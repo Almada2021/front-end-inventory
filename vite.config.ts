@@ -20,9 +20,9 @@ export default defineConfig({
         start_url: "/",
         scope: "/",
         display: "standalone",
-        name: "My Awesome App",
-        short_name: "MyApp",
-        description: "My Awesome App description",
+        name: "Inventario",
+        short_name: "InvAlm",
+        description: "App de inventario",
         theme_color: "#FFF",
         icons: [
           {
@@ -45,6 +45,7 @@ export default defineConfig({
     },
   },
   server: {
+    // host: "almada.com",
     https: {
       key: "./localhost.key", // Ruta al archivo .key
       cert: "./localhost.crt", // Ruta al archivo .crt

@@ -1,12 +1,14 @@
 import "./App.css";
-import Navbar from "./components/Navbar/Navbar";
-import AppSidebar from "./components/ui/app-sidebar";
+// import { useNavigate } from "react-router";
 
 function App() {
+  // const navigate = useNavigate();
+
+  // navigate("/login");
+
   return (
     <>
-      <Navbar />
-      <AppSidebar show={false} />
+      <h2>Hola </h2>
     </>
   );
 }
