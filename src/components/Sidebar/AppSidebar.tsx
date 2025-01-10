@@ -1,3 +1,5 @@
+// import { RootState } from "@/app/store";
+// import { useAppSelector } from "@/config/react-redux.adapter";
 import {
   Sidebar,
   SidebarContent,
@@ -81,7 +83,11 @@ const items: MenuItem[] = [
   },
 ];
 
-export default function AppSidebar() {
+export default function AppSidebar({ children }: { children: JSX.Element }) {
+  // const { userInfo, token } = useAppSelector((state: RootState) => state.auth);
+  // if (!userInfo || !token) {
+  //   return <>{children}</>;
+  // }
   return (
     <>
       <SidebarProvider
@@ -92,7 +98,7 @@ export default function AppSidebar() {
           } as React.CSSProperties
         }
       >
-        <Sidebar>
+        <Sidebar variant="floating" collapsible="icon">
           <SidebarTrigger />
           <SidebarHeader />
           <SidebarContent>
@@ -143,6 +149,7 @@ export default function AppSidebar() {
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
+        {children}
       </SidebarProvider>
     </>
   );
