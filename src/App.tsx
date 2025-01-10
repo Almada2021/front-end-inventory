@@ -1,16 +1,16 @@
+import { useNavigate } from "react-router";
 import "./App.css";
-// import { useNavigate } from "react-router";
+import { useEffect } from "react";
 
 function App() {
-  // const navigate = useNavigate();
-
-  // navigate("/login");
-
-  return (
-    <>
-      <h2>Hola </h2>
-    </>
-  );
+  const shouldRedirect = true;
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (shouldRedirect) {
+      navigate("/login");
+    }
+  }, []);
+  return null;
 }
 
 export default App;
