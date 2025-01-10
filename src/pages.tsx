@@ -5,3 +5,8 @@ export const RegisterPage = lazy(
 );
 
 export const LoginPage = lazy(() => import("@/layouts/LoginPage/LoginPage"));
+
+// Logged Routes
+export const HomeScreen = lazy(() => import("@/layouts/Home/HomeScreen"));
+
+export const AiScreen = lazy(() => import("@/layouts/AI/AiScreen"));

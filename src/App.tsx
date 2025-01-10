@@ -1,16 +1,21 @@
 import { useNavigate } from "react-router";
 import "./App.css";
+import { RootState } from "./app/store";
+import { useAppSelector } from "./config/react-redux.adapter";
 import { useEffect } from "react";
+import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 
 function App() {
-  const shouldRedirect = true;
+  const { userInfo, token } = useAppSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
   useEffect(() => {
-    if (shouldRedirect) {
+    if (!userInfo && !token) {
       navigate("/login");
+    } else {
+      navigate("/inventory");
     }
-  }, []);
-  return null;
+  }, [userInfo, token, navigate]);
+  return <LoadingScreen />;
 }
 
 export default App;

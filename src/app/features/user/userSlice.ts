@@ -1,7 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { userLogin } from "./authActions";
 // import type { PayloadAction } from "@reduxjs/toolkit";
+const userToken = localStorage.getItem("userToken")
+  ? localStorage.getItem("userToken")
+  : null;
 
+console.log(userToken);
 export interface UserInfo {
   id: string;
   email: string;
@@ -35,9 +39,10 @@ export const authSlice = createSlice({
         userLogin.fulfilled,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (state: UserState, action: { payload: any }) => {
+          console.log(action);
           state.loading = false;
-          state.userInfo = action.payload;
-          state.token = action.payload.userToken;
+          state.userInfo = action.payload.user;
+          state.token = action.payload.token;
         }
       )
       .addCase(

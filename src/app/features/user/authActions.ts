@@ -1,13 +1,13 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-interface LoginRequest {
-  email: string;
-  password: string;
+export interface LoginRequest {
+  email?: string;
+  password?: string;
 }
 export const userLogin = createAsyncThunk(
   "auth/login",
-  async ({ email, password }: LoginRequest, { rejectWithValue }) => {
+  async ({ email = "", password = "" }: LoginRequest, { rejectWithValue }) => {
     try {
       const config = {
         headers: {
@@ -15,7 +15,7 @@ export const userLogin = createAsyncThunk(
         },
       };
       const { data } = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/login`,
+        `${import.meta.env.VITE_BACKEND_URL}/auth/login`,
         { email, password },
         config
       );

@@ -3,5 +3,5 @@ interface Props {
 }
 export default function HomeScreen({ show }: Props) {
   if (!show) return null;
-  return <div>Home</div>;
+  return <></>;
 }

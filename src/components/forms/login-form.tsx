@@ -3,7 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormikHelpers, useFormik } from "formik";
+import { useFormik } from "formik";
+import { useDispatch } from "react-redux";
+import { userLogin } from "@/app/features/user/authActions";
+import { AppDispatch } from "@/app/store";
 interface FormValues {
   email: string;
   password: string;
@@ -26,6 +29,8 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const dispatch = useDispatch<AppDispatch>();
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -33,25 +38,10 @@ export function LoginForm({
     },
     validate,
     onSubmit: (
-      values: FormValues,
-      formikHelpers: FormikHelpers<{ email: string; password: string }>
+      values: FormValues
+      // formikHelpers: FormikHelpers<{ email: string; password: string }>
     ) => {
-      console.log(values);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-      fetch(import.meta.env.VITE_BACKEND_URL + "/auth/login", {
-        method: "POST",
-        headers: myHeaders,
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-        }),
-      })
-        .then((res) => {
-          formikHelpers.setSubmitting(false);
-          console.log(res);
-        })
-        .catch((res) => console.log(res));
+      dispatch(userLogin({ email: values.email, password: values.password }));
     },
   });
   return (
