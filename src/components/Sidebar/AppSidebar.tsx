@@ -29,6 +29,7 @@ import {
   Milk,
   Store,
   User2,
+  TruckIcon,
   Users,
 } from "lucide-react";
 import { Home, Settings } from "lucide-react";
@@ -70,6 +71,11 @@ const items: MenuItem[] = [
     title: "Empleados",
     url: "#",
     icon: Users,
+  },
+  {
+    title: "Proveedores",
+    url: "#",
+    icon: TruckIcon,
   },
   {
     title: "Reportes",

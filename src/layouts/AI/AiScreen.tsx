@@ -39,7 +39,7 @@ export default function AiScreen() {
     <div className="min-h-[100svh] w-full  flex px-10 py-10 items-center gap-10 flex-wrap">
       {AiModules.map((module: AiItem) => {
         return (
-          <Card className="sm:w-full md:w-4/12 lg:w-3/12 ">
+          <Card className="sm:w-full md:w-5/12 lg:w-4/12 ">
             <CardHeader>
               <img
                 className="object-cover "
@@ -50,7 +50,12 @@ export default function AiScreen() {
               <CardDescription>{module.description}</CardDescription>
             </CardHeader>
             <CardFooter>
-              <p>Card Footer</p>
+              <a
+                href={module.url}
+                className="w-full bg-primary text-secondary rounded text-center text-xl1"
+              >
+                Usar
+              </a>
             </CardFooter>
           </Card>
         );

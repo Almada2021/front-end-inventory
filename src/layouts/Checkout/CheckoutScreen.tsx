@@ -11,8 +11,12 @@ export default function CheckoutScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <div>
-      <Bills />
+    <div className="h-screen w-full">
+      <Bills
+        onValueChange={(v) => {
+          console.log(v);
+        }}
+      />
     </div>
   );
 }
