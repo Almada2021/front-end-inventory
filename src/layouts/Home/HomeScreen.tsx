@@ -17,7 +17,7 @@ export default function HomeScreen({ show }: Props) {
 
   if (!show) return null;
   return (
-    <main className="mt-2 w-full">
+    <main className="mt-2 w-full ">
       <h2 className="text-3xl font-bold">Bienvenido {userInfo?.name}</h2>
       <h2 className="text-sm text-gray-500 ">{userInfo?.email}</h2>
       <h2 className="text-xs ">{userInfo?.id}</h2>

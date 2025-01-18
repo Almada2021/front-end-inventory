@@ -17,7 +17,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useAppSelector } from "@/config/react-redux.adapter";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { validateTime } from "@/lib/jwt.utils";
 import {
   DropdownMenu,
@@ -98,7 +97,6 @@ const items: MenuItem[] = [
 export default function AppSidebar({ children }: { children: JSX.Element }) {
   const { userInfo, token } = useAppSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
-  const isMobile = useIsMobile();
   const out = () => {
     dispatch(signOut());
   };
@@ -123,6 +121,7 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
             "--sidebar-width-mobile": "20rem",
           } as React.CSSProperties
         }
+        className="flex flex-col md:flex-row"
       >
         <Sidebar variant="floating" collapsible="icon">
           <SidebarTrigger />

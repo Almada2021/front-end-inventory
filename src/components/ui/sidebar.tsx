@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
-import { PanelLeft } from "lucide-react";
+import { MenuIcon, PanelLeft } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -174,7 +174,12 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
-
+    const [showTrigger, setShowTrigger] = React.useState<boolean>(false);
+    React.useEffect(() => {
+      if (openMobile == false) {
+        setShowTrigger(false);
+      }
+    }, [openMobile]);
     if (collapsible === "none") {
       return (
         <div
@@ -189,12 +194,20 @@ const Sidebar = React.forwardRef<
         </div>
       );
     }
+    const mobileTrigger = () => {
+      setShowTrigger(true);
+      setOpenMobile(true);
+    };
 
     if (isMobile) {
-      console.log(children);
       return (
         <>
-          {children}
+          {!showTrigger && (
+            <div className="w-full  p-2" onClick={mobileTrigger}>
+              <MenuIcon size={40} />
+            </div>
+          )}
+          <div>{showTrigger && children}</div>
           <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
             <SheetContent
               data-sidebar="sidebar"
