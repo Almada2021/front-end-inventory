@@ -12,9 +12,9 @@ export default function SuppliersPage() {
         }}
         className="w-full lg:w-4/12 h-3/6 flex flex-col items-center justify-center"
       >
-        <PlusCircleIcon className="size-10 w-full h-2/6 md:h-3/6  p-2 md:p-30" />
+        <PlusCircleIcon className="size-4 md:size-10 w-4/6 md:w-full h-1/6 md:h-3/6  p-2 md:p-30" />
         <CardFooter className="w-full text-center">
-          <h3 className="text-xl md:text-2xl w-full font-bold">
+          <h3 className="text-md sm:text-xl md:text-2xl w-full font-bold">
             Crear Proveedor
           </h3>
         </CardFooter>
@@ -25,9 +25,11 @@ export default function SuppliersPage() {
         }}
         className="w-full lg:w-4/12 h-3/6 flex flex-col items-center justify-center"
       >
-        <Container className="size-10 w-full h-3/6 p-30" />
+        <Container className="size-4 md:size-10 w-4/6 md:w-full h-1/6 md:h-3/6  p-2 md:p-30" />
         <CardFooter className="w-full text-center">
-          <h3 className="text-2xl w-full font-bold">Mostras Proveedores</h3>
+          <h3 className="text-md sm:text-xl md:text-2xl w-full font-bold">
+            Mostras Proveedores
+          </h3>
         </CardFooter>
       </Card>
     </div>
