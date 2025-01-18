@@ -15,7 +15,12 @@ function App() {
       navigate("/inventory");
     }
   }, [userInfo, token, navigate]);
-  return <LoadingScreen />;
+
+  return (
+    <div className="w-full h-full">
+      <LoadingScreen />
+    </div>
+  );
 }
 
 export default App;

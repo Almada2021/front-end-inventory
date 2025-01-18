@@ -37,9 +37,9 @@ const AiModules: AiItem[] = [
 export default function AiScreen() {
   return (
     <div className="min-h-[100svh] w-full  flex px-10 py-10 items-center gap-10 flex-wrap">
-      {AiModules.map((module: AiItem) => {
+      {AiModules.map((module: AiItem, index: number) => {
         return (
-          <Card className="sm:w-full md:w-5/12 lg:w-4/12 ">
+          <Card className="sm:w-full md:w-5/12 lg:w-4/12 " key={index}>
             <CardHeader>
               <img
                 className="object-cover "

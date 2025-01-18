@@ -5,7 +5,7 @@ const userToken = localStorage.getItem("userToken")
   ? localStorage.getItem("userToken")
   : null;
 
-console.log(userToken);
+console.log(userToken ? "Logged" : "unlogged");
 export interface UserInfo {
   id: string;
   email: string;
@@ -28,7 +28,12 @@ const initialState: UserState = {
 export const authSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {},
+  reducers: {
+    signOut: (state: UserState) => {
+      state.userInfo = undefined;
+      state.token = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(userLogin.pending, (state: UserState) => {
@@ -55,4 +60,5 @@ export const authSlice = createSlice({
       );
   },
 });
+export const { signOut } = authSlice.actions;
 export default authSlice.reducer;

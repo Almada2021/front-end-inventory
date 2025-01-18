@@ -1,5 +1,7 @@
 // import { RootState } from "@/app/store";
 // import { useAppSelector } from "@/config/react-redux.adapter";
+import { signOut } from "@/app/features/user/userSlice";
+import { RootState } from "@/app/store";
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +16,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useAppSelector } from "@/config/react-redux.adapter";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { validateTime } from "@/lib/jwt.utils";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -33,7 +38,8 @@ import {
   Users,
 } from "lucide-react";
 import { Home, Settings } from "lucide-react";
-
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
 interface MenuItem {
   title: string;
   url: string;
@@ -64,17 +70,17 @@ const items: MenuItem[] = [
   },
   {
     title: "Productos",
-    url: "#",
+    url: "/inventory/products",
     icon: Milk,
   },
   {
     title: "Empleados",
-    url: "#",
+    url: "/inventory/employee",
     icon: Users,
   },
   {
     title: "Proveedores",
-    url: "#",
+    url: "/inventory/suppliers",
     icon: TruckIcon,
   },
   {
@@ -90,10 +96,24 @@ const items: MenuItem[] = [
 ];
 
 export default function AppSidebar({ children }: { children: JSX.Element }) {
-  // const { userInfo, token } = useAppSelector((state: RootState) => state.auth);
-  // if (!userInfo || !token) {
-  //   return <>{children}</>;
-  // }
+  const { userInfo, token } = useAppSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const isMobile = useIsMobile();
+  const out = () => {
+    dispatch(signOut());
+  };
+  useEffect(() => {
+    if (token) {
+      if (validateTime(token)) {
+        dispatch(signOut());
+      }
+    }
+  }, [token, dispatch]);
+
+  if (!userInfo || !token) {
+    return <>{children}</>;
+  }
+
   return (
     <>
       <SidebarProvider
@@ -106,10 +126,11 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
       >
         <Sidebar variant="floating" collapsible="icon">
           <SidebarTrigger />
+
           <SidebarHeader />
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Application</SidebarGroupLabel>
+              <SidebarGroupLabel>Modulos</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {items.map((item) => (
@@ -125,6 +146,9 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel>Modulos de Administrador</SidebarGroupLabel>
+            </SidebarGroup>
           </SidebarContent>
           <SidebarFooter>
             <SidebarMenu>
@@ -132,22 +156,22 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton>
-                      <User2 /> Username
+                      <User2 /> {userInfo.name}
                       <ChevronUp className="ml-auto" />
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     side="top"
-                    className="w-[--radix-popper-anchor-width]"
+                    className="w-[--radix-popper-anchor-width] border-t-2 border-b-2 border-r-2 border-l-2 "
                   >
                     <DropdownMenuItem>
-                      <span>Account</span>
+                      <span>Cuenta</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <span>Billing</span>
+                      <span>Informacion</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <span>Sign out</span>
+                    <DropdownMenuItem onClick={out}>
+                      <span>Cerrar Session</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

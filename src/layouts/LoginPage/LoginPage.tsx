@@ -1,9 +1,10 @@
 import { ArchiveIcon } from "lucide-react";
 
 import { LoginForm } from "@/components/forms/login-form";
-import { useAppSelector } from "@/config/react-redux.adapter";
-import { RootState } from "@/app/store";
 import { useNavigate } from "react-router";
+import { RootState } from "@/app/store";
+import { useAppSelector } from "@/config/react-redux.adapter";
+import LoadingScreen from "../Loading/LoadingScreen";
 import { useEffect } from "react";
 interface Props {
   show: boolean;
@@ -13,13 +14,14 @@ export default function LoginPage({ show }: Props) {
     (state: RootState) => state.auth
   );
   const navigate = useNavigate();
+
   useEffect(() => {
-    if (userInfo && token) {
-      navigate("/");
+    if (userInfo || token) {
+      navigate("/inventory");
     }
   }, [userInfo, token, navigate]);
   if (loading) {
-    return <div>Loading</div>;
+    return <LoadingScreen />;
   }
   if (!show) return null;
   return (
