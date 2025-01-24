@@ -1,3 +1,4 @@
+import { defaultConfig } from "@/lib/http.utils";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -11,18 +12,15 @@ export const createProviders = createAsyncThunk(
   "providers/create",
   async ({ name, sellerName, phoneNumber }: CreateSupplierDto) => {
     try {
-      const config = {
-        headers: {
-          "Content-Type": "appication/json",
-        },
-      };
       const { data } = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/providers/create`,
         { name, sellerName, phoneNumber, sheet: name },
-        config
+        defaultConfig
       );
       if (data) {
-        return true;
+        return data;
+      } else {
+        throw new Error("data not exists");
       }
     } catch (error) {
       if (error instanceof Error) {

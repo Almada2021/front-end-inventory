@@ -3,14 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useFormik } from "formik";
+import { FormikHelpers, useFormik } from "formik";
 import * as Yup from "yup";
-
-// interface FormValues {
-//   name: string;
-//   email: string;
-//   phoneNumber?: string;
-// }
+import { useDispatch } from "react-redux";
+import { createProviders } from "@/app/features/supplier/supplierActions";
+import { AppDispatch } from "@/app/store";
+import { useToast } from "@/hooks/use-toast";
 
 const phoneRegExp =
   /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
@@ -19,6 +17,8 @@ export default function SuppliersForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { toast } = useToast();
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -33,12 +33,36 @@ export default function SuppliersForm({
         "Numero de telefono no es Valido"
       ),
     }),
-    onSubmit: (values) => {
+    onSubmit: async (
+      values,
+      formikHelpers: FormikHelpers<{
+        name: string;
+        sellerName: string;
+        phoneNumber: string;
+      }>
+    ) => {
       try {
-        console.log(values);
+        const providerCreated = await dispatch(
+          createProviders({
+            name: values.name,
+            sellerName: values.sellerName,
+            phoneNumber: values.phoneNumber,
+          })
+        );
+        if (!providerCreated.payload) throw new Error("Creation Failed");
+        toast({
+          title: "El proveedor se creo correctamente",
+          description: values.name,
+        });
+        formikHelpers.resetForm();
       } catch (error: unknown) {
         if (error instanceof Error) {
           console.log(error.message);
+          toast({
+            title: "El proveedor NO se creo correctamente",
+            description: `${values.name} Cambia el nombre o prueba el internet`,
+            variant: "destructive",
+          });
         }
       }
     },
@@ -95,7 +119,7 @@ export default function SuppliersForm({
                   </p>
                 </div>
                 <Button type="submit" className="w-full">
-                  Ingresar
+                  Crear Proveedor
                 </Button>
               </div>
             </div>

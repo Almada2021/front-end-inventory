@@ -5,6 +5,10 @@ export interface SupplierInfo {
   name: string;
   sellerName: string;
   phoneNumber: string;
+  id?: string;
+  sheet?: string;
+  productsIds?: string[];
+  orders?: string[];
 }
 
 export interface SupplierState {
@@ -28,8 +32,15 @@ export const supplierSlice = createSlice({
       .addCase(createProviders.pending, (state: SupplierState) => {
         console.log(state);
       })
-      .addCase(createProviders.fulfilled, () => {})
-      .addCase(createProviders.rejected, () => {});
+      .addCase(createProviders.fulfilled, (state: SupplierState, action) => {
+        if (action.payload) {
+          state.suppliers.push(action.payload);
+        }
+        return state;
+      })
+      .addCase(createProviders.rejected, (state: SupplierState) => {
+        return state;
+      });
   },
 });
 

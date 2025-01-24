@@ -203,7 +203,7 @@ const Sidebar = React.forwardRef<
       return (
         <>
           {!showTrigger && (
-            <div className="w-full  p-2" onClick={mobileTrigger}>
+            <div className="w-full fixed  p-2" onClick={mobileTrigger}>
               <MenuIcon size={40} />
             </div>
           )}

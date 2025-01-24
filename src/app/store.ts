@@ -1,9 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import counterReducer from "@/app/features/counter/counterSlice";
-import authReducer from "@/app/features/user/userSlice";
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-
+// !Reducers
+import counterReducer from "@/app/features/counter/counterSlice";
+import authReducer from "@/app/features/user/userSlice";
+import supplierReducer from "@/app/features/supplier/supplierSlice";
 const persistConfig = {
   key: "root",
   storage,
@@ -17,6 +18,7 @@ import persistStore from "redux-persist/es/persistStore";
 const rootReducer = combineReducers({
   counter: counterReducer,
   auth: authReducer,
+  suppliers: supplierReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

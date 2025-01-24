@@ -37,11 +37,20 @@ export function LoginForm({
       password: "",
     },
     validate,
-    onSubmit: (
+    onSubmit: async (
       values: FormValues
       // formikHelpers: FormikHelpers<{ email: string; password: string }>
     ) => {
-      dispatch(userLogin({ email: values.email, password: values.password }));
+      try {
+        const provider: unknown = await dispatch(
+          userLogin({ email: values.email, password: values.password })
+        );
+        console.log(provider);
+      } catch (error) {
+        if (error instanceof Error) {
+          console.log(error.message);
+        }
+      }
     },
   });
   return (
