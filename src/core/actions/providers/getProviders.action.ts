@@ -5,14 +5,25 @@ import {
 } from "@/infrastructure/interfaces/provider.interface";
 import { ProviderMapper } from "@/infrastructure/mappers/provider.mapper";
 
-export const getProvidersAction = async (): Promise<
-  ProviderModel[] | undefined
-> => {
+interface RequestOptions {
+  page: number;
+  limit: number;
+}
+export const getProvidersAction = async ({
+  page,
+  limit,
+}: RequestOptions): Promise<ProviderModel[]> => {
   try {
     const providers = await BackendApi.get<BackendProviderAPIResponse>(
-      "/providers/all"
+      "/providers/all",
+      {
+        params: {
+          page: page,
+          limit: limit,
+        },
+      }
     );
-    if (!providers.data) {
+    if (providers.data.providers.length == 0) {
       return [];
     }
     return providers.data.providers.map(ProviderMapper.fromBackToFront);
@@ -20,5 +31,6 @@ export const getProvidersAction = async (): Promise<
     if (error instanceof Error) {
       console.log(error.message);
     }
+    throw error;
   }
 };

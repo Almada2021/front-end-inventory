@@ -1,4 +1,4 @@
-import { Card, CardFooter } from "@/components/ui/card";
+import MainCard from "@/components/Cards/Main/MainCard";
 import { PlusCircleIcon, Container } from "lucide-react";
 import { useNavigate } from "react-router";
 export default function SuppliersPage() {
@@ -6,32 +6,22 @@ export default function SuppliersPage() {
   return (
     <div className=" w-full p-20  md:p-20 flex flex-wrap  gap-4 items-center justify-center">
       {/* <SuppliersForm /> */}
-      <Card
+      <MainCard
         onClick={() => {
           navigate("./new");
         }}
-        className="w-full lg:w-4/12 h-3/6 flex flex-col items-center justify-center"
+        Icon={PlusCircleIcon}
       >
-        <PlusCircleIcon className="size-4 md:size-10 w-4/6 md:w-full h-1/6 md:h-3/6  p-2 md:p-30" />
-        <CardFooter className="w-full text-center">
-          <h3 className="text-md sm:text-xl md:text-2xl w-full font-bold">
-            Crear Proveedor
-          </h3>
-        </CardFooter>
-      </Card>
-      <Card
+        Crear Proveedor
+      </MainCard>
+      <MainCard
         onClick={() => {
           navigate("./show");
         }}
-        className="w-full lg:w-4/12 h-3/6 flex flex-col items-center justify-center"
+        Icon={Container}
       >
-        <Container className="size-4 md:size-10 w-4/6 md:w-full h-1/6 md:h-3/6  p-2 md:p-30" />
-        <CardFooter className="w-full text-center">
-          <h3 className="text-md sm:text-xl md:text-2xl w-full font-bold">
-            Mostras Proveedores
-          </h3>
-        </CardFooter>
-      </Card>
+        Mostras Proveedores
+      </MainCard>
     </div>
   );
 }

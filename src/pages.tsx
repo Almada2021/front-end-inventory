@@ -19,10 +19,22 @@ export const ProductsScreen = lazy(
   () => import("@/layouts/ProductsPage/ProductsPage")
 );
 
+export const NewProduct = lazy(
+  () => import("@/layouts/ProductsPage/NewProduct/NewProduct")
+);
+
 export const EmployeeScreen = lazy(
   () => import("@/layouts/EmployeePage/EmployeePage")
 );
 
 export const SuppliersScreen = lazy(
   () => import("@/layouts/Suppliers/SuppliersPage")
+);
+
+export const ShowSupplier = lazy(
+  () => import("@/layouts/Suppliers/ShowSuppliers/ShowSupplier")
+);
+
+export const SupplierInfp = lazy(
+  () => import("@/layouts/Suppliers/SupplierInfo/SupplierInfo")
 );

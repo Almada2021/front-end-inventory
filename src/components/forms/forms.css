@@ -1,0 +1,20 @@
+.with-suffix {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.with-suffix input {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  text-align: right;
+  flex: 1;
+  min-width: 0;
+
+  border: none;
+  background: none;
+}
+
+.suffix-gs::after {
+  content: "Gs.";
+}

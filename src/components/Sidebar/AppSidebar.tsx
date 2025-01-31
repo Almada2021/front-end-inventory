@@ -34,11 +34,13 @@ import {
   Store,
   User2,
   TruckIcon,
+  ListOrdered,
   Users,
 } from "lucide-react";
 import { Home, Settings } from "lucide-react";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router";
 interface MenuItem {
   title: string;
   url: string;
@@ -46,6 +48,18 @@ interface MenuItem {
     Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
   >;
 }
+const AdminItems: MenuItem[] = [
+  {
+    title: "Sucursales y Cajas",
+    url: "/inventory/ai",
+    icon: Store,
+  },
+  {
+    title: "Reportes",
+    url: "#",
+    icon: FileSpreadsheet,
+  },
+];
 const items: MenuItem[] = [
   {
     title: "Inicio",
@@ -62,11 +76,7 @@ const items: MenuItem[] = [
     url: "/inventory/ai",
     icon: Brain,
   },
-  {
-    title: "Sucursales y Cajas",
-    url: "/inventory/ai",
-    icon: Store,
-  },
+
   {
     title: "Productos",
     url: "/inventory/products",
@@ -83,6 +93,11 @@ const items: MenuItem[] = [
     icon: TruckIcon,
   },
   {
+    title: "Ordenes",
+    url: "/inventory/orders",
+    icon: ListOrdered,
+  },
+  {
     title: "Reportes",
     url: "#",
     icon: FileSpreadsheet,
@@ -97,8 +112,10 @@ const items: MenuItem[] = [
 export default function AppSidebar({ children }: { children: JSX.Element }) {
   const { userInfo, token } = useAppSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const out = () => {
     dispatch(signOut());
+    navigate("/");
   };
   useEffect(() => {
     if (token) {
@@ -131,11 +148,11 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
             <SidebarGroup>
               <SidebarGroupLabel>Modulos</SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu draggable={false}>
                   {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
+                    <SidebarMenuItem className="select-none" key={item.title}>
                       <SidebarMenuButton asChild>
-                        <a href={item.url}>
+                        <a draggable={false} href={item.url}>
                           <item.icon />
                           <span>{item.title}</span>
                         </a>
@@ -146,7 +163,19 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
               </SidebarGroupContent>
             </SidebarGroup>
             <SidebarGroup>
-              <SidebarGroupLabel>Modulos de Administrador</SidebarGroupLabel>
+              <SidebarMenu draggable={false}>
+                <SidebarGroupLabel>Modulos de Administrador</SidebarGroupLabel>
+                {AdminItems.map((item) => (
+                  <SidebarMenuItem className="select-none" key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a draggable={false} href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>
           <SidebarFooter>
@@ -154,23 +183,27 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
               <SidebarMenuItem>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton>
-                      <User2 /> {userInfo.name}
-                      <ChevronUp className="ml-auto" />
-                    </SidebarMenuButton>
+                    <div>
+                      {" "}
+                      {/* Changed from button to div */}
+                      <SidebarMenuButton>
+                        <User2 /> Username
+                        <ChevronUp className="ml-auto" />
+                      </SidebarMenuButton>
+                    </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     side="top"
-                    className="w-[--radix-popper-anchor-width] border-t-2 border-b-2 border-r-2 border-l-2 "
+                    className="w-[--radix-popper-anchor-width] shadow shadow-black "
                   >
                     <DropdownMenuItem>
-                      <span>Cuenta</span>
+                      <span>Account</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <span>Informacion</span>
+                      <span>Billing</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={out}>
-                      <span>Cerrar Session</span>
+                      <span>Sign out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

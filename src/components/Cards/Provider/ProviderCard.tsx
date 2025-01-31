@@ -14,12 +14,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteProviderAction } from "@/core/actions/providers/deleteProvider.action";
+import { useNavigate } from "react-router";
 interface Props {
   provider: ProviderModel;
+  className?: string;
+  length?: number;
+  onDeleteLength?: () => void;
 }
 
-export default function ProviderCard({ provider }: Props) {
+export default function ProviderCard({
+  provider,
+  className,
+  length = 0,
+  onDeleteLength = () => {},
+}: Props) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const deleteMutation = useMutation({
     mutationFn: (id: string) => {
       return deleteProviderAction(id);
@@ -29,12 +39,19 @@ export default function ProviderCard({ provider }: Props) {
         queryKey: ["providers", "all"],
         refetchType: "active",
       });
+      if (length == 1 || length == 0) {
+        onDeleteLength();
+      }
     },
   });
-  const showProvider = () => {};
+  const showProvider = () => {
+    return navigate(`../${provider.id}`);
+  };
 
   return (
-    <div className="group relative overflow-hidden rounded-lg border bg-white shadow-md transition-all hover:shadow-lg w-[280px] 1">
+    <div
+      className={`group relative overflow-hidden rounded-lg border bg-white shadow-md transition-all hover:shadow-lg w-[280px] ${className}`}
+    >
       <AlertDialog>
         <AlertDialogContent>
           <AlertDialogHeader>
