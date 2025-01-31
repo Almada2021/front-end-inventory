@@ -20,18 +20,21 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import DataTableView from "../DataTable/DataTable";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Search } from "lucide-react";
 
 export default function ProductsForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const [providers, setProviders] = useState<string[]>([]);
+  const [previewImg, setPreviewImg] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const formik = useFormik({
     initialValues: {
       name: "",
       price: 0,
-      image: null as File | null, // Nuevo campo para la imagen
+      image: null as File | null,
     },
     validationSchema: Yup.object({
       name: Yup.string(),
@@ -129,14 +132,19 @@ export default function ProductsForm({
                     </p>
                   </div>
                   {/* Input de la imagen */}
-                  <div className="grid gap-2">
-                    <Label htmlFor="image">Imagen del Producto </Label>
+                  <div className="grid ">
+                    <Label htmlFor="image" className="invisible h-[0.1px]">
+                      Imagen del Producto
+                    </Label>
                     <Input
+                      className="invisible h-[0.1px]"
                       id="image"
+                      ref={fileInputRef}
                       type="file"
                       accept="image/png, image/gif, image/jpeg"
-                      onChange={(event) => {
+                      onChange={async (event) => {
                         const file = event.target.files?.[0];
+                        setPreviewImg(URL.createObjectURL(file!));
                         formik.setFieldValue("image", file || null);
                       }}
                     />
@@ -145,12 +153,46 @@ export default function ProductsForm({
                         {formik.errors.image}
                       </p>
                     )}
+                    {previewImg != "" && (
+                      <div
+                        onClick={() => {
+                          if (fileInputRef.current) {
+                            fileInputRef.current.click();
+                          }
+                        }}
+                        className="border-dotted border-primary border-2 min-h-[150px] flex justify-center items-center"
+                      >
+                        <img
+                          className="w-full max-h-[150px] object-contain"
+                          src={previewImg}
+                          alt={`Producto: ${formik.values.name}`}
+                          title={`Producto: ${formik.values.name}`}
+                        ></img>
+                      </div>
+                    )}
+                    {previewImg == "" && (
+                      <div
+                        onClick={() => {
+                          if (fileInputRef.current) {
+                            fileInputRef.current.click();
+                          }
+                        }}
+                        className="border-dotted border-primary border-2 min-h-[150px] flex justify-center items-center"
+                      >
+                        <h3 className="text-primary font-bold">
+                          Click Para Elegir la foto del producto
+                        </h3>
+                      </div>
+                    )}
                   </div>
                   {/* Name */}
                   <div className="grid gap-2">
                     <Label htmlFor="providers"> Proveedores</Label>
-                    <AlertDialogTrigger className="rounded-full border-primary border-2">
-                      Buscar Proveedores
+                    <AlertDialogTrigger className="rounded-full border-primary border-2 p-2">
+                      <div className="w-full flex items-center justify-center gap-2">
+                        <Search size={24} />
+                        Buscar Proveedores
+                      </div>
                     </AlertDialogTrigger>
                   </div>
                   <Button type="submit" className="w-full">
