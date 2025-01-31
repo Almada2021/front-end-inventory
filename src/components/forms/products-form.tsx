@@ -156,14 +156,15 @@ export default function ProductsForm({
                     </div>
                     {!formik.values.uncounted && (
                       <>
-                        <Label htmlFor="price">Cantidad</Label>
+                        <Label htmlFor="stock">Cantidad</Label>
                         <div>
                           <Input
-                            id="price"
+                            id="stock"
                             type="number"
-                            placeholder="10000"
+                            placeholder="Numero de unidades"
                             required
-                            step={1000}
+                            step={1}
+                            min={1}
                             value={formik.values.stock}
                             onChange={formik.handleChange}
                           />
