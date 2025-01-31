@@ -22,6 +22,7 @@ import {
 import DataTableView from "../DataTable/DataTable";
 import { useRef, useState } from "react";
 import { Search } from "lucide-react";
+import { Checkbox } from "../ui/checkbox";
 
 export default function ProductsForm({
   className,
@@ -35,13 +36,18 @@ export default function ProductsForm({
       name: "",
       price: 0,
       image: null as File | null,
+      uncounted: true,
+      stock: 0,
     },
     validationSchema: Yup.object({
-      name: Yup.string(),
+      name: Yup.string().required("El nombre es requerido"),
       price: Yup.number()
+        .required("El Precio es requerido")
         .integer("Ingresa un Entero.")
         .required("El precio es requerido"),
       image: Yup.mixed().nullable(),
+      uncounted: Yup.boolean().required(),
+      stock: Yup.number(),
     }),
     onSubmit: async (
       values,
@@ -51,12 +57,16 @@ export default function ProductsForm({
         name: string;
         price: number;
         image: File | null;
+        uncounted: boolean;
+        stock: number;
       }>
     ) => {
       try {
         const formData = new FormData();
         formData.append("name", values.name);
         formData.append("price", values.price.toString());
+        formData.append("uncounted", values.uncounted.toString());
+        formData.append("stock", values.stock.toString());
         providers.forEach((element) => {
           formData.append("providers", element);
         });
@@ -115,8 +125,8 @@ export default function ProductsForm({
                   </div>
                   {/* Name */}
                   <div className="grid gap-2">
-                    <Label htmlFor="price">Precio</Label>
-                    <div className="with-suffix suffix-gs">
+                    <Label htmlFor="price">Precio en Gs</Label>
+                    <div>
                       <Input
                         id="price"
                         type="number"
@@ -130,6 +140,39 @@ export default function ProductsForm({
                     <p className="text-xs text-red-600">
                       {formik.errors.price}
                     </p>
+                  </div>
+                  <div className="grid gap-2">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={formik.values.uncounted}
+                        onClick={() => {
+                          formik.setFieldValue(
+                            "uncounted",
+                            !formik.values.uncounted
+                          );
+                        }}
+                      />
+                      <p>No Contar Cantidad en el inventario</p>
+                    </div>
+                    {!formik.values.uncounted && (
+                      <>
+                        <Label htmlFor="price">Cantidad</Label>
+                        <div>
+                          <Input
+                            id="price"
+                            type="number"
+                            placeholder="10000"
+                            required
+                            step={1000}
+                            value={formik.values.stock}
+                            onChange={formik.handleChange}
+                          />
+                        </div>
+                        <p className="text-xs text-red-600">
+                          {formik.errors.stock}
+                        </p>
+                      </>
+                    )}
                   </div>
                   {/* Input de la imagen */}
                   <div className="grid ">
