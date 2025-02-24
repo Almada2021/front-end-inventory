@@ -1,15 +1,19 @@
 import { useMutation } from "@tanstack/react-query";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 interface Props<T> {
   mutateFunction: (query: string) => Promise<T[] | undefined>;
   mutationKey?: string[];
   onGetData?: (data: T[] | undefined) => void;
+  onNotify?: (query: string) => void;
 }
 export default function SearchBar<T>({
   mutateFunction,
   mutationKey = ["random", "search"],
   onGetData,
+  onNotify = (query: string) => {
+    console.log(query);
+  },
 }: Props<T>) {
   const [query, setQuery] = useState<string>("");
   const searchMutation = useMutation({
@@ -20,7 +24,15 @@ export default function SearchBar<T>({
   const SearchFunction = async () => {
     await searchMutation.mutate(query);
   };
-
+  const memoizedNotify = useCallback(
+    (query: string) => {
+      onNotify(query);
+    },
+    [onNotify]
+  );
+  useEffect(() => {
+    memoizedNotify(query);
+  }, [query, memoizedNotify]);
   return (
     <section
       aria-description="Search bar"

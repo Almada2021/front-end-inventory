@@ -1,0 +1,125 @@
+import Image from "@/components/Image/Image";
+import useProductsByIds from "@/hooks/products/useProductsByIds";
+import {
+  BoxIcon,
+  PackageIcon,
+  DollarSignIcon,
+  TagIcon,
+  UsersIcon,
+} from "lucide-react";
+import { useParams } from "react-router";
+// import SkeletonLoader from "@/components/SkeletonLoader"; // Asume un componente de carga
+
+export default function ProductInfo() {
+  const { id } = useParams();
+  const { getProductsByIds } = useProductsByIds([id!]);
+
+  if (getProductsByIds.isLoading) return null;
+  if (!getProductsByIds.data?.[0]) return <div>Producto no encontrado</div>;
+
+  const product = getProductsByIds.data[0];
+
+  return (
+    <div className="w-full max-w-6xl mx-auto p-4 md:p-8">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        {/* Encabezado */}
+        <div className="bg-primary/10 p-6 border-b border-gray-200">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+            {product.name}
+          </h1>
+        </div>
+
+        {/* Contenido principal */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
+          {/* Imagen */}
+          <div className="relative h-96 rounded-xl overflow-hidden shadow-md">
+            <Image
+              className="object-contain w-full h-full bg-gray-50 p-4"
+              src={product.photoUrl}
+              alt={product.name}
+            />
+          </div>
+
+          {/* Información */}
+          <div className="space-y-6">
+            {/* Estadísticas principales */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <InfoCard
+                icon={<BoxIcon className="w-6 h-6" />}
+                title="Stock"
+                value={product.stock}
+                color="bg-blue-100"
+              />
+              <InfoCard
+                icon={<DollarSignIcon className="w-6 h-6" />}
+                title="Precio"
+                value={`${product.price.toLocaleString()} Gs`}
+                color="bg-green-100"
+              />
+              <InfoCard
+                icon={<TagIcon className="w-6 h-6" />}
+                title="P. Base"
+                value={`${product.basePrice.toLocaleString()} Gs`}
+                color="bg-purple-100"
+              />
+            </div>
+
+            {/* Detalles adicionales */}
+            <div className="space-y-4">
+              <DetailItem
+                title="Proveedores"
+                value={product.providers.join(", ")}
+                icon={<UsersIcon className="w-5 h-5" />}
+              />
+              <DetailItem
+                title="No contabilizado"
+                value={product.uncounted ? "Sí" : "No"}
+                icon={<PackageIcon className="w-5 h-5" />}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Componente auxiliar para tarjetas de información
+const InfoCard = ({
+  icon,
+  title,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string | number;
+  color: string;
+}) => (
+  <div className={`${color} p-4 rounded-lg transition-all hover:shadow-md`}>
+    <div className="flex items-center gap-2 mb-2">
+      <div className="p-2 bg-white rounded-full shadow-sm">{icon}</div>
+      <span className="font-semibold text-gray-600">{title}</span>
+    </div>
+    <p className="text-2xl font-bold text-gray-800">{value}</p>
+  </div>
+);
+
+// Componente auxiliar para detalles
+const DetailItem = ({
+  title,
+  value,
+  icon,
+}: {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+}) => (
+  <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+    <div className="p-2 bg-white rounded-full shadow-sm">{icon}</div>
+    <div>
+      <h4 className="font-semibold text-gray-600 mb-1">{title}</h4>
+      <p className="text-gray-700">{value}</p>
+    </div>
+  </div>
+);

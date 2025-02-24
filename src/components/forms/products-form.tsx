@@ -20,7 +20,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import DataTableView from "../DataTable/DataTable";
-import { useRef, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 
@@ -35,6 +35,7 @@ export default function ProductsForm({
     initialValues: {
       name: "",
       price: 0,
+      basePrice: 0,
       image: null as File | null,
       uncounted: true,
       stock: 0,
@@ -43,6 +44,9 @@ export default function ProductsForm({
       name: Yup.string().required("El nombre es requerido"),
       price: Yup.number()
         .required("El Precio es requerido")
+        .integer("Ingresa un Entero.")
+        .required("El precio es requerido"),
+      basePrice: Yup.number()
         .integer("Ingresa un Entero.")
         .required("El precio es requerido"),
       image: Yup.mixed().nullable(),
@@ -56,6 +60,7 @@ export default function ProductsForm({
       }: FormikHelpers<{
         name: string;
         price: number;
+        basePrice: number;
         image: File | null;
         uncounted: boolean;
         stock: number;
@@ -65,6 +70,7 @@ export default function ProductsForm({
         const formData = new FormData();
         formData.append("name", values.name);
         formData.append("price", values.price.toString());
+        formData.append("basePrice", values.basePrice.toString());
         formData.append("uncounted", values.uncounted.toString());
         formData.append("stock", values.stock.toString());
         providers.forEach((element) => {
@@ -77,6 +83,7 @@ export default function ProductsForm({
         await axios.post("http://localhost:8000/products", formData);
 
         resetForm();
+        setPreviewImg("");
       } catch (err) {
         console.log(err);
       }
@@ -134,13 +141,47 @@ export default function ProductsForm({
                         required
                         step={1000}
                         value={formik.values.price}
-                        onChange={formik.handleChange}
+                        // onChange={formik.handleChange}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                          let value = e.target.value;
+                          const num = Number(e.target.value);
+                          if (value[0])
+                            value = value.substring(1, value.length);
+                          if (isNaN(num)) return;
+                          if (num < 0) return;
+                          formik.setFieldValue("price", value);
+                        }}
                       />
                     </div>
                     <p className="text-xs text-red-600">
                       {formik.errors.price}
                     </p>
                   </div>
+                  {/* <div className="grid gap-2">
+                    <Label htmlFor="basePrice">Costo en Gs</Label>
+                    <div>
+                      <Input
+                        id="basePrice"
+                        type="number"
+                        placeholder="10000"
+                        required
+                        step={1000}
+                        value={formik.values.basePrice}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                          let value = e.target.value;
+                          const num = Number(e.target.value);
+                          if (value[0])
+                            value = value.substring(1, value.length);
+                          if (isNaN(num)) return;
+                          if (num < 0) return;
+                          formik.setFieldValue("basePrice", value);
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-red-600">
+                      {formik.errors.basePrice}
+                    </p>
+                  </div> */}
                   <div className="grid gap-2">
                     <div className="flex items-center gap-2">
                       <Checkbox
@@ -223,7 +264,7 @@ export default function ProductsForm({
                         }}
                         className="border-dotted border-primary border-2 min-h-[150px] flex justify-center items-center"
                       >
-                        <h3 className="text-primary font-bold">
+                        <h3 className="text-primary font-bold text-center">
                           Click Para Elegir la foto del producto
                         </h3>
                       </div>

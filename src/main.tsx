@@ -1,10 +1,15 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { Provider } from "react-redux";
 import { store } from "@/app/store";
+import AppSidebar from "./components/Sidebar/AppSidebar";
+import { ErrorBoundary } from "./components/Errors/ErrorBoundary";
+import ProtectedRoutes from "./layouts/guard/ProtectedRoutes";
+import { Toaster } from "@/components/ui/toaster";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   RegisterPage,
   LoginPage,
@@ -16,14 +21,17 @@ import {
   SuppliersScreen,
   ShowSupplier,
   NewProduct,
+  ProductInfo,
+  SupplierInfo,
+  ShowProducts,
+  NewSupplier,
+  StoresAndBill,
+  NewStore,
+  ShowStores,
+  StoreById,
+  NewTill,
 } from "@/pages";
-import AppSidebar from "./components/Sidebar/AppSidebar";
-import { ErrorBoundary } from "./components/Errors/ErrorBoundary";
-import ProtectedRoutes from "./layouts/guard/ProtectedRoutes";
-import NewSupplier from "./layouts/Suppliers/NewSupplier/NewSupplier";
-import { Toaster } from "@/components/ui/toaster";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import SupplierInfo from "./layouts/Suppliers/SupplierInfo/SupplierInfo";
+
 const client = new QueryClient();
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -34,31 +42,50 @@ createRoot(document.getElementById("root")!).render(
             <BrowserRouter>
               <AppSidebar>
                 <ProtectedRoutes>
-                  <Routes>
-                    <Route path="/" element={<App />} />
-                    <Route path="inventory">
-                      <Route index element={<HomeScreen show />} />
-                      <Route path="ai" element={<AiScreen />} />
-                      <Route path="checkout" element={<CheckoutScreen />} />
-                      <Route path="products">
-                        <Route index element={<ProductsScreen />} />
-                        <Route path="new" element={<NewProduct />}></Route>
+                  <Suspense fallback={null}>
+                    <Routes>
+                      <Route path="/" element={<App />} />
+                      <Route path="inventory">
+                        <Route index element={<HomeScreen show />} />
+                        <Route path="ai" element={<AiScreen />} />
+                        <Route path="checkout" element={<CheckoutScreen />} />
+                        <Route path="products">
+                          <Route index element={<ProductsScreen />} />
+                          <Route path="new" element={<NewProduct />}></Route>
+                          <Route path="show" element={<ShowProducts />}></Route>
+                          <Route path=":id" element={<ProductInfo />}></Route>
+                        </Route>
+                        <Route path="employee" element={<EmployeeScreen />} />
+                        <Route path="suppliers">
+                          <Route index element={<SuppliersScreen />} />
+                          <Route path="new" element={<NewSupplier />}></Route>
+                          <Route path="show" element={<ShowSupplier />}></Route>
+                          <Route path=":id" element={<SupplierInfo />}></Route>
+                        </Route>
+                        <Route path="stores">
+                          <Route index element={<StoresAndBill />} />
+                          <Route path="new" element={<NewStore />}></Route>
+                          <Route
+                            path="new-till/:id"
+                            element={<NewTill />}
+                          ></Route>
+                          <Route path="show" element={<ShowStores />}></Route>
+                          <Route
+                            path="show/:id"
+                            element={<StoreById />}
+                          ></Route>
+                        </Route>
+                        <Route path="register" element={<RegisterPage />} />
                       </Route>
-                      <Route path="employee" element={<EmployeeScreen />} />
-                      <Route path="suppliers">
-                        <Route index element={<SuppliersScreen />} />
-                        <Route path="new" element={<NewSupplier />}></Route>
-                        <Route path="show" element={<ShowSupplier />}></Route>
-                        {/* TODO: Agregar supplier info */}
-                        <Route path=":id" element={<SupplierInfo />}></Route>
-                      </Route>
-                      <Route path="register" element={<RegisterPage />} />
-                    </Route>
 
-                    <Route path="/test" element={<App />} />
-                    <Route path="/login" element={<LoginPage show />} />
-                    <Route path="*" element={<div>No encontrado</div>}></Route>
-                  </Routes>
+                      <Route path="/test" element={<App />} />
+                      <Route path="/login" element={<LoginPage show />} />
+                      <Route
+                        path="*"
+                        element={<div>No encontrado</div>}
+                      ></Route>
+                    </Routes>
+                  </Suspense>
                   <Toaster />
                 </ProtectedRoutes>
               </AppSidebar>

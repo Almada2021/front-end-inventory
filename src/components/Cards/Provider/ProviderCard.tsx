@@ -19,6 +19,7 @@ interface Props {
   provider: ProviderModel;
   className?: string;
   length?: number;
+  key?: string;
   onDeleteLength?: () => void;
 }
 

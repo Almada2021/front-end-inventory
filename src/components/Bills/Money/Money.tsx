@@ -1,45 +1,49 @@
 import { useState } from "react";
 
 interface Props {
-  src: string | undefined;
+  src: string;
   alt: string;
   type?: "coin" | "bill";
   onClick?: () => void;
+  className?: string;
 }
-export default function Money({ src, alt, type = "coin", onClick }: Props) {
-  const [isPressed, setIsPressed] = useState<boolean>(false);
 
-  const handleStart = () => {
-    setIsPressed(true);
+export default function Money({
+  src,
+  alt,
+  type = "coin",
+  onClick,
+  className,
+}: Props) {
+  const [isPressed, setIsPressed] = useState(false);
+
+  const handleInteraction = (state: boolean) => {
+    setIsPressed(state);
+    if (state && onClick) onClick();
   };
 
-  const handleEnd = () => {
-    setIsPressed(false);
-  };
-
-  if (!src) return null;
   return (
-    <section
+    <button
       title={alt}
-      onTouchStart={handleStart}
-      onTouchEnd={handleEnd}
-      onMouseDown={handleStart}
-      onMouseUp={handleEnd}
-      onDragEnd={handleEnd}
-      className=" mx-2 my-2 select-none "
-      onClick={onClick}
+      onTouchStart={() => handleInteraction(true)}
+      onTouchEnd={() => handleInteraction(false)}
+      onMouseDown={() => handleInteraction(true)}
+      onMouseUp={() => handleInteraction(false)}
+      className={`active:scale-95 transition-transform ${className} ${
+        isPressed ? "opacity-75" : "opacity-100"
+      }`}
+      aria-label={`Seleccionar ${alt}`}
     >
-      <div className="">
-        <img
-          className={`max-h-[68px] sm:max-h-[130px] md:max-h-[100px] select-none ${
-            isPressed ? "opacity-50" : " opacity-100"
-          } 
-          ${type == "bill" ? "w-full px-10" : ""}
-          `}
-          alt={alt}
-          src={src}
-        ></img>
-      </div>
-    </section>
+      <img
+        className={`w-full h-auto object-contain ${
+          type === "bill"
+            ? "max-h-[120px] md:max-h-[150px]"
+            : "max-h-[80px] md:max-h-[100px]"
+        }`}
+        alt={alt}
+        src={src}
+        draggable="false"
+      />
+    </button>
   );
 }

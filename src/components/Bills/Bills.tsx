@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import Money from "./Money/Money";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 
 interface Props {
   title?: string;
@@ -8,129 +8,90 @@ interface Props {
 }
 
 const defaultProps = {
-  title: "Ingresar Cantidad de dinero",
+  title: "Ingresar cantidad de dinero",
   onValueChange: () => {},
 };
+
 export default function Bills({
   title = defaultProps.title,
   onValueChange = defaultProps.onValueChange,
 }: Props) {
   const [value, setValue] = useState<number>(0);
-  const [text, setText] = useState<string | undefined>(undefined);
+  const [text, setText] = useState<string>("0Gs");
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const reg = /^[0-9]+$/;
-    const value = e.target.value.split(" ")[0];
-    if (reg.test(value)) {
-      setValue(Number(value));
+    const inputValue = e.target.value.replace(/\D/g, "");
+
+    if (reg.test(inputValue)) {
+      const numericValue = parseInt(inputValue) || 0;
+      setValue(numericValue);
+      setText(`${numericValue}Gs`);
     }
   };
+
   const clickBill = (amount: number) => {
     const newValue = value + amount;
     setValue(newValue);
-    setText(`${newValue} Gs`);
+    setText(`${newValue}Gs`);
   };
+
+  const memoizedOnValueChange = useCallback(
+    (value: number) => {
+      onValueChange(value);
+    },
+    [onValueChange]
+  );
+
   useEffect(() => {
-    onValueChange(value);
-  }, [text]);
+    memoizedOnValueChange(value);
+  }, [memoizedOnValueChange, value]);
   return (
-    <div className=" min-h-[100svh] w-full  flex px-10 md:px-40 py-10  gap-10 flex-wrap ">
-      <div className="flex flex-col justify-center items-center w-full">
-        <h2 className="font-bold text-center sm:text-xl md:text-3xl ">
+    <div className="min-h-screen w-full p-4 md:p-10 flex flex-col gap-6">
+      <div className="flex flex-col items-center w-full">
+        <h2 className="font-bold text-2xl md:text-3xl mb-4 text-center">
           {title}
         </h2>
-        <Input
-          onFocus={() => {
-            setText(undefined);
-          }}
-          onBlur={() => setText(`${value} Gs`)}
-          value={text || `${value}`}
-          onChange={onChange}
-          style={{
-            fontSize: "2rem",
-          }}
-          className="min-h-[40px] md:min-h-[60px] text-center"
-        ></Input>
-      </div>
-      <section
-        style={{ margin: "0 !important" }}
-        className=" w-full  min-h-[80svh] flex flex-col md:flex-row justify-center items-center gap-0"
-      >
-        {/* Amount */}
-        {/* coins */}
-        <div className="flex flex-wrap md:flex-row w-full lg:w-5/12 items-center justify-center">
-          <Money
-            onClick={() => {
-              clickBill(100);
-            }}
-            alt="100 Gs."
-            src="/money/100.png"
+        <div className="relative w-full max-w-[400px]">
+          <Input
+            onFocus={() => setText(value.toString())}
+            onBlur={() => setText(`${value}Gs`)}
+            value={text}
+            onChange={onChange}
+            className="h-16 text-2xl md:text-3xl text-center font-bold border-2 border-primary rounded-xl"
           />
-          <Money
-            onClick={() => {
-              clickBill(500);
-            }}
-            alt="500 Gs."
-            src="/money/500.png"
-          />
-          <Money
-            onClick={() => {
-              clickBill(1000);
-            }}
-            alt="1000 Gs."
-            src="/money/1000.png"
-          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+            Gs
+          </span>
         </div>
-        {/* bills */}
-        <div className="flex flex-col md:flex-row w-full flex-wrap items-center justify-center">
-          <Money
-            onClick={() => {
-              clickBill(2000);
-            }}
-            type="bill"
-            alt="2000 Gs."
-            src="/money/2000.jpg"
-          />
-          <Money
-            onClick={() => {
-              clickBill(5000);
-            }}
-            type="bill"
-            alt="5000 Gs."
-            src="/money/5000.jpg"
-          />
-          <Money
-            onClick={() => {
-              clickBill(10000);
-            }}
-            type="bill"
-            alt="10000 Gs."
-            src="/money/10000.jpg"
-          />
-          <Money
-            onClick={() => {
-              clickBill(20000);
-            }}
-            type="bill"
-            alt="20000 Gs."
-            src="/money/20000.jpg"
-          />
-          <Money
-            onClick={() => {
-              clickBill(50000);
-            }}
-            type="bill"
-            alt="50000 Gs."
-            src="/money/50000.jpg"
-          />
-          <Money
-            onClick={() => {
-              clickBill(100000);
-            }}
-            type="bill"
-            alt="100000 Gs."
-            src="/money/100000.jpg"
-          />
+      </div>
+
+      <section className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {/* Monedas */}
+        <div className="col-span-full grid grid-cols-3 gap-4">
+          {[100, 500, 1000].map((amount) => (
+            <Money
+              key={amount}
+              onClick={() => clickBill(amount)}
+              alt={`${amount}Gs`}
+              src={`/money/${amount}.png`}
+              className="p-2 bg-muted rounded-lg"
+            />
+          ))}
+        </div>
+
+        {/* Billetes */}
+        <div className="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[2000, 5000, 10000, 20000, 50000, 100000].map((amount) => (
+            <Money
+              key={amount}
+              onClick={() => clickBill(amount)}
+              type="bill"
+              alt={`${amount}Gs`}
+              src={`/money/${amount}.jpg`}
+              className="p-4 bg-muted rounded-xl hover:scale-105 transition-transform"
+            />
+          ))}
         </div>
       </section>
     </div>

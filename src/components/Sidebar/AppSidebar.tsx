@@ -51,7 +51,7 @@ interface MenuItem {
 const AdminItems: MenuItem[] = [
   {
     title: "Sucursales y Cajas",
-    url: "/inventory/ai",
+    url: "/inventory/stores",
     icon: Store,
   },
   {
