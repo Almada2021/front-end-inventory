@@ -9,7 +9,6 @@ import { useNavigate } from "react-router";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -18,6 +17,8 @@ import {
 import SearchBar from "@/components/SearchBar/SearchBar";
 import { searchProviderAction } from "@/core/actions/providers/searchProvider.action";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+
 export default function ShowSupplier() {
   const [page, setPage] = useState(1);
   const { providersQuery } = useProviders({ page, limit: 12 });
@@ -25,10 +26,11 @@ export default function ShowSupplier() {
   const [providersSearched, setSearchedProviders] = useState<ProviderModel[]>(
     []
   );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [existPrevious, setExistPrevious] = useState(false);
   const { toast } = useToast();
-  let length = 0;
+
   const ChangePage = (val: number) => {
     if (val + page <= 0) return;
     setPage(page + val);
@@ -37,160 +39,101 @@ export default function ShowSupplier() {
   if (providersQuery.isFetching && providersQuery.data) {
     return <LoadingScreen />;
   }
+
   if (providersSearched.length > 0) {
     return (
-      <div className="container mx-auto p-6 ">
-        <div className="w-full ">
+      <div className="container mx-auto p-4 md:p-6 max-w-7xl">
+        <div className="flex items-center justify-between mb-6">
           <Button
-            onClick={() => {
-              setSearchedProviders([]);
-            }}
+            variant="ghost"
+            onClick={() => setSearchedProviders([])}
+            className="gap-2"
           >
             <ArrowLeftCircleIcon size={20} />
-            Volver
+            Volver a todos los proveedores
           </Button>
+          <Badge variant="secondary" className="text-lg px-4 py-2">
+            {providersSearched.length} resultados
+          </Badge>
         </div>
-        <div className="w-full">
-          <h3 className="text-3xl font-bold">Buscaste: {searchQuery}</h3>
-        </div>
-        <div className="grid grid-cols-1 min-h-[80dvh] sm:grid-cols-11 lg:grid-cols-2 xl:grid-cols-3 gap-6 justify-center items-center place-items-center m-6">
-          {providersSearched.map((prov: ProviderModel) => (
-            <div key={prov.id}>
-              <ProviderCard
-                onDeleteLength={() => {
-                  if (page > 1) ChangePage(-1);
-                }}
-                length={length}
-                provider={prov}
-              />
-            </div>
-          ))}
-          {providersSearched.length < 12 &&
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((element: number) => {
-              if (providersSearched.length >= element) return null;
-              return (
-                <div key={`unknow-${element}`}>
-                  <ProviderCard
-                    provider={{
-                      id: "",
-                      name: "",
-                      ordersIds: [],
-                      phoneNumber: "",
-                      productsIds: [],
-                      seller: "",
-                      sheet: "",
-                    }}
-                    className="invisible"
-                  ></ProviderCard>
-                </div>
-              );
-            })}
-        </div>
-      </div>
-    );
-  }
-  if (providersQuery.data?.length == 0) {
-    if (page != 1) setPage(page - 1);
-    return (
-      <div className="container mx-auto p-6 ">
-        <section className="h-full flex flex-col">
-          <h2 className="text-4xl font-bold">No se Encontraron Proveedores</h2>
 
-          <section className="w-full  h-5/6 flex flex-col items-center justify-center gap-3">
-            <h3 className="text-2xl">
-              Todavia no tienes ningun proveedor creado
-            </h3>
-            <Frown size={60} />
-            <Button
-              onClick={() => {
-                navigate("../new");
-              }}
-            >
-              Crear uno nuevo
-            </Button>
-          </section>
-        </section>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {providersSearched.map((prov) => (
+            <ProviderCard
+              key={prov.id}
+              provider={prov}
+              onDeleteLength={() => page > 1 && ChangePage(-1)}
+            />
+          ))}
+        </div>
       </div>
     );
   }
-  if (providersQuery.data) length = providersQuery.data.length;
+
+  if (providersQuery.data?.length === 0) {
+    if (page !== 1) setPage(page - 1);
+    return (
+      <div className="h-[70vh] flex flex-col items-center justify-center text-center space-y-6">
+        <div className="space-y-2">
+          <Frown className="h-16 w-16 mx-auto text-muted-foreground" />
+          <h1 className="text-3xl font-bold tracking-tight">
+            No hay proveedores
+          </h1>
+          <p className="text-muted-foreground">
+            Comienza agregando un nuevo proveedor a tu sistema
+          </p>
+        </div>
+        <Button onClick={() => navigate("../new")} size="lg">
+          Crear nuevo proveedor
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto ">
+    <div className="container mx-auto p-4 md:p-6 max-w-7xl">
       <SearchBar<ProviderModel>
         mutateFunction={searchProviderAction}
         mutationKey={["Search", "providers"]}
         onGetData={(data: ProviderModel[] | undefined) => {
-          if (data && data.length > 0) {
+          if (data?.length) {
             setSearchedProviders(data);
-            return;
           } else {
             toast({
               variant: "destructive",
-              title: "No Se encontraron Resultados",
-              description: "Busque otra cosa...",
+              title: "No se encontraron resultados",
+              description: "Prueba con otros términos de búsqueda",
             });
           }
         }}
-        onNotify={(query: string) => {
-          setSearchQuery(query);
-        }}
+        onNotify={(query: string) => setSearchQuery(query)}
       />
-      <div className="grid grid-cols-1 min-h-[80dvh] sm:grid-cols-11 lg:grid-cols-2 xl:grid-cols-3 gap-6 justify-center items-center place-items-center m-6">
-        {providersQuery.data?.map((prov: ProviderModel) => (
-          <div key={prov.id}>
-            <ProviderCard
-              onDeleteLength={() => {
-                if (page > 1) ChangePage(-1);
-              }}
-              length={length}
-              provider={prov}
-            />
-          </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {providersQuery.data?.map((prov) => (
+          <ProviderCard
+            key={prov.id}
+            provider={prov}
+            onDeleteLength={() => page > 1 && ChangePage(-1)}
+          />
         ))}
-        {providersQuery.data &&
-          providersQuery.data?.length < 12 &&
-          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((element: number) => {
-            if (providersQuery.data.length >= element) return null;
-            return (
-              <div key={`unknow-2-${element}`}>
-                <ProviderCard
-                  provider={{
-                    id: "",
-                    name: "",
-                    ordersIds: [],
-                    phoneNumber: "",
-                    productsIds: [],
-                    seller: "",
-                    sheet: "",
-                  }}
-                  className="invisible"
-                ></ProviderCard>
-              </div>
-            );
-          })}
       </div>
-      <section className=" w-full py-12">
-        {(providersQuery.data?.length == 12 || existPrevious) && (
+
+      {(providersQuery.data?.length === 12 || existPrevious) && (
+        <div className="mt-8">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious onClick={() => ChangePage(-1)} />
+                <PaginationPrevious
+                  onClick={() => ChangePage(-1)}
+                  isActive={page > 1}
+                />
               </PaginationItem>
+
               <PaginationItem>
-                <PaginationLink>{page}</PaginationLink>
+                <PaginationLink isActive>{page}</PaginationLink>
               </PaginationItem>
-              <PaginationItem
-                onClick={() => {
-                  setExistPrevious(true);
-                  ChangePage(1);
-                }}
-              >
-                <PaginationLink>{page + 1}</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
+
               <PaginationItem>
                 <PaginationNext
                   onClick={() => {
@@ -201,8 +144,8 @@ export default function ShowSupplier() {
               </PaginationItem>
             </PaginationContent>
           </Pagination>
-        )}
-      </section>
+        </div>
+      )}
     </div>
   );
 }

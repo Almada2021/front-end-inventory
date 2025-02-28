@@ -6,4 +6,5 @@ export interface Till {
   totalCash: number;
   cardPayments: number;
   transferPayments: number;
+  status: boolean;
 }

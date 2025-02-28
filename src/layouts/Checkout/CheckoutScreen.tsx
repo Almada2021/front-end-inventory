@@ -7,17 +7,38 @@ import { CartInterface } from "@/infrastructure/interfaces/cart/cart.interface";
 import { Product } from "@/infrastructure/interfaces/products.interface";
 import { useEffect, useState } from "react";
 import Cart from "./Cart/Cart";
-
+import { useMediaQuery } from "usehooks-ts";
+import PaymentMethod from "./Screens/PaymentMethod";
+import Bills from "@/components/Bills/Bills";
+import { Button } from "@/components/ui/button";
+import { ArrowLeftCircleIcon } from "lucide-react";
 type CheckoutModes = "products" | "paymentMethod" | "bills" | "confirm";
-
+const modes: CheckoutModes[] = [
+  "products",
+  "paymentMethod",
+  "bills",
+  "confirm",
+];
 export default function CheckoutScreen() {
   const { open, setOpen } = useSidebar();
   const { productsQuery } = useProducts({ page: 1, limit: 40 });
   const [mode, setMode] = useState<CheckoutModes>("products");
   const [cart, setCart] = useState<CartInterface[]>([]);
-  const changeMode = (newMode: CheckoutModes) => {
-    setMode(newMode);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  const changeMode = (back?: "back") => {
+    const index = modes.indexOf(mode);
+    if (index <= 0 && back) return;
+    if (back && index - 1 >= 0) {
+      setMode(modes[index - 1]);
+      return;
+    } else {
+      if (index + 1 == modes.length) return;
+      setMode(modes[index + 1]);
+      return;
+    }
   };
+
   const pushCart = (product: Product, quantity: number) => {
     if (cart.length == 0) {
       setCart([{ product, quantity, id: product.id }]);
@@ -51,9 +72,23 @@ export default function CheckoutScreen() {
   }, []);
   if (productsQuery.isFetching) return null;
 
+  // * Payment Method Screen
+
   return (
     <div className="h-screen w-full flex flex-col lg:flex-row">
-      <section className="lg:w-3/4 w-full mt-4">
+      <section className="lg:w-3/4 w-full mt-20 md:mt-4">
+        <div className="w-full">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              changeMode("back");
+            }}
+            className="gap-2"
+          >
+            <ArrowLeftCircleIcon size={48} />
+            Volver
+          </Button>
+        </div>
         {mode == "products" && (
           <div
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 
@@ -71,18 +106,42 @@ export default function CheckoutScreen() {
             ))}
           </div>
         )}
-        {mode == "bills" && <div>bills</div>}
+        {mode == "paymentMethod" && (
+          <PaymentMethod
+            onSelectMethod={(method) => {
+              console.log(method);
+            }}
+          />
+        )}
+        {mode == "bills" && (
+          <Bills
+            onValueChange={(v) => {
+              console.log(v);
+            }}
+          />
+        )}
+        {mode == "confirm" && <div> Confirm Screen</div>}
       </section>
-      <section className="lg:w-1/4 w-full  lg:border-l">
-        <section
-          className="h-[calc(100vh-100px)] lg:h-5/6"
-          aria-label="products carts"
-          title="Carrito de Productos"
-        >
-          <Cart onQuantityChange={handleQuantityChange} cart={cart} />
+      {!isMobile && (
+        <section className="lg:w-1/4 w-full">
+          <Cart
+            changeMode={() => changeMode()}
+            cart={cart}
+            onQuantityChange={handleQuantityChange}
+            isMobile={false}
+          />
         </section>
-        <button onClick={() => changeMode("bills")}>Confirmar</button>
-      </section>
+      )}
+
+      {isMobile && (
+        <Cart
+          changeMode={() => changeMode()}
+          cart={cart}
+          onQuantityChange={handleQuantityChange}
+          isMobile={true}
+        />
+      )}
+
       {/* <Bills
         onValueChange={(v) => {
           console.log(v);

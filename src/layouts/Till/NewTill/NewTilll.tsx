@@ -1,156 +1,193 @@
-// components/NewTilll.tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useState } from "react";
-import Money from "@/components/Bills/Money/Money";
-interface IDENOMINATION {
-  value: string;
-  type: "bill" | "coin";
-}
-const DENOMINATIONS: IDENOMINATION[] = [
-  { value: "100000", type: "bill" },
-  { value: "50000", type: "bill" },
-  { value: "20000", type: "bill" },
-  { value: "10000", type: "bill" },
-  { value: "5000", type: "bill" },
-  { value: "2000", type: "bill" },
-  { value: "1000", type: "coin" },
-  { value: "500", type: "coin" },
-  { value: "100", type: "coin" },
-  { value: "50", type: "coin" },
+import { Checkbox } from "@/components/ui/checkbox";
+import { MouseEvent, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import {
+  NewTillAction,
+  TillActionRequirements,
+} from "@/core/actions/tills/newTillAction";
+import { useParams } from "react-router";
+
+const DENOMINATIONS = [
+  "100000",
+  "50000",
+  "20000",
+  "10000",
+  "5000",
+  "2000",
+  "1000",
+  "500",
+  "100",
+  "50",
 ];
 
-function MoneyControl({
+interface MoneyProps {
+  denomination: string;
+  quantity: number;
+  onQuantityChange: (newQuantity: number) => void;
+}
+
+function MoneyCounter({
   denomination,
-  type,
   quantity,
   onQuantityChange,
-}: {
-  denomination: string;
-  type: "coin" | "bill";
-  quantity: number;
-  onQuantityChange: (newQty: number) => void;
-}) {
+}: MoneyProps) {
   return (
-    <div className="flex items-center gap-4 p-2 bg-card rounded-lg border">
-      <Money
-        variant="control"
-        type={type}
-        src={`/money/${denomination}.${type === "bill" ? "jpg" : "png"}`}
-        alt={`${denomination} Gs`}
-        className="flex-1"
-      />
+    <div className="flex items-center gap-4 p-2 border rounded-lg">
+      <div className="w-32">
+        <Label>Gs. {parseInt(denomination).toLocaleString()}</Label>
+      </div>
 
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
           size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => onQuantityChange(Math.max(0, quantity - 1))}
+          type="button"
+          onClick={(event: MouseEvent<HTMLButtonElement>) => {
+            event.preventDefault();
+            return onQuantityChange(Math.max(0, quantity - 1));
+          }}
         >
           -
         </Button>
-        <span className="w-8 text-center font-medium">{quantity}</span>
+        <span className="w-8 text-center">{quantity}</span>
         <Button
           variant="outline"
           size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => onQuantityChange(quantity + 1)}
+          onClick={(event: MouseEvent<HTMLButtonElement>) => {
+            event.preventDefault();
+
+            onQuantityChange(quantity + 1);
+          }}
         >
           +
         </Button>
+        {(Number(denomination) * quantity).toLocaleString()}Gs
       </div>
     </div>
   );
 }
 
-export default function NewTilll() {
+export default function NewTilll({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
   const [bills, setBills] = useState<Map<string, number>>(
-    new Map(DENOMINATIONS.map(({ value }) => [value, 0]))
+    new Map(DENOMINATIONS.map((denomination) => [denomination, 0]))
   );
-
+  const { id } = useParams();
+  const newTillMutate = useMutation({
+    mutationFn: (data: TillActionRequirements) => NewTillAction(data),
+    mutationKey: [],
+    onSuccess: () => {},
+  });
   const formik = useFormik({
     initialValues: {
       name: "",
       contabilizada: true,
     },
     validationSchema: Yup.object({
-      name: Yup.string().required("El nombre es requerido"),
-      contabilizada: Yup.boolean().required(),
+      name: Yup.string().required("El nombre de la caja es requerido"),
+      contabilizada: Yup.boolean().optional(),
     }),
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       const formData = {
-        ...values,
+        // ...values,
+        name: values.name,
+        storeId: String(id),
         bills: Object.fromEntries(bills),
         totalCash: Array.from(bills).reduce(
           (acc, [denom, qty]) => acc + parseInt(denom) * qty,
           0
         ),
       };
-      console.log("Datos para enviar:", formData);
+      newTillMutate.mutate(formData);
       formik.resetForm();
     },
   });
 
+  const handleBillChange = (denomination: string, quantity: number) => {
+    setBills((prev) => new Map(prev).set(denomination, quantity));
+  };
+
   return (
-    <div className="w-full">
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl">Nueva Caja Registradora</CardTitle>
+    <div
+      className={cn(
+        "flex flex-col gap-4 w-full mt-20 md:mt-4 px-10 md:px-4 ",
+        className
+      )}
+      {...props}
+    >
+      <Card>
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">Nueva Caja Registradora</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={formik.handleSubmit} className="space-y-6">
-            {/* Campo de nombre y checkbox */}
-            <div className="space-y-4">
-              <div className="space-y-2">
+          <form onSubmit={formik.handleSubmit}>
+            <div className="grid gap-6">
+              {/* Nombre de la caja */}
+              <div className="grid gap-2">
                 <Label htmlFor="name">Nombre de la caja</Label>
                 <Input
                   id="name"
                   name="name"
+                  type="text"
+                  placeholder="Caja Principal"
+                  required
                   value={formik.values.name}
                   onChange={formik.handleChange}
-                  placeholder="Ej: Caja Principal"
                 />
               </div>
 
+              {/* Checkbox Contabilizada */}
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="contabilizada"
+                  name="contabilizada"
                   checked={formik.values.contabilizada}
-                  onCheckedChange={(val) =>
-                    formik.setFieldValue("contabilizada", val)
+                  onCheckedChange={(checked) =>
+                    formik.setFieldValue("contabilizada", checked)
                   }
                 />
                 <Label htmlFor="contabilizada">Caja contabilizada</Label>
               </div>
-            </div>
 
-            {/* Configuración de efectivo */}
-            <div className="space-y-4">
-              <Label className="block text-lg">Efectivo inicial</Label>
-              <div className="grid gap-3">
-                {DENOMINATIONS.map(({ value, type }) => (
-                  <MoneyControl
-                    key={value}
-                    denomination={value}
-                    type={type}
-                    quantity={bills.get(value) || 0}
-                    onQuantityChange={(newQty) =>
-                      setBills((prev) => new Map(prev).set(value, newQty))
-                    }
-                  />
-                ))}
+              {/* Configuración de efectivo */}
+              <div className="grid gap-4">
+                <Label>Configuración de efectivo inicial</Label>
+
+                <div className="grid grid-cols-1 gap-2">
+                  {DENOMINATIONS.map((denomination) => (
+                    <MoneyCounter
+                      key={denomination}
+                      denomination={denomination}
+                      quantity={bills.get(denomination) || 0}
+                      onQuantityChange={(newQty) =>
+                        handleBillChange(denomination, newQty)
+                      }
+                    />
+                  ))}
+                </div>
+                <div>
+                  {DENOMINATIONS.reduce((a, b) => {
+                    const quantity = Number(bills.get(b));
+                    const total = quantity * Number(b);
+                    return a + total;
+                  }, 0).toLocaleString()}{" "}
+                  Gs
+                </div>
               </div>
-            </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Crear Caja
-            </Button>
+              <Button type="submit" className="w-full">
+                Crear Caja Registradora
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

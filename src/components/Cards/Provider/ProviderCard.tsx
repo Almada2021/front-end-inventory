@@ -15,6 +15,8 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteProviderAction } from "@/core/actions/providers/deleteProvider.action";
 import { useNavigate } from "react-router";
+import { Badge } from "@/components/ui/badge";
+import { CircleUser, Eye, PhoneCallIcon, Trash2 } from "lucide-react";
 interface Props {
   provider: ProviderModel;
   className?: string;
@@ -50,65 +52,74 @@ export default function ProviderCard({
   };
 
   return (
-    <div
-      className={`group relative overflow-hidden rounded-lg border bg-white shadow-md transition-all hover:shadow-lg w-[280px] ${className}`}
-    >
-      <AlertDialog>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              ¿Estás absolutamente seguro de que deseas eliminar el proveedor?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Si hay productos asociados con este proveedor y no existe otro,
-              ese producto se eliminará. Si no puedes marcar la casilla de no
-              eliminar producto aunque se elimine el proveedor.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(provider.id);
-              }}
-            >
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-slate-100 opacity-0 transition-opacity group-hover:opacity-100" />
+    <AlertDialog>
+      <div
+        className={`group relative overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:shadow-md ${className}`}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
 
         <div className="relative p-6 space-y-4">
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {provider.name}
-            </h2>
-            <div className="space-y-1">
-              <p className="text-sm text-gray-600 flex items-center justify-center gap-1">
-                <span className="font-medium">Tel:</span> {provider.phoneNumber}
-              </p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold truncate">
+                {provider.name}
+              </h2>
+              <Badge variant="outline" className="shrink-0">
+                {provider.productsIds?.length || 0} productos
+              </Badge>
+            </div>
 
-              <p className="text-sm text-gray-600 flex items-center justify-center gap-1">
-                <span className="font-medium">Vendedor:</span> {provider.seller}
-              </p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <PhoneCallIcon className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{provider.phoneNumber}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <CircleUser className="h-4 w-4 text-muted-foreground" />
+                <span className="truncate">{provider.seller}</span>
+              </div>
             </div>
           </div>
 
-          <div className="pt-4 flex gap-2">
+          <div className="flex gap-2">
             <Button
               onClick={showProvider}
-              className="w-full bg-primary hover:bg-primary text-white transition-colors"
+              variant="outline"
+              className="w-full gap-2"
             >
-              Ver
+              <Eye className="h-4 w-4" />
+              Detalles
             </Button>
+
             <AlertDialogTrigger asChild>
-              <Button className="w-full bg-red-700 hover:bg-red-800 text-white transition-colors">
-                Borrar
+              <Button variant="destructive" className="w-full gap-2">
+                <Trash2 className="h-4 w-4" />
+                Eliminar
               </Button>
             </AlertDialogTrigger>
           </div>
         </div>
-      </AlertDialog>
-    </div>
+      </div>
+
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-destructive">
+            Eliminar proveedor
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción eliminará permanentemente el proveedor y podría afectar
+            los productos asociados. ¿Deseas continuar?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={() => deleteMutation.mutate(provider.id)}>
+            Confirmar eliminación
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

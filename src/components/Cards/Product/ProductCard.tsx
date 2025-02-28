@@ -22,7 +22,11 @@ export default function ProductCard({
   return (
     <div
       onClick={pressCard}
-      className="w-full bg-white h-[350px] rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden hover:transform hover:scale-[1.02] relative"
+      className={`w-full ${
+        variant == "checkout"
+          ? "bg-white active:bg-green-400 select-none h-[350px] active:h-[340px]"
+          : "bg-white h-[350px]"
+      }  rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden hover:transform hover:scale-[1.02] relative`}
     >
       {/* Contenedor de imagen con overlay y badge de precio */}
       <div className="relative h-3/4 w-full overflow-hidden">

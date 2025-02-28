@@ -35,7 +35,7 @@ export default function ProductsForm({
     initialValues: {
       name: "",
       price: 0,
-      basePrice: 0,
+      // basePrice: 0,
       image: null as File | null,
       uncounted: true,
       stock: 0,
@@ -46,9 +46,9 @@ export default function ProductsForm({
         .required("El Precio es requerido")
         .integer("Ingresa un Entero.")
         .required("El precio es requerido"),
-      basePrice: Yup.number()
-        .integer("Ingresa un Entero.")
-        .required("El precio es requerido"),
+      // basePrice: Yup.number()
+      //   .integer("Ingresa un Entero.")
+      //   .required("El precio es requerido"),
       image: Yup.mixed().nullable(),
       uncounted: Yup.boolean().required(),
       stock: Yup.number(),
@@ -60,7 +60,7 @@ export default function ProductsForm({
       }: FormikHelpers<{
         name: string;
         price: number;
-        basePrice: number;
+        // basePrice: number;
         image: File | null;
         uncounted: boolean;
         stock: number;
@@ -70,7 +70,7 @@ export default function ProductsForm({
         const formData = new FormData();
         formData.append("name", values.name);
         formData.append("price", values.price.toString());
-        formData.append("basePrice", values.basePrice.toString());
+        // formData.append("basePrice", values.basePrice.toString());
         formData.append("uncounted", values.uncounted.toString());
         formData.append("stock", values.stock.toString());
         providers.forEach((element) => {

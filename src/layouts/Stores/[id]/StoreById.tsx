@@ -21,7 +21,6 @@ export default function StoreById() {
     return <LoadingScreen />;
   if (!store) return <div>No Encontrado</div>;
   const tills = tillsByStoreQuery.data?.tills;
-  console.log(tillsByStoreQuery.data);
   return (
     <div className="min-h-screen bg-gray-50 p-6 w-full">
       {/* Encabezado de la tienda */}
@@ -136,12 +135,16 @@ export default function StoreById() {
           </motion.div>
           {tills?.map((till: Till, index: number) => (
             <motion.div
+              onClick={() => {
+                navigate(`../../till/${till.id}`);
+              }}
               key={till.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
               <TillCard
+                status={till.status}
                 name={till.name}
                 currentMoney={Number(till.totalCash) || 0}
               />

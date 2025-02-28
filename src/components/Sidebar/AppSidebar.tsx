@@ -36,6 +36,7 @@ import {
   TruckIcon,
   ListOrdered,
   Users,
+  ShoppingCart,
 } from "lucide-react";
 import { Home, Settings } from "lucide-react";
 import { useEffect } from "react";
@@ -58,6 +59,11 @@ const AdminItems: MenuItem[] = [
     title: "Reportes",
     url: "#",
     icon: FileSpreadsheet,
+  },
+  {
+    title: "Ventas",
+    url: "/inventory/sales",
+    icon: ShoppingCart,
   },
 ];
 const items: MenuItem[] = [

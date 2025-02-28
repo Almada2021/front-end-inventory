@@ -15,7 +15,7 @@ import {
   LoginPage,
   HomeScreen,
   AiScreen,
-  CheckoutScreen,
+  POSPage,
   ProductsScreen,
   EmployeeScreen,
   SuppliersScreen,
@@ -30,6 +30,7 @@ import {
   ShowStores,
   StoreById,
   NewTill,
+  TillById,
 } from "@/pages";
 
 const client = new QueryClient();
@@ -48,7 +49,7 @@ createRoot(document.getElementById("root")!).render(
                       <Route path="inventory">
                         <Route index element={<HomeScreen show />} />
                         <Route path="ai" element={<AiScreen />} />
-                        <Route path="checkout" element={<CheckoutScreen />} />
+                        <Route path="checkout" element={<POSPage />} />
                         <Route path="products">
                           <Route index element={<ProductsScreen />} />
                           <Route path="new" element={<NewProduct />}></Route>
@@ -76,6 +77,8 @@ createRoot(document.getElementById("root")!).render(
                           ></Route>
                         </Route>
                         <Route path="register" element={<RegisterPage />} />
+                        {/* Till */}
+                        <Route path="till/:id" element={<TillById />} />
                       </Route>
 
                       <Route path="/test" element={<App />} />
