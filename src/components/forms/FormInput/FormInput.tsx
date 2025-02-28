@@ -4,13 +4,15 @@ import React from "react";
 interface Props extends React.ComponentProps<"input"> {
   label: string;
   containerClassName?: string;
+  validationComponent?: React.ReactNode;
 }
 const FormInput = React.forwardRef<HTMLInputElement, Props>(
-  ({ label, alt, containerClassName = "", ...props }) => {
+  ({ label, alt, validationComponent, containerClassName = "", ...props }) => {
     return (
       <div className={`grid gap-2 ${containerClassName}`}>
         <Label htmlFor={alt}>{label}</Label>
         <Input id={alt} placeholder="Galletitas" required {...props} />
+        {validationComponent}
       </div>
     );
   }

@@ -7,7 +7,6 @@ import { FormikHelpers, useFormik } from "formik";
 import * as Yup from "yup";
 // import { useToast } from "@/hooks/use-toast";
 import "./forms.css";
-import axios from "axios";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +24,7 @@ import { Search } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 import ImgUploader from "./ImgUploader/ImgUploader";
 import FormInput from "./FormInput/FormInput";
+import { BackendApi } from "@/core/api/api";
 
 export default function ProductsForm({
   className,
@@ -54,6 +54,7 @@ export default function ProductsForm({
       uncounted: Yup.boolean().required(),
       stock: Yup.number(),
       barCode: Yup.number().optional(),
+      basePrice: Yup.number().optional(),
     }),
     onSubmit: async (
       values,
@@ -67,6 +68,7 @@ export default function ProductsForm({
         uncounted: boolean;
         stock: number;
         barCode?: number;
+        basePrice?: number;
       }>
     ) => {
       try {
@@ -79,6 +81,9 @@ export default function ProductsForm({
         if (formik.values.barCode && values.barCode !== undefined) {
           formData.append("barCode", values.barCode.toString());
         }
+        if (formik.values.basePrice && values.basePrice !== undefined) {
+          formData.append("basePrice", values.basePrice.toString());
+        }
         providers.forEach((element) => {
           formData.append("providers", element);
         });
@@ -86,7 +91,7 @@ export default function ProductsForm({
           formData.append("img", values.image); // Agrega la imagen al FormData
         }
 
-        await axios.post("http://localhost:8000/products", formData);
+        await BackendApi.post("/products", formData);
 
         resetForm();
       } catch (err) {
@@ -132,34 +137,58 @@ export default function ProductsForm({
                     required
                     value={formik.values.name}
                     onChange={formik.handleChange}
+                    validationComponent={
+                      <p className="text-xs text-red-600">
+                        {formik.errors.name}
+                      </p>
+                    }
                   />
                   {/* Price */}
-                  <div className="grid gap-2">
-                    <Label htmlFor="price">Precio en Gs</Label>
-                    <div>
-                      <Input
-                        id="price"
-                        type="number"
-                        placeholder="10000"
-                        required
-                        step={1000}
-                        value={formik.values.price}
-                        // onChange={formik.handleChange}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                          let value = e.target.value;
-                          const num = Number(e.target.value);
-                          if (value[0] == "0")
-                            value = value.substring(1, value.length);
-                          if (isNaN(num)) return;
-                          if (num < 0) return;
-                          formik.setFieldValue("price", value);
-                        }}
-                      />
-                    </div>
-                    <p className="text-xs text-red-600">
-                      {formik.errors.price}
-                    </p>
-                  </div>
+                  <FormInput
+                    alt="price"
+                    label="Precio en Gs"
+                    type="number"
+                    placeholder="10000"
+                    required
+                    step={1000}
+                    value={formik.values.price}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      let value = e.target.value;
+                      const numberValue = Number(e.target.value);
+                      if (value[0] == "0")
+                        value = value.substring(1, value.length);
+                      if (isNaN(numberValue) || numberValue < 0) return;
+                      formik.setFieldValue("price", value);
+                    }}
+                    validationComponent={
+                      <p className="text-xs text-red-600">
+                        {formik.errors.price}
+                      </p>
+                    }
+                  />
+                  {/* BasePrice */}
+                  <FormInput
+                    alt="basePrice"
+                    label="Precio en Gs"
+                    type="number"
+                    placeholder="10000"
+                    required
+                    step={1000}
+                    value={formik.values.basePrice}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      let value = e.target.value;
+                      const numberValue = Number(e.target.value);
+                      if (value[0] == "0")
+                        value = value.substring(1, value.length);
+                      if (isNaN(numberValue) || numberValue < 0) return;
+                      formik.setFieldValue("price", value);
+                    }}
+                    validationComponent={
+                      <p className="text-xs text-red-600">
+                        {formik.errors.price}
+                      </p>
+                    }
+                  />
                   {/* <div className="grid gap-2">
                     <Label htmlFor="basePrice">Costo en Gs</Label>
                     <div>
@@ -188,8 +217,10 @@ export default function ProductsForm({
                   <div className="grid gap-2">
                     <div className="flex items-center gap-2">
                       <Checkbox
+                        type="button"
                         checked={formik.values.uncounted}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
                           formik.setFieldValue(
                             "uncounted",
                             !formik.values.uncounted
