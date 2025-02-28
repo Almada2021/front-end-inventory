@@ -23,13 +23,14 @@ import DataTableView from "../DataTable/DataTable";
 import { ChangeEvent, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
+import ImgUploader from "./ImgUploader/ImgUploader";
+import FormInput from "./FormInput/FormInput";
 
 export default function ProductsForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const [providers, setProviders] = useState<string[]>([]);
-  const [previewImg, setPreviewImg] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const formik = useFormik({
     initialValues: {
@@ -52,6 +53,7 @@ export default function ProductsForm({
       image: Yup.mixed().nullable(),
       uncounted: Yup.boolean().required(),
       stock: Yup.number(),
+      barCode: Yup.number().optional(),
     }),
     onSubmit: async (
       values,
@@ -64,6 +66,7 @@ export default function ProductsForm({
         image: File | null;
         uncounted: boolean;
         stock: number;
+        barCode?: number;
       }>
     ) => {
       try {
@@ -73,6 +76,9 @@ export default function ProductsForm({
         // formData.append("basePrice", values.basePrice.toString());
         formData.append("uncounted", values.uncounted.toString());
         formData.append("stock", values.stock.toString());
+        if (formik.values.barCode && values.barCode !== undefined) {
+          formData.append("barCode", values.barCode.toString());
+        }
         providers.forEach((element) => {
           formData.append("providers", element);
         });
@@ -83,7 +89,6 @@ export default function ProductsForm({
         await axios.post("http://localhost:8000/products", formData);
 
         resetForm();
-        setPreviewImg("");
       } catch (err) {
         console.log(err);
       }
@@ -119,18 +124,16 @@ export default function ProductsForm({
               <div className="grid gap-6">
                 <div className="grid gap-6">
                   {/* Name */}
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Nombre del Producto</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Galletitas"
-                      required
-                      value={formik.values.name}
-                      onChange={formik.handleChange}
-                    />
-                  </div>
-                  {/* Name */}
+                  <FormInput
+                    label="Nombre del Producto"
+                    alt="name"
+                    type="text"
+                    placeholder="Galletitas"
+                    required
+                    value={formik.values.name}
+                    onChange={formik.handleChange}
+                  />
+                  {/* Price */}
                   <div className="grid gap-2">
                     <Label htmlFor="price">Precio en Gs</Label>
                     <div>
@@ -145,7 +148,7 @@ export default function ProductsForm({
                         onChange={(e: ChangeEvent<HTMLInputElement>) => {
                           let value = e.target.value;
                           const num = Number(e.target.value);
-                          if (value[0])
+                          if (value[0] == "0")
                             value = value.substring(1, value.length);
                           if (isNaN(num)) return;
                           if (num < 0) return;
@@ -217,59 +220,15 @@ export default function ProductsForm({
                     )}
                   </div>
                   {/* Input de la imagen */}
-                  <div className="grid ">
-                    <Label htmlFor="image" className="invisible h-[0.1px]">
-                      Imagen del Producto
-                    </Label>
-                    <Input
-                      className="invisible h-[0.1px]"
-                      id="image"
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/png, image/gif, image/jpeg"
-                      onChange={async (event) => {
-                        const file = event.target.files?.[0];
-                        setPreviewImg(URL.createObjectURL(file!));
-                        formik.setFieldValue("image", file || null);
-                      }}
-                    />
-                    {formik.errors.image && (
-                      <p className="text-xs text-red-600">
-                        {formik.errors.image}
-                      </p>
-                    )}
-                    {previewImg != "" && (
-                      <div
-                        onClick={() => {
-                          if (fileInputRef.current) {
-                            fileInputRef.current.click();
-                          }
-                        }}
-                        className="border-dotted border-primary border-2 min-h-[150px] flex justify-center items-center"
-                      >
-                        <img
-                          className="w-full max-h-[150px] object-contain"
-                          src={previewImg}
-                          alt={`Producto: ${formik.values.name}`}
-                          title={`Producto: ${formik.values.name}`}
-                        ></img>
-                      </div>
-                    )}
-                    {previewImg == "" && (
-                      <div
-                        onClick={() => {
-                          if (fileInputRef.current) {
-                            fileInputRef.current.click();
-                          }
-                        }}
-                        className="border-dotted border-primary border-2 min-h-[150px] flex justify-center items-center"
-                      >
-                        <h3 className="text-primary font-bold text-center">
-                          Click Para Elegir la foto del producto
-                        </h3>
-                      </div>
-                    )}
-                  </div>
+                  <ImgUploader
+                    validation={formik.errors.image ? true : false}
+                    setFieldValue={(key, file) =>
+                      formik.setFieldValue("image", file)
+                    }
+                    fileInputRef={fileInputRef}
+                    alt={formik.values.name}
+                    validationMessage={formik.errors.image || ""}
+                  />
                   {/* Name */}
                   <div className="grid gap-2">
                     <Label htmlFor="providers"> Proveedores</Label>
@@ -280,6 +239,15 @@ export default function ProductsForm({
                       </div>
                     </AlertDialogTrigger>
                   </div>
+                  <FormInput
+                    label="Codigo de Barras"
+                    alt="barCode"
+                    type="number"
+                    placeholder="1000000"
+                    required
+                    value={formik.values.barCode}
+                    onChange={formik.handleChange}
+                  />
                   <Button type="submit" className="w-full">
                     Crear Producto
                   </Button>

@@ -89,10 +89,7 @@ interface Props {
   notifyProvidersSelected: (prov: string[]) => void;
 }
 
-export default function DataTableView({
-  notifyProvidersSelected,
-  initial,
-}: Props) {
+export default function DataTableView({ notifyProvidersSelected }: Props) {
   const memoizedNotifyProvidersSelected = useCallback(
     (selectedRows: string[]) => {
       notifyProvidersSelected(selectedRows);
@@ -151,7 +148,7 @@ export default function DataTableView({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown />
+              Columnas <ChevronDown />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
