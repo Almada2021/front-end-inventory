@@ -1,11 +1,9 @@
-// import { TillCard } from "@/components/Cards/Till/Till";
 import useStoreById from "@/hooks/store/useStoreById";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 import { Building, MapPin, Wallet, Package } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { useNavigate, useParams } from "react-router";
-// import { TillCard } from "@/components/Cards/Till/TillCard";
 import useTills from "@/hooks/till/useTills";
 import { Till } from "@/infrastructure/interfaces/till.interface";
 import { TillCard } from "@/components/Cards/Till/TillCard";
@@ -171,24 +169,4 @@ export default function StoreById() {
       </div>
     </div>
   );
-  // return (
-  //   <div className="w-full">
-  //     <section className="bg-slate-200  shadow-xl w-max rounded">
-  //       <h2>{store.name}</h2>
-  //       <h2>{store.address}</h2>
-  //     </section>
-  //     <h2>
-  //       {store.tillIds.map((till: string) => (
-  //         <div>{till}</div>
-  //       ))}
-  //     </h2>
-  //     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-  //       <TillCard name={"caja 1"} currentMoney={0} />
-  //       <TillCard name={"caja 1"} currentMoney={0} />
-  //       <TillCard name={"caja 1"} currentMoney={0} />
-  //       <TillCard name={"caja 1"} currentMoney={0} />
-  //       <TillCard name={"caja 1"} currentMoney={0} />
-  //     </div>
-  //   </div>
-  // );
 }
