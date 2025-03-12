@@ -31,6 +31,8 @@ import {
   StoreById,
   NewTill,
   TillById,
+  LoadProduct,
+  CheckoutScreen,
 } from "@/pages";
 
 const client = new QueryClient();
@@ -48,7 +50,17 @@ createRoot(document.getElementById("root")!).render(
                       <Route path="/" element={<App />} />
                       <Route path="inventory">
                         <Route index element={<HomeScreen show />} />
-                        <Route path="ai" element={<AiScreen />} />
+                        <Route path="ai">
+                          <Route index element={<AiScreen />} />
+                          <Route
+                            path="load-product"
+                            element={<LoadProduct />}
+                          />
+                        </Route>
+                        <Route path="checkout">
+                          <Route index element={<POSPage />} />
+                          <Route path=":id" element={<CheckoutScreen />} />
+                        </Route>{" "}
                         <Route path="checkout" element={<POSPage />} />
                         <Route path="products">
                           <Route index element={<ProductsScreen />} />

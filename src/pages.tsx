@@ -9,9 +9,17 @@ export const LoginPage = lazy(() => import("@/layouts/LoginPage/LoginPage"));
 // Logged Routes
 export const HomeScreen = lazy(() => import("@/layouts/Home/HomeScreen"));
 
+//* Ai
 export const AiScreen = lazy(() => import("@/layouts/AI/AiScreen"));
-
+export const LoadProduct = lazy(
+  () => import("@/layouts/AI/LoadProduct/LoadProduct")
+);
+//* POS
 export const POSPage = lazy(() => import("@/layouts/Checkout/POSPage"));
+
+export const CheckoutScreen = lazy(
+  () => import("@/layouts/Checkout/CheckoutScreen")
+);
 
 export const EmployeeScreen = lazy(
   () => import("@/layouts/EmployeePage/EmployeePage")
