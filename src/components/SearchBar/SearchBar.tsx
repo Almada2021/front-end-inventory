@@ -6,6 +6,8 @@ interface Props<T> {
   mutationKey?: string[];
   onGetData?: (data: T[] | undefined) => void;
   onNotify?: (query: string) => void;
+  mode?: "min" | "max";
+  placeholder?: string;
 }
 export default function SearchBar<T>({
   mutateFunction,
@@ -14,6 +16,8 @@ export default function SearchBar<T>({
   onNotify = (query: string) => {
     console.log(query);
   },
+  mode = "max",
+  placeholder = "Ingresa el nombre del proveedor",
 }: Props<T>) {
   const [query, setQuery] = useState<string>("");
   const searchMutation = useMutation({
@@ -36,24 +40,30 @@ export default function SearchBar<T>({
   return (
     <section
       aria-description="Search bar"
-      className="min-h-[120px] max-h-[140px] w-full flex justify-center items-center p-20"
+      className={` ${
+        mode == "max" && "min-h-[120px] max-h-[140px] p-20"
+      }  flex justify-center items-center  w-full`}
     >
       <form
         onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
           e.preventDefault();
           await SearchFunction();
         }}
-        className="bg-white w-full md:w-10/12 rounded-full h-[60px] flex"
+        className={`bg-white w-full md:w-10/12 rounded-full ${
+          mode == "max" && "h-[60px]"
+        } flex`}
       >
         <input
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             setQuery(e.target.value);
           }}
           type="text"
-          className="bg-white w-full md:w-11/12 rounded-l-full h-[60px]  focus:outline-none px-4 shadow-black shadow "
+          className={`bg-white w-full md:w-11/12 rounded-l-full ${
+            mode == "max" && "h-[60px]"
+          }  focus:outline-none px-4 shadow-black shadow `}
           aria-label="Buscar"
           title="Barra de Busqueda"
-          placeholder="Ingresa el nombre del proveedor"
+          placeholder={placeholder}
         ></input>
         <div
           onClick={SearchFunction}

@@ -23,11 +23,10 @@ const TillSelectorScreen = memo(function StoreSelectorScreen({
   if (tillsByStoreQuery.isFetching) return <LoadingScreen />;
   const tills = tillsByStoreQuery.data?.tills;
   return (
-    <div className="p-10">
+    <div className="p-10 grid grid-cols-4 col-span-full w-full gap-2 ">
       {tills?.map((till: Till, index: number) => (
         <motion.div
           onClick={() => {
-            // navigate(`../../till/${till.id}`);
             memoizedChangeMode(till.id, till);
           }}
           key={till.id}

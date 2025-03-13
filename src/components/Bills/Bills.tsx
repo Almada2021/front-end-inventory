@@ -4,7 +4,7 @@ import { ChangeEvent, useCallback, useEffect, useState } from "react";
 
 interface Props {
   title?: string;
-  onValueChange: (amount: number) => void;
+  onValueChange: (amount: number, bills: { [key: string]: number }) => void;
 }
 
 const defaultProps = {
@@ -18,7 +18,7 @@ export default function Bills({
 }: Props) {
   const [value, setValue] = useState<number>(0);
   const [text, setText] = useState<string>("0Gs");
-
+  const [bills, setBills] = useState<{ [key: string]: number }>({});
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const reg = /^[0-9]+$/;
     const inputValue = e.target.value.replace(/\D/g, "");
@@ -34,13 +34,22 @@ export default function Bills({
     const newValue = value + amount;
     setValue(newValue);
     setText(`${newValue}Gs`);
+    setBills((v: { [key: string]: number }) => {
+      const val = { ...v };
+      if (val[`${amount}`]) {
+        val[`${amount}`] += 1;
+        return val;
+      }
+      val[`${amount}`] = 1;
+      return val;
+    });
   };
 
   const memoizedOnValueChange = useCallback(
     (value: number) => {
-      onValueChange(value);
+      onValueChange(value, bills);
     },
-    [onValueChange]
+    [onValueChange, bills]
   );
 
   useEffect(() => {

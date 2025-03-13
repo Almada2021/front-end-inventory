@@ -37,6 +37,7 @@ import {
   ListOrdered,
   Users,
   ShoppingCart,
+  Contact,
 } from "lucide-react";
 import { Home, Settings } from "lucide-react";
 import { useEffect } from "react";
@@ -92,6 +93,11 @@ const items: MenuItem[] = [
     title: "Empleados",
     url: "/inventory/employee",
     icon: Users,
+  },
+  {
+    title: "Clientes",
+    url: "/inventory/clients",
+    icon: Contact,
   },
   {
     title: "Proveedores",

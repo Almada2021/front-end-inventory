@@ -6,7 +6,7 @@ export default function useProducts({ page, limit }: FilterOptionsRequest) {
   const productsQuery = useQuery({
     queryKey: ["products", page, limit],
     queryFn: () => getAllProductsAction({ page, limit }),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 60 * 1,
   });
   return {
     productsQuery,

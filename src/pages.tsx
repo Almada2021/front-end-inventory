@@ -80,3 +80,11 @@ export const StoreById = lazy(() => import("@/layouts/Stores/[id]/StoreById"));
 export const NewTill = lazy(() => import("@/layouts/Till/NewTill/NewTilll"));
 
 export const TillById = lazy(() => import("@/layouts/Till/[id]/TillById"));
+
+// * Clients
+
+export const ClientPage = lazy(() => import("@/layouts/Client/ClientPage"));
+
+export const NewClient = lazy(
+  () => import("@/layouts/Client/NewClient/NewClient")
+);

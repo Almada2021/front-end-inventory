@@ -8,14 +8,17 @@ import {
   SheetHeader,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ChevronUp, Minus, Plus, X } from "lucide-react";
+import { ChevronUp, Minus, Plus, User2Icon, X } from "lucide-react";
 import { CartInterface } from "@/infrastructure/interfaces/cart/cart.interface";
-
+import { CheckoutModes } from "@/types/ui.modes-checkout";
+import { AlertDialogTrigger } from "@/components/ui/alert-dialog";
 interface Props {
   cart: CartInterface[];
+  mode: CheckoutModes;
   onQuantityChange: (productId: string, newQuantity: number) => void;
   changeMode: () => void;
   isMobile?: boolean;
+  clientMoney?: number;
 }
 
 export default function Cart({
@@ -23,6 +26,8 @@ export default function Cart({
   changeMode,
   onQuantityChange,
   isMobile,
+  mode,
+  clientMoney = 0,
 }: Props) {
   const total = cart.reduce(
     (acc, item) => acc + item.product.price * item.quantity,
@@ -95,7 +100,13 @@ export default function Cart({
             <span className="font-semibold">Total:</span>
             <span className="font-bold">{total.toFixed(2)}Gs</span>
           </div>
-          <Button onClick={changeMode} className="w-full">
+          <Button
+            disabled={clientMoney < total && mode == "bills"}
+            onClick={() => {
+              changeMode();
+            }}
+            className="w-full"
+          >
             Continuar
           </Button>
         </div>
@@ -107,8 +118,17 @@ export default function Cart({
 
   return (
     <div className="flex flex-col h-full border-l">
-      <div className="p-4 border-b">
+      <div className="p-4 border-b flex justify-between items-center">
         <h3 className="text-lg font-semibold">Carrito ({cart.length})</h3>
+        <AlertDialogTrigger>
+          <Button
+            variant="ghost"
+            className="gap-2 text-lg border-2 border-white border-solid"
+          >
+            <User2Icon size={48} />
+            cliente
+          </Button>
+        </AlertDialogTrigger>
       </div>
 
       <ScrollArea className="h-[calc(100vh-220px)] pr-4">
@@ -118,9 +138,11 @@ export default function Cart({
               key={item.id}
               className="flex justify-between items-center gap-4"
             >
-              <div className="flex-1">
-                <p className="font-medium truncate">{item.product.name}</p>
-                <p className="text-sm text-muted-foreground">
+              <div className="flex-1 w-full">
+                <p className="font-medium truncate w-full">
+                  {item.product.name.substring(0, 9)}
+                </p>
+                <p className="text-sm text-muted-foreground ">
                   {item.product.price.toLocaleString()} Gs.
                 </p>
               </div>
@@ -169,11 +191,39 @@ export default function Cart({
       </ScrollArea>
 
       <div className="mt-auto p-4 border-t">
-        <div className="flex justify-between items-center mb-4">
-          <span className="font-semibold">Total:</span>
-          <span className="font-bold">{total.toLocaleString()} Gs.</span>
+        <div className="flex flex-wrap justify-between items-center mb-4">
+          {clientMoney != 0 && (
+            <div className="w-full flex flex-wrap justify-between items-center">
+              <span className="font-semibold text-green-500">Dinero:</span>
+              <span className="font-bold ">
+                {clientMoney.toLocaleString()} Gs.
+              </span>
+            </div>
+          )}
+          <div className="w-full flex flex-wrap justify-between items-center">
+            <span className="font-semibold text-blue-500">Total:</span>
+            <span className="font-bold ">{total.toLocaleString()} Gs.</span>
+          </div>
+
+          {clientMoney != 0 && (
+            <div className="w-full flex flex-wrap justify-between items-center">
+              <span className="font-semibold  text-red-600">Vuelto:</span>
+              <span className="font-bold">
+                {(clientMoney - total).toLocaleString()} Gs.
+              </span>
+            </div>
+          )}
         </div>
-        <Button onClick={changeMode} className="w-full">
+        <Button
+          disabled={clientMoney < total && mode == "bills"}
+          onClick={() => {
+            if (mode == "bills") {
+              alert("here");
+            }
+            changeMode();
+          }}
+          className="w-full"
+        >
           Continuar
         </Button>
       </div>

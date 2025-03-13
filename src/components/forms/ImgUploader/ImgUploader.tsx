@@ -6,6 +6,7 @@ interface Props {
   validationMessage: string;
   fileInputRef: RefObject<HTMLInputElement>;
   alt: string;
+  imgUrl?: string;
   setFieldValue: (key: string, file: File | null) => void;
 }
 export default function ImgUploader({
@@ -13,6 +14,7 @@ export default function ImgUploader({
   validationMessage,
   fileInputRef,
   alt = "",
+  imgUrl,
   setFieldValue,
 }: Props) {
   const [previewImg, setPreviewImg] = useState<string>("");
@@ -36,6 +38,23 @@ export default function ImgUploader({
       />
       {validation && (
         <p className="text-xs text-red-600">{validationMessage}</p>
+      )}
+      {imgUrl && previewImg == "" && (
+        <div
+          onClick={() => {
+            if (fileInputRef.current) {
+              fileInputRef.current.click();
+            }
+          }}
+          className="border-dotted border-primary border-2 min-h-[150px] flex justify-center items-center"
+        >
+          <img
+            className="w-full max-h-[150px] object-contain"
+            src={imgUrl}
+            alt={`Producto: ${alt}`}
+            title={`Producto: ${alt}`}
+          ></img>
+        </div>
       )}
       {previewImg != "" && (
         <div

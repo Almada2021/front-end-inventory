@@ -31,7 +31,7 @@ export default function Money({
       onMouseUp={() => handleInteraction(false)}
       className={`active:scale-95 transition-transform ${className} ${
         isPressed ? "opacity-75" : "opacity-100"
-      }`}
+      } select-none`}
       aria-label={`Seleccionar ${alt}`}
     >
       <img

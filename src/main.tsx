@@ -33,6 +33,8 @@ import {
   TillById,
   LoadProduct,
   CheckoutScreen,
+  ClientPage,
+  NewClient,
 } from "@/pages";
 
 const client = new QueryClient();
@@ -57,10 +59,14 @@ createRoot(document.getElementById("root")!).render(
                             element={<LoadProduct />}
                           />
                         </Route>
+                        <Route path="clients">
+                          <Route index element={<ClientPage />} />
+                          <Route path="new" element={<NewClient />} />
+                        </Route>
                         <Route path="checkout">
                           <Route index element={<POSPage />} />
                           <Route path=":id" element={<CheckoutScreen />} />
-                        </Route>{" "}
+                        </Route>
                         <Route path="checkout" element={<POSPage />} />
                         <Route path="products">
                           <Route index element={<ProductsScreen />} />

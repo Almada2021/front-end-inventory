@@ -1,5 +1,4 @@
-import { useState } from "react";
-import CheckoutScreen from "./CheckoutScreen";
+import { useEffect, useState } from "react";
 import StoreSelectorScreen from "./StoreSelectorScreen";
 import TillSelectorScreen from "./TillSelectorScreen";
 import {
@@ -14,12 +13,45 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Till } from "@/infrastructure/interfaces/till.interface";
+import { useMutation } from "@tanstack/react-query";
+import { BackendApi } from "@/core/api/api";
+import useLocalStorage from "@/hooks/browser/useLocalStorage";
+import { useNavigate } from "react-router";
+
 type PageModes = "store" | "till" | "pos";
 export default function POSPage() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<PageModes>("store");
   const [confirmTill, setConfirmTill] = useState(false);
   const [currentTill, setCurrentTill] = useState<Till | undefined>();
   const [storeId, setStoreId] = useState<string | undefined>(undefined);
+  const [tillStorage, setTillStorage] = useLocalStorage<string | null>(
+    "till",
+    null
+  );
+  const openTillMutate = useMutation({
+    mutationFn: async () => {
+      try {
+        if (!currentTill) throw "Not Till Selected";
+        await BackendApi.patch<Till>(`/till/open/${currentTill.id}`).then(
+          async (till) => {
+            const data = await till.data;
+            if (typeof data.id == "string") {
+              setTillStorage(data.id);
+            }
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    mutationKey: ["till", "open"],
+  });
+  useEffect(() => {
+    if (tillStorage) {
+      navigate(`./${tillStorage}`);
+    }
+  }, [tillStorage, navigate]);
   if (mode == "store") {
     return (
       <StoreSelectorScreen
@@ -33,44 +65,45 @@ export default function POSPage() {
   if (mode == "till" && storeId) {
     return (
       <>
-        <AlertDialog open={confirmTill}>
-          <AlertDialogTrigger></AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Absolutamente seguro?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Estas seguro que deseas abrir la caja {currentTill?.name}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel
-                onClick={() => {
-                  setConfirmTill(false);
-                }}
-              >
-                Cancelar
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  // FN to enable till and save to local storage current till
-                }}
-              >
-                Continuar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {currentTill && (
+          <AlertDialog open={confirmTill}>
+            <AlertDialogTrigger></AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Absolutamente seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Estas seguro que deseas abrir la caja {currentTill?.name}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel
+                  onClick={() => {
+                    setConfirmTill(false);
+                  }}
+                >
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    // FN to enable till and save to local storage current till
+                    await openTillMutate.mutate();
+                  }}
+                >
+                  Continuar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
         <TillSelectorScreen
           changeMode={(id: string, till: Till) => {
             setConfirmTill(true);
             setCurrentTill(till);
-            // setMode("pos");
-            console.log(id);
+            // setMode("pos");1
           }}
           storeId={storeId}
         />
       </>
     );
   }
-  return <CheckoutScreen />;
 }

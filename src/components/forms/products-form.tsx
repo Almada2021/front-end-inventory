@@ -25,6 +25,7 @@ import { Checkbox } from "../ui/checkbox";
 import ImgUploader from "./ImgUploader/ImgUploader";
 import FormInput from "./FormInput/FormInput";
 import { BackendApi } from "@/core/api/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ProductsForm({
   className,
@@ -32,6 +33,7 @@ export default function ProductsForm({
 }: React.ComponentPropsWithoutRef<"div">) {
   const [providers, setProviders] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const clientQuery = useQueryClient();
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -92,6 +94,7 @@ export default function ProductsForm({
         }
 
         await BackendApi.post("/products", formData);
+        clientQuery.invalidateQueries({ queryKey: ["products"] });
 
         resetForm();
       } catch (err) {
@@ -116,8 +119,10 @@ export default function ProductsForm({
             />
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => {}}>Continue</AlertDialogAction>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {}}>
+              Seleccionar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
         <Card>
@@ -189,31 +194,7 @@ export default function ProductsForm({
                       </p>
                     }
                   />
-                  {/* <div className="grid gap-2">
-                    <Label htmlFor="basePrice">Costo en Gs</Label>
-                    <div>
-                      <Input
-                        id="basePrice"
-                        type="number"
-                        placeholder="10000"
-                        required
-                        step={1000}
-                        value={formik.values.basePrice}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                          let value = e.target.value;
-                          const num = Number(e.target.value);
-                          if (value[0])
-                            value = value.substring(1, value.length);
-                          if (isNaN(num)) return;
-                          if (num < 0) return;
-                          formik.setFieldValue("basePrice", value);
-                        }}
-                      />
-                    </div>
-                    <p className="text-xs text-red-600">
-                      {formik.errors.basePrice}
-                    </p>
-                  </div> */}
+
                   <div className="grid gap-2">
                     <div className="flex items-center gap-2">
                       <Checkbox

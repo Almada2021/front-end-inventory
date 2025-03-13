@@ -4,15 +4,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useMediaQuery } from "usehooks-ts";
 import { useState } from "react";
-
-type PaymentMethod = "cash" | "card" | "transfer";
+import { PaymentMethod as TPaymentMethod } from "@/lib/database.types";
 
 interface Props {
-  onSelectMethod: (method: PaymentMethod) => void;
+  onSelectMethod: (method: TPaymentMethod) => void;
 }
 
 export default function PaymentMethod({ onSelectMethod }: Props) {
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("cash");
+  const [selectedMethod, setSelectedMethod] = useState<TPaymentMethod>("cash");
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const handleSubmit = () => {
@@ -20,7 +19,7 @@ export default function PaymentMethod({ onSelectMethod }: Props) {
   };
 
   return (
-    <div className="h-screen w-full flex items-center justify-center p-4">
+    <div className="w-full h-full flex items-center justify-center  ">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
@@ -32,7 +31,9 @@ export default function PaymentMethod({ onSelectMethod }: Props) {
           <RadioGroup
             defaultValue="cash"
             value={selectedMethod}
-            onValueChange={(value) => setSelectedMethod(value as PaymentMethod)}
+            onValueChange={(value) =>
+              setSelectedMethod(value as TPaymentMethod)
+            }
             className="space-y-3"
           >
             <div className="flex items-center space-x-3">
