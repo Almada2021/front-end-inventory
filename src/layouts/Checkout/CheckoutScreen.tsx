@@ -36,6 +36,8 @@ import {
 import DataTableViewClient from "@/components/DataTable/clients/DataTableClient";
 import { Client } from "@/infrastructure/interfaces/clients/clients.response";
 import CashBackBills from "./CashBackBills/CashBackBills";
+import { useToast } from "@/hooks/use-toast";
+import { Sale } from "@/infrastructure/interfaces/sale/sale.interface";
 const modes: CheckoutModes[] = [
   "products",
   "paymentMethod",
@@ -46,6 +48,8 @@ const modes: CheckoutModes[] = [
 
 export default function CheckoutScreen() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [preventConfirm, setPreventConfirm] = useState(false);
   const { id } = useParams();
   const [customer, setCustomer] = useState<Client | null>(null);
   const { tillsByIdQuery } = useTillById(id!);
@@ -82,10 +86,16 @@ export default function CheckoutScreen() {
     {}
   );
   const [total, setTotal] = useState<number>(0);
+
+  const [lastSale, setLastSale] = useState<Sale | null>(null);
   const changeMode = (back?: "back") => {
     const index = modes.indexOf(mode);
-
-    if (mode === "cashBack" && back) {
+    if (index == modes.length - 1 && preventConfirm) {
+      setMode("products");
+      setLastSale(null);
+      return;
+    }
+    if ((mode === "cashBack" || mode === "confirm") && back) {
       setMode("paymentMethod");
       return;
     }
@@ -169,17 +179,42 @@ export default function CheckoutScreen() {
           client: customer?.id,
         };
 
-        const data = await BackendApi.post("/sale/create", saleData);
+        const data = await BackendApi.post<Sale>("/sale/create", saleData);
         //! RESET
-        if (data) {
-          setCart([]);
-          setBillsPay({});
-        }
+
+        return data;
       } catch (error) {
         console.log(error);
       }
     },
-    mutationKey: ["sale"],
+    onSuccess: (data) => {
+      if (!data) return;
+      setLastSale(data?.data);
+      setPreventConfirm(true);
+      //RESET ALL
+      setCustomer(null);
+      setCart([]);
+      setBillsPay({});
+      setClientMoney(0);
+      setTotal(0);
+      setCart([]);
+      setBillsCashBack({});
+      setBillsPay({});
+      toast({
+        title: "Se creo la venta",
+        description: "Felicitaciones, la venta se creo correctamente",
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      console.error("Error creating sale:", error);
+      toast({
+        title: "Error al crear la venta",
+        description: "Revisa los datos ingresados",
+        variant: "destructive",
+      });
+      // Manejar error
+    },
   });
 
   useEffect(() => {
@@ -281,6 +316,7 @@ export default function CheckoutScreen() {
           {mode == "paymentMethod" && (
             <PaymentMethod
               onSelectMethod={(method) => {
+                console.log("Method:", method);
                 setMethod(method);
                 setMode(method === "cash" ? "bills" : "confirm");
               }}
@@ -314,6 +350,7 @@ export default function CheckoutScreen() {
               confirmFn={async () => {
                 mutateAddSale.mutate();
               }}
+              lastSale={lastSale}
             />
           )}
         </section>

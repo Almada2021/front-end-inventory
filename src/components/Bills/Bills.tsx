@@ -116,19 +116,6 @@ export default function Bills({
       </div>
 
       <section className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {/* Monedas */}
-        <div className="col-span-full grid grid-cols-3 gap-4">
-          {[100, 500, 1000].map((amount) => (
-            <Money
-              key={amount}
-              onClick={() => clickBill(amount)}
-              alt={`${amount}Gs`}
-              src={`/money/${amount}.png`}
-              className="p-2 bg-muted rounded-lg"
-            />
-          ))}
-        </div>
-
         {/* Billetes */}
         <div className="col-span-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {[2000, 5000, 10000, 20000, 50000, 100000].map((amount) => (
@@ -139,6 +126,18 @@ export default function Bills({
               alt={`${amount}Gs`}
               src={`/money/${amount}.jpg`}
               className="p-4 bg-muted rounded-xl hover:scale-105 transition-transform"
+            />
+          ))}
+        </div>
+        {/* Monedas */}
+        <div className="col-span-full grid grid-cols-4 gap-4">
+          {[50, 100, 500, 1000].map((amount) => (
+            <Money
+              key={amount}
+              onClick={() => clickBill(amount)}
+              alt={`${amount}Gs`}
+              src={`/money/${amount}.png`}
+              className="p-2 bg-muted rounded-lg "
             />
           ))}
         </div>

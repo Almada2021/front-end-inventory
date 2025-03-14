@@ -1,9 +1,10 @@
 import { useReactToPrint } from "react-to-print";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CrossIcon } from "lucide-react";
 import useUserById from "@/hooks/users/useUserById";
+import useStoreByTillId from "@/hooks/store/useStoreByTillId";
 const TRANSLATE_PAYMENT_METHODS = {
   cash: "Efectivo",
   card: "Tarjeta",
@@ -26,19 +27,27 @@ interface ReceiptProps {
     bills: Record<string, number>;
     billsCashBack: Record<string, number>;
     createdAt: string;
-    paymentMethod?: string[];
+    paymentMethod?: string;
   };
 }
 
 export const Receipt = ({ data }: ReceiptProps) => {
   const componentRef = useRef<HTMLDivElement>(null);
   const { userByIdQuery } = useUserById(data.sellerId);
+  const { storeByTillId } = useStoreByTillId(data.till);
+  // memoized Paid by customer
+  const paidByCustomer = useMemo(() => {
+    return Object.entries(data.bills).reduce(
+      (acc, [key, value]) => acc + Number(key) * value,
+      0
+    );
+  }, [data.bills]);
   const [selectedMethod, setSelectedMethod] = useState(
     data.paymentMethod?.[0] || ""
   );
-  const [cashBack, setCashBack] = useState<Record<string, number>>(
-    data.billsCashBack
-  );
+  const cashBack: Record<string, number> = data.billsCashBack;
+
+  const bills: Record<string, number> = data.bills;
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -52,10 +61,7 @@ export const Receipt = ({ data }: ReceiptProps) => {
     }).format(amount);
   };
 
-  const removeCashBack = () => {
-    setCashBack({});
-  };
-  if (userByIdQuery.isFetching) return null;
+  if (userByIdQuery.isFetching || storeByTillId.isFetching) return null;
 
   return (
     <div className="h-full w-full bg-white p-8 flex flex-col">
@@ -65,8 +71,12 @@ export const Receipt = ({ data }: ReceiptProps) => {
       >
         {/* Encabezado */}
         <div className="mb-6 border-b-2 border-black pb-4">
-          <h1 className="text-3xl font-bold text-center">Mi Negocio</h1>
+          <h1 className="text-3xl font-bold text-center">
+            {storeByTillId.data?.name || "Mi Negocio"}
+          </h1>
+
           <div className="text-center mt-2">
+            <p className="text-sm">{storeByTillId.data?.address || ""}</p>
             <p className="text-sm">
               {format(new Date(data.createdAt), "dd MMM yyyy HH:mm", {
                 locale: es,
@@ -90,6 +100,10 @@ export const Receipt = ({ data }: ReceiptProps) => {
 
         {/* Totales */}
         <div className="my-6 border-t-2 border-black pt-4">
+          <div className="flex justify-between mb-2">
+            <span>Pagado:</span>
+            <span>{formatCurrency(paidByCustomer)}</span>
+          </div>
           <div className="flex justify-between mb-2">
             <span>Total:</span>
             <span>{formatCurrency(data.amount)}</span>
@@ -115,6 +129,25 @@ export const Receipt = ({ data }: ReceiptProps) => {
             </select>
           </div>
 
+          {bills && Object.keys(bills).length > 0 && (
+            <div className="flex items-center gap-2 mb-2">
+              <span>Billetes Pagados:</span>
+              {Object.entries(bills).map(([bill, quantity]) => (
+                <div
+                  key={bill}
+                  className="bg-gray-100 px-2 py-1 rounded flex items-center"
+                >
+                  {quantity}x {formatCurrency(Number(bill))}
+                  <button
+                    title="x"
+                    className="ml-1 text-red-500 hover:text-red-700"
+                  >
+                    <CrossIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           {cashBack && Object.keys(cashBack).length > 0 && (
             <div className="flex items-center gap-2">
               <span>Vuelto:</span>
@@ -126,7 +159,6 @@ export const Receipt = ({ data }: ReceiptProps) => {
                   {quantity}x {formatCurrency(Number(bill))}
                   <button
                     title="x"
-                    onClick={removeCashBack}
                     className="ml-1 text-red-500 hover:text-red-700"
                   >
                     <CrossIcon className="w-4 h-4" />
@@ -140,7 +172,7 @@ export const Receipt = ({ data }: ReceiptProps) => {
         {/* Pie de página */}
         <div className="mt-8 text-center text-sm">
           <p>¡Gracias por su compra!</p>
-          <p>ID Transacción: {data.id}</p>
+          <p>ID Recibo: {data.id}</p>
         </div>
       </div>
 
