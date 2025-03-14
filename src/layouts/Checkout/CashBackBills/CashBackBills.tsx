@@ -53,26 +53,33 @@ const CashBackBills = ({
     const amountStr = `${amount}`;
     const maxAvailable = availableBills[amountStr] || 0;
 
-    setBills((prevBills) => {
-      const newBills = { ...prevBills };
-      const currentCount = newBills[amountStr] || 0;
+    if (mode === "add") {
+      // Evita que el valor supere el objetivo
+      if (value + amount > objectiveValue) return;
 
-      if (mode === "add") {
+      setBills((prevBills) => {
+        const currentCount = prevBills[amountStr] || 0;
         if (currentCount < maxAvailable) {
-          newBills[amountStr] = currentCount + 1;
+          const newBills = { ...prevBills, [amountStr]: currentCount + 1 };
           setValue((prevValue) => prevValue + amount);
+          return newBills;
         }
-      } else {
+        return prevBills;
+      });
+    } else {
+      setBills((prevBills) => {
+        const currentCount = prevBills[amountStr] || 0;
         if (currentCount > 0) {
-          newBills[amountStr] = currentCount - 1;
+          const newBills = { ...prevBills, [amountStr]: currentCount - 1 };
           if (newBills[amountStr] === 0) {
             delete newBills[amountStr];
           }
-          setValue((prevValue) => prevValue - amount);
+          setValue((prevValue) => Math.max(0, prevValue - amount));
+          return newBills;
         }
-      }
-      return newBills;
-    });
+        return prevBills;
+      });
+    }
   };
 
   // Notifica cambios en el valor y en los billetes seleccionados
@@ -143,7 +150,8 @@ const CashBackBills = ({
   };
 
   return (
-    <div className="min-h-screen w-full p-4 md:p-10 flex flex-col gap-6">
+    // Se reduce el padding en mobile para mejorar el diseño
+    <div className="w-full p-2 md:p-10 flex flex-col gap-6">
       <div className="flex flex-col items-center w-full">
         <h2 className="font-bold text-2xl md:text-3xl mb-4 text-center">
           Entregar Vuelto: {objectiveValue}Gs
@@ -189,7 +197,7 @@ const CashBackBills = ({
         </p>
       )}
 
-      <section className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <section className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
         {DEFAULT_DENOMINATIONS.map((amountStr) => {
           const amount = Number(amountStr);
           const countAvailable = availableBills[amountStr] || 0;

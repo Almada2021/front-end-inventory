@@ -81,10 +81,11 @@ export default function CheckoutScreen() {
   const [billsCashBack, setBillsCashBack] = useState<{ [key: string]: number }>(
     {}
   );
+  const [total, setTotal] = useState<number>(0);
   const changeMode = (back?: "back") => {
     const index = modes.indexOf(mode);
 
-    if (mode === "cashBack") {
+    if (mode === "cashBack" && back) {
       setMode("paymentMethod");
       return;
     }
@@ -230,10 +231,10 @@ export default function CheckoutScreen() {
         <section
           className={`${
             mode !== "paymentMethod" && "lg:w-3/4"
-          } w-full mt-20 md:mt-4`}
+          } w-full mt-10 md:mt-4`}
         >
           <div
-            className={`w-full px-4 mb-2 flex min-h-[60px] ${
+            className={`w-full px-4 mb-2 flex md:min-h-[60px] ${
               mode == "products" && "justify-center items-center"
             }`}
           >
@@ -296,8 +297,9 @@ export default function CheckoutScreen() {
           {mode == "cashBack" && (
             <CashBackBills
               till={tillsByIdQuery.data!}
-              objectiveValue={10000}
+              objectiveValue={clientMoney - total}
               onValueChange={(amount, bills) => {
+                setBillsCashBack(bills);
                 console.log("Nuevo valor:", amount, bills);
               }}
             />
@@ -325,6 +327,9 @@ export default function CheckoutScreen() {
               onQuantityChange={handleQuantityChange}
               isMobile={false}
               clientMoney={clientMoney}
+              notifyTotal={(value: number) => {
+                setTotal(value);
+              }}
             />
           </section>
         )}
@@ -338,6 +343,9 @@ export default function CheckoutScreen() {
             onQuantityChange={handleQuantityChange}
             isMobile={true}
             clientMoney={clientMoney}
+            notifyTotal={(value: number) => {
+              setTotal(value);
+            }}
           />
         )}
       </AlertDialog>

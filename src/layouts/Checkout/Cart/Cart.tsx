@@ -13,6 +13,7 @@ import { CartInterface } from "@/infrastructure/interfaces/cart/cart.interface";
 import { CheckoutModes } from "@/types/ui.modes-checkout";
 import { AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Client } from "@/infrastructure/interfaces/clients/clients.response";
+import { useEffect } from "react";
 interface Props {
   cart: CartInterface[];
   mode: CheckoutModes;
@@ -21,6 +22,7 @@ interface Props {
   isMobile?: boolean;
   clientMoney?: number;
   client?: Client | null;
+  notifyTotal: (value: number) => void;
 }
 
 export default function Cart({
@@ -31,12 +33,15 @@ export default function Cart({
   mode,
   clientMoney = 0,
   client,
+  notifyTotal,
 }: Props) {
   const total = cart.reduce(
     (acc, item) => acc + item.product.price * item.quantity,
     0
   );
-
+  useEffect(() => {
+    notifyTotal(total);
+  }, [total, notifyTotal]);
   const MobileCart = () => (
     <Sheet>
       <SheetTrigger className="fixed bottom-0 left-0 right-0 bg-primary text-primary-foreground p-4 flex justify-center items-center gap-2">

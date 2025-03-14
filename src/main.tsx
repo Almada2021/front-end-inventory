@@ -35,6 +35,7 @@ import {
   CheckoutScreen,
   ClientPage,
   NewClient,
+  SalesPage,
 } from "@/pages";
 import ShowClient from "./layouts/Client/ShowClient/ShowClient";
 
@@ -82,6 +83,9 @@ createRoot(document.getElementById("root")!).render(
                           <Route path="new" element={<NewSupplier />}></Route>
                           <Route path="show" element={<ShowSupplier />}></Route>
                           <Route path=":id" element={<SupplierInfo />}></Route>
+                        </Route>
+                        <Route path="sales">
+                          <Route index element={<SalesPage />} />
                         </Route>
                         <Route path="stores">
                           <Route index element={<StoresAndBill />} />

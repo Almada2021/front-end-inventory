@@ -91,3 +91,7 @@ export const NewClient = lazy(
 export const ShowClient = lazy(
   () => import("@/layouts/Client/ShowClient/ShowClient")
 );
+
+// * Sales
+
+export const SalesPage = lazy(() => import("@/layouts/Sales/SalesPage"));
