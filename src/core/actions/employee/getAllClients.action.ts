@@ -11,7 +11,7 @@ export const getAllClientsAction = async ({
   page,
 }: FilterOptionsRequest): Promise<Client[]> => {
   try {
-    const { data } = await BackendApi.get<ClientsResponse>("/products/all", {
+    const { data } = await BackendApi.get<ClientsResponse>("/client/show", {
       params: {
         limit,
         page,

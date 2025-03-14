@@ -6,7 +6,7 @@ export default function useTillById(id: string) {
     queryKey: ["till", "show", id],
     queryFn: () => getTillById(id),
     staleTime: 1000 * 60,
-    refetchInterval: 1000 * 60,
+    refetchInterval: 1000 * 60 * 60,
   });
   return {
     tillsByIdQuery,

@@ -12,6 +12,7 @@ import { ChevronUp, Minus, Plus, User2Icon, X } from "lucide-react";
 import { CartInterface } from "@/infrastructure/interfaces/cart/cart.interface";
 import { CheckoutModes } from "@/types/ui.modes-checkout";
 import { AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Client } from "@/infrastructure/interfaces/clients/clients.response";
 interface Props {
   cart: CartInterface[];
   mode: CheckoutModes;
@@ -19,6 +20,7 @@ interface Props {
   changeMode: () => void;
   isMobile?: boolean;
   clientMoney?: number;
+  client?: Client | null;
 }
 
 export default function Cart({
@@ -28,6 +30,7 @@ export default function Cart({
   isMobile,
   mode,
   clientMoney = 0,
+  client,
 }: Props) {
   const total = cart.reduce(
     (acc, item) => acc + item.product.price * item.quantity,
@@ -120,13 +123,15 @@ export default function Cart({
     <div className="flex flex-col h-full border-l">
       <div className="p-4 border-b flex justify-between items-center">
         <h3 className="text-lg font-semibold">Carrito ({cart.length})</h3>
-        <AlertDialogTrigger>
+        <AlertDialogTrigger asChild>
           <Button
             variant="ghost"
-            className="gap-2 text-lg border-2 border-white border-solid"
+            className={`gap-2 ${
+              !client && "text-lg"
+            } border-2 border-white border-solid`}
           >
             <User2Icon size={48} />
-            cliente
+            {client?.name.concat(client?.lastName) || "cliente"}
           </Button>
         </AlertDialogTrigger>
       </div>
@@ -217,9 +222,6 @@ export default function Cart({
         <Button
           disabled={clientMoney < total && mode == "bills"}
           onClick={() => {
-            if (mode == "bills") {
-              alert("here");
-            }
             changeMode();
           }}
           className="w-full"

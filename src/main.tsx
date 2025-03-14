@@ -36,6 +36,7 @@ import {
   ClientPage,
   NewClient,
 } from "@/pages";
+import ShowClient from "./layouts/Client/ShowClient/ShowClient";
 
 const client = new QueryClient();
 createRoot(document.getElementById("root")!).render(
@@ -62,6 +63,7 @@ createRoot(document.getElementById("root")!).render(
                         <Route path="clients">
                           <Route index element={<ClientPage />} />
                           <Route path="new" element={<NewClient />} />
+                          <Route path="show" element={<ShowClient />} />
                         </Route>
                         <Route path="checkout">
                           <Route index element={<POSPage />} />

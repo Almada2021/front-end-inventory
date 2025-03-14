@@ -1,25 +1,31 @@
 import { Input } from "@/components/ui/input";
 import Money from "./Money/Money";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
 interface Props {
   title?: string;
   onValueChange: (amount: number, bills: { [key: string]: number }) => void;
+  counted?: boolean;
 }
 
 const defaultProps = {
   title: "Ingresar cantidad de dinero",
   onValueChange: () => {},
+  counted: true,
 };
 
 export default function Bills({
   title = defaultProps.title,
   onValueChange = defaultProps.onValueChange,
+  counted = defaultProps.counted,
 }: Props) {
   const [value, setValue] = useState<number>(0);
   const [text, setText] = useState<string>("0Gs");
   const [bills, setBills] = useState<{ [key: string]: number }>({});
+  const [mode, setMode] = useState<"add" | "subtract">("add");
+
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (counted) return;
     const reg = /^[0-9]+$/;
     const inputValue = e.target.value.replace(/\D/g, "");
 
@@ -31,30 +37,37 @@ export default function Bills({
   };
 
   const clickBill = (amount: number) => {
-    const newValue = value + amount;
-    setValue(newValue);
-    setText(`${newValue}Gs`);
-    setBills((v: { [key: string]: number }) => {
+    const newValue = mode === "add" ? value + amount : value - amount;
+    const updatedValue = Math.max(0, newValue);
+    setValue(updatedValue);
+    setBills((v) => {
       const val = { ...v };
-      if (val[`${amount}`]) {
-        val[`${amount}`] += 1;
-        return val;
+      const amountStr = `${amount}`;
+      if (mode === "add") {
+        if (val[amountStr]) {
+          val[amountStr] += 1;
+        } else {
+          val[amountStr] = 1;
+        }
+      } else {
+        if (val[amountStr]) {
+          val[amountStr] -= 1;
+          if (val[amountStr] <= 0) {
+            delete val[amountStr];
+          }
+        }
       }
-      val[`${amount}`] = 1;
       return val;
     });
   };
 
-  const memoizedOnValueChange = useCallback(
-    (value: number) => {
-      onValueChange(value, bills);
-    },
-    [onValueChange, bills]
-  );
-
   useEffect(() => {
-    memoizedOnValueChange(value);
-  }, [memoizedOnValueChange, value]);
+    onValueChange(value, bills);
+    if (counted) {
+      setText(`${value}Gs`);
+    }
+  }, [value, bills, onValueChange, counted]);
+
   return (
     <div className="min-h-screen w-full p-4 md:p-10 flex flex-col gap-6">
       <div className="flex flex-col items-center w-full">
@@ -63,15 +76,42 @@ export default function Bills({
         </h2>
         <div className="relative w-full max-w-[400px]">
           <Input
-            onFocus={() => setText(value.toString())}
-            onBlur={() => setText(`${value}Gs`)}
+            onFocus={() => {
+              if (!counted) setText(value.toString());
+            }}
+            onBlur={() => {
+              if (!counted) setText(`${value}Gs`);
+            }}
             value={text}
             onChange={onChange}
+            readOnly={counted}
             className="h-16 text-2xl md:text-3xl text-center font-bold border-2 border-primary rounded-xl"
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-            Gs
-          </span>
+
+          {counted && (
+            <div className="flex items-center justify-center mt-4 space-x-4">
+              <button
+                onClick={() => setMode("add")}
+                className={`px-4 py-2 rounded-md ${
+                  mode === "add"
+                    ? "bg-primary text-white"
+                    : "bg-muted text-gray-800"
+                }`}
+              >
+                +
+              </button>
+              <button
+                onClick={() => setMode("subtract")}
+                className={`px-4 py-2 rounded-md ${
+                  mode === "subtract"
+                    ? "bg-primary text-white"
+                    : "bg-muted text-gray-800"
+                }`}
+              >
+                -
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

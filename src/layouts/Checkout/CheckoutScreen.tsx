@@ -33,8 +33,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import useClients from "@/hooks/clients/useClients";
-import DataTableView from "@/components/DataTable/DataTable";
+import DataTableViewClient from "@/components/DataTable/clients/DataTableClient";
+import { Client } from "@/infrastructure/interfaces/clients/clients.response";
+import CashBackBills from "./CashBackBills/CashBackBills";
 const modes: CheckoutModes[] = [
   "products",
   "paymentMethod",
@@ -46,8 +47,8 @@ const modes: CheckoutModes[] = [
 export default function CheckoutScreen() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [customer, setCustomer] = useState<Client | null>(null);
   const { tillsByIdQuery } = useTillById(id!);
-  const { queryAllClients } = useClients({ page: 1, limit: 1000 });
   const [clientMoney, setClientMoney] = useState<number>(0);
   const userId = useAppSelector((state) => state.auth.userInfo?.id);
   const [tillStorage, setTillStorage] = useLocalStorage<string | null>(
@@ -164,14 +165,15 @@ export default function CheckoutScreen() {
           till: id,
           sellerId: userId,
           profits,
+          client: customer?.id,
         };
 
         const data = await BackendApi.post("/sale/create", saleData);
-
         //! RESET
-        setCart([]);
-        setBillsPay({});
-        console.log(data);
+        if (data) {
+          setCart([]);
+          setBillsPay({});
+        }
       } catch (error) {
         console.log(error);
       }
@@ -179,7 +181,6 @@ export default function CheckoutScreen() {
     mutationKey: ["sale"],
   });
 
-  console.log(mutateAddSale);
   useEffect(() => {
     if (open) {
       setOpen(false);
@@ -193,7 +194,6 @@ export default function CheckoutScreen() {
   }, [tillStorage, navigate]);
 
   if (productsQuery.isFetching || tillsByIdQuery.isFetching) return null;
-  console.log(method);
   // * Payment Method Screen
 
   return (
@@ -205,15 +205,9 @@ export default function CheckoutScreen() {
             <AlertDialogDescription>
               Marcalos y confirma para agregar
             </AlertDialogDescription>
-            <DataTableView
-              initial={
-                queryAllClients.data?.map(
-                  (client) => client.name + client.lastName
-                ) || []
-              }
-              notifyProvidersSelected={(value: string[]) => {
-                // setProviders(value);
-                console.log(value);
+            <DataTableViewClient
+              notifyProvidersSelected={(client: Client) => {
+                setCustomer(client);
               }}
             />
           </AlertDialogHeader>
@@ -295,17 +289,23 @@ export default function CheckoutScreen() {
             <Bills
               onValueChange={(v, bills) => {
                 setClientMoney(v);
-                console.log(clientMoney, "cm");
                 setBillsPay(bills);
               }}
             />
           )}
           {mode == "cashBack" && (
-            <Bills
-              onValueChange={(v, bills) => {
-                setBillsCashBack(bills);
+            <CashBackBills
+              till={tillsByIdQuery.data!}
+              objectiveValue={10000}
+              onValueChange={(amount, bills) => {
+                console.log("Nuevo valor:", amount, bills);
               }}
             />
+            // <Bills
+            //   onValueChange={(v, bills) => {
+            //     setBillsCashBack(bills);
+            //   }}
+            // />
           )}
           {mode == "confirm" && (
             <ConfirmScreen
@@ -318,6 +318,7 @@ export default function CheckoutScreen() {
         {!isMobile && mode != "paymentMethod" && (
           <section className="lg:w-1/4 w-full">
             <Cart
+              client={customer}
               changeMode={() => changeMode()}
               cart={cart}
               mode={mode}
@@ -330,6 +331,7 @@ export default function CheckoutScreen() {
 
         {isMobile && mode != "paymentMethod" && (
           <Cart
+            client={customer}
             changeMode={() => changeMode()}
             cart={cart}
             mode={mode}

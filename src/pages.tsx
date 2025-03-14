@@ -88,3 +88,6 @@ export const ClientPage = lazy(() => import("@/layouts/Client/ClientPage"));
 export const NewClient = lazy(
   () => import("@/layouts/Client/NewClient/NewClient")
 );
+export const ShowClient = lazy(
+  () => import("@/layouts/Client/ShowClient/ShowClient")
+);
