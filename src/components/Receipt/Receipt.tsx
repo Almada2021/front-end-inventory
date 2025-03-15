@@ -42,9 +42,8 @@ export const Receipt = ({ data }: ReceiptProps) => {
       0
     );
   }, [data.bills]);
-  const [selectedMethod, setSelectedMethod] = useState(
-    data.paymentMethod?.[0] || ""
-  );
+  const [, setSelectedMethod] = useState(data.paymentMethod?.[0] || "");
+
   const cashBack: Record<string, number> = data.billsCashBack;
 
   const bills: Record<string, number> = data.bills;
@@ -100,10 +99,12 @@ export const Receipt = ({ data }: ReceiptProps) => {
 
         {/* Totales */}
         <div className="my-6 border-t-2 border-black pt-4">
-          <div className="flex justify-between mb-2">
-            <span>Pagado:</span>
-            <span>{formatCurrency(paidByCustomer)}</span>
-          </div>
+          {data.paymentMethod != "cash" && (
+            <div className="flex justify-between mb-2">
+              <span>Pagado:</span>
+              <span>{formatCurrency(paidByCustomer)}</span>
+            </div>
+          )}
           <div className="flex justify-between mb-2">
             <span>Total:</span>
             <span>{formatCurrency(data.amount)}</span>
@@ -116,7 +117,7 @@ export const Receipt = ({ data }: ReceiptProps) => {
             <span>Método de pago:</span>
             <select
               title="Método de pago"
-              value={selectedMethod}
+              value={data.paymentMethod}
               disabled={true}
               onChange={(e) => setSelectedMethod(e.target.value)}
               className="border rounded px-2"

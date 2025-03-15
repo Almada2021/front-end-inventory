@@ -1,5 +1,4 @@
 import "./css/checkout.css";
-import ProductCard from "@/components/Cards/Product/ProductCard";
 import { useSidebar } from "@/components/ui/sidebar";
 import useProducts from "@/hooks/products/useProducts";
 import { CartInterface } from "@/infrastructure/interfaces/cart/cart.interface";
@@ -38,6 +37,7 @@ import { Client } from "@/infrastructure/interfaces/clients/clients.response";
 import CashBackBills from "./CashBackBills/CashBackBills";
 import { useToast } from "@/hooks/use-toast";
 import { Sale } from "@/infrastructure/interfaces/sale/sale.interface";
+import PaginatedProductGrid from "@/components/PaginatedProducts/PaginatedProducts";
 const modes: CheckoutModes[] = [
   "products",
   "paymentMethod",
@@ -95,7 +95,14 @@ export default function CheckoutScreen() {
       setLastSale(null);
       return;
     }
+    if (mode == "bills" && back) {
+      setBillsPay({});
+      setClientMoney(0);
+      setMode("paymentMethod");
+    }
     if ((mode === "cashBack" || mode === "confirm") && back) {
+      setBillsCashBack({});
+      setClientMoney(0);
       setMode("paymentMethod");
       return;
     }
@@ -177,6 +184,7 @@ export default function CheckoutScreen() {
           sellerId: userId,
           profits,
           client: customer?.id,
+          paymentMethod: method,
         };
 
         const data = await BackendApi.post<Sale>("/sale/create", saleData);
@@ -297,21 +305,46 @@ export default function CheckoutScreen() {
             )}
           </div>
           {mode == "products" && (
-            <div
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 
-      gap-4 w-full flex-1 auto-rows-fr px-4"
-            >
-              {productsQuery.data?.map((product: Product) => (
-                <ProductCard
-                  onClick={() => {
-                    pushCart(product, 1);
-                  }}
-                  variant="checkout"
-                  key={product.id}
-                  product={product}
-                />
-              ))}
-            </div>
+            <PaginatedProductGrid
+              products={productsQuery.data || []}
+              currentPage={1}
+              itemsPerPage={2}
+              pushCart={pushCart}
+              onPageChange={() => {}}
+            />
+            //       <div
+            //         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5
+            // gap-4 w-full flex-1 auto-rows-fr px-4 overflow-y-scroll "
+            //       >
+            //         {productsQuery.data?.map((product: Product) => (
+            //           <>
+            //             <ProductCard
+            //               onClick={() => {
+            //                 pushCart(product, 1);
+            //               }}
+            //               variant="checkout"
+            //               key={product.id}
+            //               product={product}
+            //             />
+            //             <ProductCard
+            //               onClick={() => {
+            //                 pushCart(product, 1);
+            //               }}
+            //               variant="checkout"
+            //               key={product.id}
+            //               product={product}
+            //             />
+            //             <ProductCard
+            //               onClick={() => {
+            //                 pushCart(product, 1);
+            //               }}
+            //               variant="checkout"
+            //               key={product.id}
+            //               product={product}
+            //             />
+            //           </>
+            //         ))}
+            //       </div>
           )}
           {mode == "paymentMethod" && (
             <PaymentMethod
@@ -336,14 +369,8 @@ export default function CheckoutScreen() {
               objectiveValue={clientMoney - total}
               onValueChange={(amount, bills) => {
                 setBillsCashBack(bills);
-                console.log("Nuevo valor:", amount, bills);
               }}
             />
-            // <Bills
-            //   onValueChange={(v, bills) => {
-            //     setBillsCashBack(bills);
-            //   }}
-            // />
           )}
           {mode == "confirm" && (
             <ConfirmScreen

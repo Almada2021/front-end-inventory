@@ -85,10 +85,7 @@ const CashBackBills = ({
   // Notifica cambios en el valor y en los billetes seleccionados
   useEffect(() => {
     onValueChange(value, bills);
-    if (value === objectiveValue) {
-      console.log("¡Se alcanzó el valor objetivo!");
-    }
-  }, [value, bills, onValueChange, objectiveValue]);
+  }, [value, bills, onValueChange]);
 
   // Calcula las posibles combinaciones para llegar al objetivo
   useEffect(() => {
