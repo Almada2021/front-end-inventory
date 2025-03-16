@@ -49,6 +49,7 @@ const modes: CheckoutModes[] = [
 export default function CheckoutScreen() {
   const navigate = useNavigate();
   const { toast } = useToast();
+
   const [preventConfirm, setPreventConfirm] = useState(false);
   const { id } = useParams();
   const [customer, setCustomer] = useState<Client | null>(null);
@@ -208,11 +209,6 @@ export default function CheckoutScreen() {
       setCart([]);
       setBillsCashBack({});
       setBillsPay({});
-      toast({
-        title: "Se creo la venta",
-        description: "Felicitaciones, la venta se creo correctamente",
-        variant: "default",
-      });
     },
     onError: (error) => {
       console.error("Error creating sale:", error);
@@ -305,46 +301,14 @@ export default function CheckoutScreen() {
             )}
           </div>
           {mode == "products" && (
+            <div className="flex-grow overflow-hidden">
+
             <PaginatedProductGrid
               products={productsQuery.data || []}
-              currentPage={1}
-              itemsPerPage={2}
               pushCart={pushCart}
-              onPageChange={() => {}}
-            />
-            //       <div
-            //         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5
-            // gap-4 w-full flex-1 auto-rows-fr px-4 overflow-y-scroll "
-            //       >
-            //         {productsQuery.data?.map((product: Product) => (
-            //           <>
-            //             <ProductCard
-            //               onClick={() => {
-            //                 pushCart(product, 1);
-            //               }}
-            //               variant="checkout"
-            //               key={product.id}
-            //               product={product}
-            //             />
-            //             <ProductCard
-            //               onClick={() => {
-            //                 pushCart(product, 1);
-            //               }}
-            //               variant="checkout"
-            //               key={product.id}
-            //               product={product}
-            //             />
-            //             <ProductCard
-            //               onClick={() => {
-            //                 pushCart(product, 1);
-            //               }}
-            //               variant="checkout"
-            //               key={product.id}
-            //               product={product}
-            //             />
-            //           </>
-            //         ))}
-            //       </div>
+              />
+              </div>
+     
           )}
           {mode == "paymentMethod" && (
             <PaymentMethod

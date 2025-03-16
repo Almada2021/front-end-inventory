@@ -5,11 +5,9 @@ import { es } from "date-fns/locale";
 import { CrossIcon } from "lucide-react";
 import useUserById from "@/hooks/users/useUserById";
 import useStoreByTillId from "@/hooks/store/useStoreByTillId";
-const TRANSLATE_PAYMENT_METHODS = {
-  cash: "Efectivo",
-  card: "Tarjeta",
-  transfer: "Transferencia",
-};
+import { TRANSLATE_PAYMENT_METHODS } from "@/constants/translations/payments.methods";
+import { formatCurrency } from "@/lib/formatCurrency.utils";
+
 type PaymentMethod = keyof typeof TRANSLATE_PAYMENT_METHODS;
 const PaymentMethods: PaymentMethod[] = ["cash", "card", "transfer"];
 interface ReceiptProps {
@@ -53,12 +51,7 @@ export const Receipt = ({ data }: ReceiptProps) => {
     pageStyle: "@page { size: auto; margin: 0mm; }",
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-PY", {
-      style: "currency",
-      currency: "PYG",
-    }).format(amount);
-  };
+ 
 
   if (userByIdQuery.isFetching || storeByTillId.isFetching) return null;
 
@@ -82,6 +75,7 @@ export const Receipt = ({ data }: ReceiptProps) => {
               })}
             </p>
             <p className="text-sm">Vendedor: {userByIdQuery.data?.name}</p>
+            <p className="text-sm">Cliente:{""}</p>
           </div>
         </div>
 

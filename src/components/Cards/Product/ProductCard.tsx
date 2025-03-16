@@ -24,8 +24,8 @@ export default function ProductCard({
       onClick={pressCard}
       className={`w-full ${
         variant == "checkout"
-          ? "bg-white active:bg-green-400 select-none h-[350px] active:h-[340px]"
-          : "bg-white h-[350px]"
+          ? "bg-white active:bg-green-400 select-none h-[350px] active:h-[349px]"
+          : "bg-white h-[350px"
       }  rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden hover:transform hover:scale-[1.02] relative`}
     >
       {/* Contenedor de imagen con overlay y badge de precio */}

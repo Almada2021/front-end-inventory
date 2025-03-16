@@ -142,6 +142,7 @@ export default function StoreById() {
               transition={{ delay: index * 0.1 }}
             >
               <TillCard
+              type="bankAcount"
                 status={till.status}
                 name={till.name}
                 currentMoney={Number(till.totalCash) || 0}

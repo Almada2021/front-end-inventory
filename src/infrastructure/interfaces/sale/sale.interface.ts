@@ -1,5 +1,8 @@
 import { PaymentMethod } from "@/lib/database.types";
 
+export interface SalesResponse {
+  sales: Sale[];
+}
 export interface Sale {
   id: string;
   amount: number;
