@@ -259,7 +259,7 @@ export default function CheckoutScreen() {
         <AlertMessage
           open={backToSelection}
           title="¿Estás seguro de que deseas volver?"
-          message="Regresarás al modo de selección de Tiendas. ¿Deseas continuar?"
+          message="Regresarás al modo de selección de Tiendas.y la caja se cerrara ¿Deseas continuar?"
           onConfirm={async () => {
             closeTillMutate.mutate();
           }}
@@ -282,10 +282,10 @@ export default function CheckoutScreen() {
               onClick={() => {
                 changeMode("back");
               }}
-              className="gap-2 text-lg border-2 border-white border-solid"
+              className={`gap-2 text-lg border-2 border-white border-solid flex items-center ${mode == "products" && "text-red-500"}`}
             >
               <ArrowLeftCircleIcon size={48} />
-              Volver
+              {mode == "products" ? "Cerrar Caja" : "Volver"}
             </Button>
             {mode == "products" && (
               <SearchBar

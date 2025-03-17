@@ -45,7 +45,7 @@ export function LoginForm({
         const provider: unknown = await dispatch(
           userLogin({ email: values.email, password: values.password })
         );
-        console.log(provider);
+        return provider;
       } catch (error) {
         if (error instanceof Error) {
           console.log(error.message);

@@ -21,10 +21,12 @@ export const CheckoutScreen = lazy(
   () => import("@/layouts/Checkout/CheckoutScreen")
 );
 
+// * Employee
 export const EmployeeScreen = lazy(
   () => import("@/layouts/EmployeePage/EmployeePage")
 );
 
+export const NewEmployee = lazy(() => import("@/layouts/EmployeePage/NewEmployee/NewEmployee"));
 // * Suppliers
 export const SuppliersScreen = lazy(
   () => import("@/layouts/Suppliers/SuppliersPage")
