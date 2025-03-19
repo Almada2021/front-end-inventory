@@ -32,7 +32,20 @@ interface Props {
 }
 
 const columns: ColumnDef<Sale>[] = [
-  { accessorKey: "id", header: "ID del Recibo" },
+  {
+    accessorKey: "id",
+    header: "ID del Recibo",
+    cell: ({ row }) => {
+      return (
+        <a
+          className="text-blue-500 underline"
+          href={`./sales/${row.getValue("id")}`}
+        >
+          {row.getValue("id")}
+        </a>
+      );
+    },
+  },
   {
     accessorKey: "amount",
     header: "Monto",
@@ -76,7 +89,7 @@ const columns: ColumnDef<Sale>[] = [
     cell: ({ row }) => {
       const cashBack = row.original.billsCashBack;
       return Object.entries(cashBack)
-        .map(([denom, count]) => `${count}x$${denom}`)
+        .map(([denom, count]) => `${count}x${formatCurrency(Number(denom))}`)
         .join(", ");
     },
   },

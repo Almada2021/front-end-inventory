@@ -102,3 +102,6 @@ export const ClientIdPage = lazy(() => import("@/layouts/Client/[id]/[id]"));
 // * Sales
 
 export const SalesPage = lazy(() => import("@/layouts/Sales/SalesPage"));
+
+
+export const SaleByIdPage = lazy(() => import("@/layouts/Sales/[id]/[id]"));

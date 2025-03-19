@@ -39,6 +39,7 @@ import {
   NewEmployee,
   ShowEmployees,
   ClientIdPage,
+  SaleByIdPage,
 } from "@/pages";
 import ShowClient from "./layouts/Client/ShowClient/ShowClient";
 
@@ -96,6 +97,7 @@ createRoot(document.getElementById("root")!).render(
                         </Route>
                         <Route path="sales">
                           <Route index element={<SalesPage />} />
+                          <Route path=":id" element={<SaleByIdPage/>}/>
                         </Route>
                         <Route path="stores">
                           <Route index element={<StoresAndBill />} />

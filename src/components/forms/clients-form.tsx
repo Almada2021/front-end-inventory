@@ -8,19 +8,24 @@ import { BackendApi } from "@/core/api/api";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface ClientFormValues {
+  id?: string;
   name: string;
   lastName: string;
   ruc: string;
 }
-
-export default function ClientsForm() {
+interface Props {
+  edit?: boolean;
+  valuesEdited?: ClientFormValues;
+  onEdit?: () => void;
+}
+export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Props) {
   const queryClient = useQueryClient();
 
   const formik = useFormik<ClientFormValues>({
     initialValues: {
-      name: "",
-      lastName: "",
-      ruc: "",
+      name: valuesEdited?.name || "",
+      lastName: valuesEdited?.lastName || "",
+      ruc: valuesEdited?.ruc || "",
     },
     validationSchema: Yup.object({
       name: Yup.string().required("El nombre es requerido"),
@@ -33,10 +38,17 @@ export default function ClientsForm() {
     ) => {
       try {
         // Enviamos los datos en formato JSON
-        await BackendApi.post("/client/create", values);
-        // Actualizamos la caché de clientes (si es necesario)
-        queryClient.invalidateQueries({ queryKey: ["clients"] });
-        resetForm();
+        if(!edit){
+
+          await BackendApi.post("/client/create", values);
+          // Actualizamos la caché de clientes (si es necesario)
+          queryClient.invalidateQueries({ queryKey: ["clients"] });
+          resetForm();
+        }else {
+          await BackendApi.patch(`/client/update/${valuesEdited?.id}`,values);
+          queryClient.invalidateQueries({ queryKey: ["clients"] });
+          if(onEdit) onEdit();
+        }
       } catch (error) {
         console.error("Error al crear el cliente:", error);
       }
@@ -46,7 +58,7 @@ export default function ClientsForm() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle>Crear Cliente</CardTitle>
+        <CardTitle>{edit ? "Crear Cliente" : "Editar Cliente"}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={formik.handleSubmit}>
@@ -96,7 +108,9 @@ export default function ClientsForm() {
                 <p className="text-xs text-red-600">{formik.errors.ruc}</p>
               )}
             </div>
-            <Button type="submit">Crear Cliente</Button>
+            <Button type="submit">
+              {edit ? "Crear Cliente" : "Editar Cliente"}
+            </Button>
           </div>
         </form>
       </CardContent>
