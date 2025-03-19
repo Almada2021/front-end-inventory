@@ -141,6 +141,7 @@ export default function CheckoutScreen() {
   };
 
   const pushCart = (product: Product, quantity: number) => {
+    if(product.stock < quantity && !product.uncounted) return;
     if (cart.length == 0) {
       setCart([{ product, quantity, id: product.id }]);
     } else {

@@ -1,4 +1,4 @@
-import { getAllClientsAction } from "@/core/actions/employee/getAllClients.action";
+import { getAllClientsAction } from "@/core/actions/clients/getAllClients.action";
 import { FilterOptionsRequest } from "@/infrastructure/interfaces/shared/filter.interface";
 import { useQuery } from "@tanstack/react-query";
 

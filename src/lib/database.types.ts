@@ -12,3 +12,9 @@ export const DEFAULT_DENOMINATIONS = [
   "100",
   "50",
 ];
+
+
+export const ROLES: { [key: string]: string} = {
+  "user": "Usuario",
+  "admin": "Administrador",
+}
