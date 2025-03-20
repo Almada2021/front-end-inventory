@@ -1,7 +1,8 @@
 import { getClientAction } from "@/core/actions/clients/getClient.action";
 import { useQuery } from "@tanstack/react-query";
 
-export default function useClient(query: string, limit: number) {
+export default function useClient(query?: string, limit?: number) {
+
   const getClientQuery  = useQuery({
     queryFn: () => getClientAction(query, limit),
     queryKey: ["client", query, limit],
