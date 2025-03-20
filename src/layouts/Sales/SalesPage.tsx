@@ -35,7 +35,14 @@ export default function SalesPage() {
         <CalendarSelector
           className="w-full"
           date={date}
-          setDate={(date: DateRange | undefined) => setDate(date!)}
+          setDate={(date: DateRange | undefined) => {
+            if(date != undefined){
+              setDate(date!)
+              return;
+            }else {
+              return;
+            }
+          }}
         />
 
         <Button

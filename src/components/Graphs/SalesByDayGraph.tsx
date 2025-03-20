@@ -1,7 +1,6 @@
-
-import { TrendingUp } from "lucide-react"
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
-
+import { TrendingUp } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { subDays } from "date-fns";
 import {
   Card,
   CardContent,
@@ -9,13 +8,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@/components/ui/chart";
 const chartData = [
   { month: "January", desktop: 186 },
   { month: "February", desktop: 305 },
@@ -23,21 +22,26 @@ const chartData = [
   { month: "April", desktop: 73 },
   { month: "May", desktop: 209 },
   { month: "June", desktop: 214 },
-]
+];
 
 const chartConfig = {
   desktop: {
     label: "Desktop",
     color: "hsl(var(--chart-1))",
   },
-} satisfies ChartConfig
-
-export function SalesByDayGraph() {
+} satisfies ChartConfig;
+interface Props {
+  date?: Date;
+}
+export function SalesByDayGraph({ date = new Date() }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bar Chart</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Ventas Semanales</CardTitle>
+        <CardDescription>
+          {" "}
+          {subDays(date, 7).toLocaleDateString()}-{date.toLocaleDateString()}{" "}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -67,5 +71,5 @@ export function SalesByDayGraph() {
         </div>
       </CardFooter>
     </Card>
-  )
+  );
 }

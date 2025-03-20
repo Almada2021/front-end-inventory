@@ -9,7 +9,7 @@ import { useMediaQuery } from "usehooks-ts";
 import PaymentMethod from "./Screens/PaymentMethod";
 import Bills from "@/components/Bills/Bills";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftCircleIcon } from "lucide-react";
+import { ArrowLeftCircleIcon, ArrowUpSquareIcon } from "lucide-react";
 import { PaymentMethod as TPaymentMethod } from "@/lib/database.types";
 import AlertMessage from "../Alert/AlertMessage";
 import useLocalStorage from "@/hooks/browser/useLocalStorage";
@@ -288,6 +288,18 @@ export default function CheckoutScreen() {
               <ArrowLeftCircleIcon size={48} />
               {mode == "products" ? "Cerrar Caja" : "Volver"}
             </Button>
+            {mode == "products" && (
+              <Button
+              variant="ghost"
+              onClick={() => {
+                changeMode("back");
+              }}
+              className={`gap-2 text-lg border-2 border-white border-solid flex items-center text-green-600`}
+            >
+              <ArrowUpSquareIcon size={48} />
+              Intercambiar
+            </Button>
+            )}
             {mode == "products" && (
               <SearchBar
                 placeholder="Busca tu producto por codigo o nombre"
