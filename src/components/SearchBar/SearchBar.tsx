@@ -6,6 +6,8 @@ interface Props<T> {
   mutationKey?: string[];
   onGetData?: (data: T[] | undefined) => void;
   onNotify?: (query: string) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
   mode?: "min" | "max";
   placeholder?: string;
 }
@@ -16,6 +18,8 @@ export default function SearchBar<T>({
   onNotify = (query: string) => {
     console.log(query);
   },
+  onFocus = () => {},
+  onBlur = () => {},
   mode = "max",
   placeholder = "Ingresa el nombre del proveedor",
 }: Props<T>) {
@@ -57,6 +61,8 @@ export default function SearchBar<T>({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             setQuery(e.target.value);
           }}
+          onFocus={onFocus}
+          onBlur={onBlur}
           type="text"
           className={`bg-white w-full md:w-11/12 rounded-l-full ${
             mode == "max" && "h-[60px]"

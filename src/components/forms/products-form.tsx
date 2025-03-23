@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormikHelpers, useFormik } from "formik";
 import * as Yup from "yup";
-// import { useToast } from "@/hooks/use-toast";
 import "./forms.css";
 import {
   AlertDialog,
@@ -20,28 +19,33 @@ import {
 } from "@/components/ui/alert-dialog";
 import DataTableView from "../DataTable/DataTable";
 import { ChangeEvent, useRef, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Tag } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 import ImgUploader from "./ImgUploader/ImgUploader";
 import FormInput from "./FormInput/FormInput";
 import { BackendApi } from "@/core/api/api";
 import { useQueryClient } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
 
 export default function ProductsForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const [providers, setProviders] = useState<string[]>([]);
+  const [isProviderDialogOpen, setIsProviderDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const clientQuery = useQueryClient();
+  
   const formik = useFormik({
     initialValues: {
       name: "",
       price: 0,
-      // basePrice: 0,
+      basePrice: 0,
       image: null as File | null,
       uncounted: true,
       stock: 0,
+      barCode: undefined as number | undefined,
+      rfef: "" // New optional RFEF field
     },
     validationSchema: Yup.object({
       name: Yup.string().required("El nombre es requerido"),
@@ -49,14 +53,14 @@ export default function ProductsForm({
         .required("El Precio es requerido")
         .integer("Ingresa un Entero.")
         .required("El precio es requerido"),
-      // basePrice: Yup.number()
-      //   .integer("Ingresa un Entero.")
-      //   .required("El precio es requerido"),
+      basePrice: Yup.number()
+        .integer("Ingresa un Entero.")
+        .required("El precio base es requerido"),
       image: Yup.mixed().nullable(),
       uncounted: Yup.boolean().required(),
       stock: Yup.number(),
       barCode: Yup.number().optional(),
-      basePrice: Yup.number().optional(),
+      rfef: Yup.string().optional(), // Validation for new field
     }),
     onSubmit: async (
       values,
@@ -65,47 +69,53 @@ export default function ProductsForm({
       }: FormikHelpers<{
         name: string;
         price: number;
-        // basePrice: number;
+        basePrice: number;
         image: File | null;
         uncounted: boolean;
         stock: number;
         barCode?: number;
-        basePrice?: number;
+        rfef?: string;
       }>
     ) => {
       try {
         const formData = new FormData();
         formData.append("name", values.name);
         formData.append("price", values.price.toString());
-        // formData.append("basePrice", values.basePrice.toString());
+        formData.append("basePrice", values.basePrice.toString());
         formData.append("uncounted", values.uncounted.toString());
         formData.append("stock", values.stock.toString());
-        if (formik.values.barCode && values.barCode !== undefined) {
+        
+        if (values.barCode !== undefined) {
           formData.append("barCode", values.barCode.toString());
         }
-        if (formik.values.basePrice && values.basePrice !== undefined) {
-          formData.append("basePrice", values.basePrice.toString());
+        
+        if (values.rfef) {
+          formData.append("rfef", values.rfef);
         }
+        
         providers.forEach((element) => {
           formData.append("providers", element);
         });
+        
         if (values.image) {
-          formData.append("img", values.image); // Agrega la imagen al FormData
+          formData.append("img", values.image);
         }
 
         await BackendApi.post("/products", formData);
         clientQuery.invalidateQueries({ queryKey: ["products"] });
 
         resetForm();
+        setProviders([]);
       } catch (err) {
         console.log(err);
       }
     },
   });
+  
   return (
-    <div className={cn("flex flex-col gap-64", className)} {...props}>
-      <AlertDialog>
-        <AlertDialogContent>
+    <div className={cn("flex flex-col", className)} {...props}>
+      <AlertDialog open={isProviderDialogOpen} onOpenChange={setIsProviderDialogOpen}>
+        <AlertDialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
           <AlertDialogHeader>
             <AlertDialogTitle>Busca los Proveedores</AlertDialogTitle>
             <AlertDialogDescription>
@@ -120,19 +130,21 @@ export default function ProductsForm({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => {}}>
+            <AlertDialogAction>
               Seleccionar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-        <Card>
-          <CardHeader className="text-center">
+        
+        <Card className="max-w-3xl mx-auto shadow-lg">
+          <CardHeader className="bg-primary/10 text-center">
             <CardTitle className="text-xl">Crear Producto</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <form onSubmit={formik.handleSubmit} encType="multipart/form-data">
-              <div className="grid gap-6">
-                <div className="grid gap-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Left Column */}
+                <div className="grid gap-4">
                   {/* Name */}
                   <FormInput
                     label="Nombre del Producto"
@@ -148,10 +160,11 @@ export default function ProductsForm({
                       </p>
                     }
                   />
+                  
                   {/* Price */}
                   <FormInput
                     alt="price"
-                    label="Precio en Gs"
+                    label="Precio de Venta (Gs)"
                     type="number"
                     placeholder="10000"
                     required
@@ -171,12 +184,13 @@ export default function ProductsForm({
                       </p>
                     }
                   />
-                  {/* BasePrice */}
+                  
+                  {/* Base Price */}
                   <FormInput
                     alt="basePrice"
-                    label="Precio en Gs"
+                    label="Precio de Costo (Gs)"
                     type="number"
-                    placeholder="10000"
+                    placeholder="8000"
                     required
                     step={1000}
                     value={formik.values.basePrice}
@@ -186,16 +200,17 @@ export default function ProductsForm({
                       if (value[0] == "0")
                         value = value.substring(1, value.length);
                       if (isNaN(numberValue) || numberValue < 0) return;
-                      formik.setFieldValue("price", value);
+                      formik.setFieldValue("basePrice", value);
                     }}
                     validationComponent={
                       <p className="text-xs text-red-600">
-                        {formik.errors.price}
+                        {formik.errors.basePrice}
                       </p>
                     }
                   />
 
-                  <div className="grid gap-2">
+                  {/* Stock section */}
+                  <div className="grid gap-2 mt-2">
                     <div className="flex items-center gap-2">
                       <Checkbox
                         type="button"
@@ -207,17 +222,18 @@ export default function ProductsForm({
                             !formik.values.uncounted
                           );
                         }}
+                        id="uncounted"
                       />
-                      <p>No Contar Cantidad en el inventario</p>
+                      <Label htmlFor="uncounted">No contar en inventario</Label>
                     </div>
                     {!formik.values.uncounted && (
                       <>
-                        <Label htmlFor="stock">Cantidad</Label>
+                        <Label htmlFor="stock">Cantidad Inicial</Label>
                         <div>
                           <Input
                             id="stock"
                             type="number"
-                            placeholder="Numero de unidades"
+                            placeholder="Número de unidades"
                             required
                             step={1}
                             min={1}
@@ -231,7 +247,56 @@ export default function ProductsForm({
                       </>
                     )}
                   </div>
-                  {/* Input de la imagen */}
+                </div>
+                
+                {/* Right Column */}
+                <div className="grid gap-4">
+                  {/* New RFEF Field */}
+                  <FormInput
+                    label="RFEF (Opcional)"
+                    alt="rfef"
+                    type="text"
+                    placeholder="Referencia externa"
+                    value={formik.values.rfef}
+                    onChange={formik.handleChange}
+                  />
+                  
+                  {/* Barcode */}
+                  <FormInput
+                    label="Código de Barras (Opcional)"
+                    alt="barCode"
+                    type="number"
+                    placeholder="Código numérico"
+                    value={formik.values.barCode}
+                    onChange={formik.handleChange}
+                  />
+                  
+                  {/* Providers */}
+                  <div className="grid gap-2">
+                    <Label htmlFor="providers">Proveedores</Label>
+                    <AlertDialogTrigger 
+                      className="rounded-md border border-primary p-2 hover:bg-primary/10 transition-colors"
+                      onClick={() => setIsProviderDialogOpen(true)}
+                    >
+                      <div className="w-full flex items-center justify-center gap-2">
+                        <Search size={20} />
+                        Buscar Proveedores
+                      </div>
+                    </AlertDialogTrigger>
+                    
+                    {/* Show selected providers */}
+                    {providers.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {providers.map(id => (
+                          <Badge key={id} variant="secondary">
+                            Proveedor {id}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Image uploader */}
                   <ImgUploader
                     validation={formik.errors.image ? true : false}
                     setFieldValue={(key, file) =>
@@ -241,30 +306,13 @@ export default function ProductsForm({
                     alt={formik.values.name}
                     validationMessage={formik.errors.image || ""}
                   />
-                  {/* Name */}
-                  <div className="grid gap-2">
-                    <Label htmlFor="providers"> Proveedores</Label>
-                    <AlertDialogTrigger className="rounded-full border-primary border-2 p-2">
-                      <div className="w-full flex items-center justify-center gap-2">
-                        <Search size={24} />
-                        Buscar Proveedores
-                      </div>
-                    </AlertDialogTrigger>
-                  </div>
-                  <FormInput
-                    label="Codigo de Barras"
-                    alt="barCode"
-                    type="number"
-                    placeholder="1000000"
-                    required
-                    value={formik.values.barCode}
-                    onChange={formik.handleChange}
-                  />
-                  <Button type="submit" className="w-full">
-                    Crear Producto
-                  </Button>
                 </div>
               </div>
+              
+              {/* Submit button - full width */}
+              <Button type="submit" className="w-full mt-6">
+                Crear Producto
+              </Button>
             </form>
           </CardContent>
         </Card>

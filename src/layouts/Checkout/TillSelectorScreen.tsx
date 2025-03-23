@@ -37,6 +37,7 @@ const TillSelectorScreen = memo(function StoreSelectorScreen({
           <TillCard
             status={till.status}
             name={till.name}
+            type="till"
             currentMoney={Number(till.totalCash) || 0}
           />
         </motion.div>

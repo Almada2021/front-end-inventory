@@ -39,46 +39,39 @@ const columns: ColumnDef<ProviderModel>[] = [
   {
     id: "select",
     header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value: unknown) =>
-          table.toggleAllPageRowsSelected(!!value)
-        }
-        aria-label="Select all"
-      />
+    <Checkbox
+    checked={
+    table.getIsAllPageRowsSelected() ||
+    (table.getIsSomePageRowsSelected() && "indeterminate")
+    }
+    onCheckedChange={(value: unknown) =>
+    table.toggleAllPageRowsSelected(!!value)
+    }
+    aria-label="Select all"
+    />
     ),
     cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value: unknown) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
+    <Checkbox
+    checked={row.getIsSelected()}
+    onCheckedChange={(value: unknown) => row.toggleSelected(!!value)}
+    aria-label="Select row"
+    />
     ),
     enableSorting: false,
     enableHiding: false,
   },
-  // {
-  //   accessorKey: "status",
-  //   header: "Status",
-  //   cell: ({ row }) => (
-  //     <div className="capitalize">{row.getValue("status")}</div>
-  //   ),
-  // },
   {
     accessorKey: "name",
     header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Nombre
-          <ArrowUpDown />
-        </Button>
-      );
+    return (
+    <Button
+    variant="ghost"
+    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    >
+    Nombre
+    <ArrowUpDown className="ml-2 h-4 w-4" />
+    </Button>
+    );
     },
     cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
   },
@@ -89,18 +82,30 @@ interface Props {
   notifyProvidersSelected: (prov: string[]) => void;
 }
 
-export default function DataTableView({ notifyProvidersSelected }: Props) {
+export default function DataTableView({ initial, notifyProvidersSelected }: Props) {
   const memoizedNotifyProvidersSelected = useCallback(
     (selectedRows: string[]) => {
-      notifyProvidersSelected(selectedRows);
+    notifyProvidersSelected(selectedRows);
     },
     [notifyProvidersSelected]
   );
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const { providersQuery } = useProviders();
+  
+  // Initialize row selection based on initial providers passed in
+  useEffect(() => {
+    if (initial && initial.length > 0) {
+      const initialSelection: Record<string, boolean> = {};
+      initial.forEach(id => {
+        initialSelection[id] = true;
+      });
+      setRowSelection(initialSelection);
+    }
+  }, [initial]);
+
   const table = useReactTable({
     data: providersQuery?.data || data,
     columns,
@@ -115,7 +120,6 @@ export default function DataTableView({ notifyProvidersSelected }: Props) {
     getRowId: (row) => {
       return row.id;
     },
-
     state: {
       sorting,
       columnFilters,
@@ -130,13 +134,14 @@ export default function DataTableView({ notifyProvidersSelected }: Props) {
     };
     return notify();
   }, [rowSelection, memoizedNotifyProvidersSelected]);
+  
   if (providersQuery.isFetching) {
     return <LoadingScreen />;
   }
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex flex-col sm:flex-row items-center gap-3 py-4">
         <Input
           placeholder="Filtrando Nombre"
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
@@ -147,8 +152,8 @@ export default function DataTableView({ notifyProvidersSelected }: Props) {
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columnas <ChevronDown />
+            <Button variant="outline" className="sm:ml-auto">
+              Columnas <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -222,7 +227,7 @@ export default function DataTableView({ notifyProvidersSelected }: Props) {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <div className="flex flex-col sm:flex-row items-center justify-end space-y-2 sm:space-y-0 sm:space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.

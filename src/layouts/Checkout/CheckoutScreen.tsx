@@ -38,6 +38,8 @@ import CashBackBills from "./CashBackBills/CashBackBills";
 import { useToast } from "@/hooks/use-toast";
 import { Sale } from "@/infrastructure/interfaces/sale/sale.interface";
 import PaginatedProductGrid from "@/components/PaginatedProducts/PaginatedProducts";
+import { searchProductsAction } from "@/core/actions/products/searchProducts.action";
+import useBarcodeScan from "@/hooks/barCode/useBarCodeScan";
 const modes: CheckoutModes[] = [
   "products",
   "paymentMethod",
@@ -86,9 +88,43 @@ export default function CheckoutScreen() {
   const [billsCashBack, setBillsCashBack] = useState<{ [key: string]: number }>(
     {}
   );
+  const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState<number>(0);
 
   const [lastSale, setLastSale] = useState<Sale | null>(null);
+  const [disabledScan, setDisabledScan] = useState<boolean>(false);
+  // Hook para detectar escaneos de códigos de barras
+  const { barcode, isScanning } = useBarcodeScan({
+    onScan: async (scannedCode) => {
+      console.log("Código de barras escaneado:", scannedCode);
+      try {
+        // Buscar el producto por código de barras
+        const searchResults = await searchProductsAction(scannedCode);
+        if (searchResults && searchResults.length > 0) {
+          setProducts(searchResults);
+          // Si hay un único resultado, añadirlo al carrito automáticamente
+          if (searchResults.length === 1) {
+            pushCart(searchResults[0], 1);
+          }
+        } else {
+          toast({
+            title: "Producto no encontrado",
+            description: `No se encontró ningún producto con el código ${scannedCode}`,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error al buscar producto por código de barras:", error);
+        toast({
+          title: "Error de búsqueda",
+          description: "No se pudo buscar el producto escaneado",
+          variant: "destructive",
+        });
+      }
+    },
+    enabled: mode === "products" && !disabledScan, // Solo activar en modo productos
+  });
+
   const changeMode = (back?: "back") => {
     const index = modes.indexOf(mode);
     if (index == modes.length - 1 && preventConfirm) {
@@ -141,7 +177,7 @@ export default function CheckoutScreen() {
   };
 
   const pushCart = (product: Product, quantity: number) => {
-    if(product.stock < quantity && !product.uncounted) return;
+    if (product.stock < quantity && !product.uncounted) return;
     if (cart.length == 0) {
       setCart([{ product, quantity, id: product.id }]);
     } else {
@@ -221,7 +257,13 @@ export default function CheckoutScreen() {
       // Manejar error
     },
   });
-
+  useEffect(() => {
+    if (isScanning) {
+      console.log("Escaneando...");
+    } else {
+      console.log(barcode);
+    }
+  }, [isScanning, barcode]);
   useEffect(() => {
     if (open) {
       setOpen(false);
@@ -283,45 +325,54 @@ export default function CheckoutScreen() {
               onClick={() => {
                 changeMode("back");
               }}
-              className={`gap-2 text-lg border-2 border-white border-solid flex items-center ${mode == "products" && "text-red-500"}`}
+              className={`gap-2 text-lg border-2 border-white border-solid flex items-center ${
+                mode == "products" && "text-red-500"
+              }`}
             >
               <ArrowLeftCircleIcon size={48} />
               {mode == "products" ? "Cerrar Caja" : "Volver"}
             </Button>
             {mode == "products" && (
               <Button
-              variant="ghost"
-              onClick={() => {
-                changeMode("back");
-              }}
-              className={`gap-2 text-lg border-2 border-white border-solid flex items-center text-green-600`}
-            >
-              <ArrowUpSquareIcon size={48} />
-              Intercambiar
-            </Button>
+                variant="ghost"
+                onClick={() => {
+                  changeMode("back");
+                }}
+                className={`gap-2 text-lg border-2 border-white border-solid flex items-center text-green-600`}
+              >
+                <ArrowUpSquareIcon size={48} />
+                Intercambiar
+              </Button>
             )}
             {mode == "products" && (
-              <SearchBar
-                placeholder="Busca tu producto por codigo o nombre"
-                mode="min"
-                mutateFunction={async (
-                  query: string
-                ): Promise<unknown[] | undefined> => {
-                  console.log(query);
-                  return;
+              <SearchBar<Product | undefined>
+                onFocus={() => {
+                  setDisabledScan(true);
                 }}
+                onBlur={() => {
+                  setDisabledScan(false);
+                }}
+
+                mutateFunction={searchProductsAction}
+                onGetData={(data) => {
+                  if (data && data?.length > 0) {
+                    setProducts(data as Product[]);
+                  }
+                }}
+                mode="min"
+                placeholder="Buscar Productos por nombre o codigo o REF"
               />
             )}
           </div>
           {mode == "products" && (
             <div className="flex-grow overflow-hidden">
-
-            <PaginatedProductGrid
-              products={productsQuery.data || []}
-              pushCart={pushCart}
+              <PaginatedProductGrid
+                products={
+                  products.length > 0 ? products : productsQuery.data || []
+                }
+                pushCart={pushCart}
               />
-              </div>
-     
+            </div>
           )}
           {mode == "paymentMethod" && (
             <PaymentMethod
