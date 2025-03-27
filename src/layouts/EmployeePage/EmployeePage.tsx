@@ -1,11 +1,9 @@
 import MainCard from "@/components/Cards/Main/MainCard";
-// import { useAppSelector } from "@/config/react-redux.adapter";
 import { Network, PlusCircleIcon } from "lucide-react";
 import { useNavigate } from "react-router";
 
 export default function EmployeePage() {
   const navigate = useNavigate();
-  // const { } = useAppSelector((state) => state.auth.userInfo);
   
   const goToPage = (page: string) => {
     navigate(page);

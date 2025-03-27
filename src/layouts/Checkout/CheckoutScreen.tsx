@@ -101,7 +101,7 @@ export default function CheckoutScreen() {
         // Buscar el producto por código de barras
         const searchResults = await searchProductsAction(scannedCode);
         if (searchResults && searchResults.length > 0) {
-          setProducts(searchResults);
+          // setProducts(searchResults);
           // Si hay un único resultado, añadirlo al carrito automáticamente
           if (searchResults.length === 1) {
             pushCart(searchResults[0], 1);

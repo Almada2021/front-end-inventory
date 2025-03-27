@@ -1,12 +1,13 @@
 import { User } from "@/infrastructure/interfaces/user/user.interface";
 import { ROLES } from "@/lib/database.types";
 import { cn } from "@/lib/utils"; // Assuming utility class merging
+import { useNavigate } from "react-router";
 
 interface Props {
   employee: User;
-  key: string;
 }
-export default function EmployeeCard({ employee, key }: Props) {
+export default function EmployeeCard({ employee }: Props) {
+  const navigate = useNavigate();
   // Generate initials for avatar
   const initials = employee.name
     ? employee.name
@@ -22,10 +23,12 @@ export default function EmployeeCard({ employee, key }: Props) {
     user_role: "bg-blue-100 text-blue-800",
     // Add other roles as needed
   };
-
+  const goToEmployee = () => {
+    navigate(`./${employee.id}`)
+  }
   return (
     <div
-      key={key}
+      onClick={goToEmployee}
       className="group relative p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-100 hover:border-gray-200"
     >
       <div className="flex items-center gap-4">

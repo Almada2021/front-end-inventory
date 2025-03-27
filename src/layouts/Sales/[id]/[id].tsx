@@ -117,9 +117,9 @@ export default function SalesById() {
             <div>
               <h3 className="text-sm text-gray-500">Cliente</h3>
               <p className="text-xl font-bold text-gray-800 truncate">
-                {getClientQuery.data?.clients[0].name ||saleData.client || "Consumidor final"}
+                {getClientQuery.data?.clients?.[0]?.name ||saleData.client || "Desconocido"}
                 {" "}
-                {getClientQuery.data?.clients[0].lastName}
+                {getClientQuery.data?.clients?.[0]?.lastName}
               </p>
             </div>
           </div>

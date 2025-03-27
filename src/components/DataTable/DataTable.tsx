@@ -79,22 +79,27 @@ const columns: ColumnDef<ProviderModel>[] = [
 
 interface Props {
   initial: string[];
-  notifyProvidersSelected: (prov: string[]) => void;
+  notifyProvidersSelected: (prov: string[], name?: string) => void;
 }
 
 export default function DataTableView({ initial, notifyProvidersSelected }: Props) {
-  const memoizedNotifyProvidersSelected = useCallback(
-    (selectedRows: string[]) => {
-    notifyProvidersSelected(selectedRows);
-    },
-    [notifyProvidersSelected]
-  );
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const { providersQuery } = useProviders();
-  
+  const memoizedNotifyProvidersSelected = useCallback(
+    (selectedRows: string[]) => {
+      const selectedProviders = providersQuery?.data
+        ?.filter(provider => selectedRows.includes(provider.id))
+        .map(provider => provider.name)
+        .join(', ');
+      
+      notifyProvidersSelected(selectedRows, selectedProviders);
+    },
+    [notifyProvidersSelected, providersQuery?.data]
+  );
   // Initialize row selection based on initial providers passed in
   useEffect(() => {
     if (initial && initial.length > 0) {
@@ -129,11 +134,13 @@ export default function DataTableView({ initial, notifyProvidersSelected }: Prop
   });
 
   useEffect(() => {
-    const notify = () => {
-      memoizedNotifyProvidersSelected(Object.keys(rowSelection));
-    };
-    return notify();
-  }, [rowSelection, memoizedNotifyProvidersSelected]);
+    // Verificamos si hay selecciones antes de notificar
+    const selectedKeys = Object.keys(rowSelection);
+    if (selectedKeys.length > 0 || initial.length > 0) {
+      memoizedNotifyProvidersSelected(selectedKeys);
+    }
+    // Solo ejecutamos cuando cambia rowSelection, no incluir memoizedNotifyProvidersSelected en las dependencias
+  }, [rowSelection, initial,memoizedNotifyProvidersSelected]);
   
   if (providersQuery.isFetching) {
     return <LoadingScreen />;

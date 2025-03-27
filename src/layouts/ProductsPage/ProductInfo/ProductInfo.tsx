@@ -1,4 +1,6 @@
+import ProductsForm from "@/components/forms/products-form";
 import Image from "@/components/Image/Image";
+import { Button } from "@/components/ui/button";
 import useProductsByIds from "@/hooks/products/useProductsByIds";
 import {
   BoxIcon,
@@ -6,27 +8,69 @@ import {
   DollarSignIcon,
   TagIcon,
   UsersIcon,
+  Pencil,
+  Trash,
 } from "lucide-react";
+import { useState } from "react";
 import { useParams } from "react-router";
 // import SkeletonLoader from "@/components/SkeletonLoader"; // Asume un componente de carga
 
 export default function ProductInfo() {
   const { id } = useParams();
   const { getProductsByIds } = useProductsByIds([id!]);
-
+  const [loadProducts, setLoadProducts] = useState<boolean>(false);
+  const [editMode, setEditMode] = useState<boolean>(false);
   if (getProductsByIds.isLoading) return null;
   if (!getProductsByIds.data?.[0]) return <div>Producto no encontrado</div>;
 
   const product = getProductsByIds.data[0];
-
+  if (getProductsByIds.isFetching) return null;
+  if (editMode) {
+    // Convert getProductsByIds.data[0].photoUrl as File is url fetch and convert
+    return (
+      <div className="w-full max-w-6xl mx-auto p-4 md:p-8">
+        <ProductsForm
+          editMode={editMode}
+          values={{
+            id: getProductsByIds.data[0].id,
+            name: getProductsByIds.data[0].name,
+            price: getProductsByIds.data[0].price,
+            basePrice: getProductsByIds.data[0].basePrice,
+            image: getProductsByIds.data[0].photoUrl,
+            stock: getProductsByIds.data[0].stock,
+            uncounted: getProductsByIds.data[0].uncounted,
+            barCode: 0,
+            rfef: "",
+          }}
+        />
+      </div>
+    );
+  }
   return (
     <div className="w-full max-w-6xl mx-auto p-4 md:p-8">
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
         {/* Encabezado */}
-        <div className="bg-primary/10 p-6 border-b border-gray-200">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+        <div className="bg-primary/10 p-6 border-b border-gray-200 flex  items-center">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 w-11/12">
             {product.name}
           </h1>
+          <button
+            onClick={() => {
+              setEditMode(true);
+            }}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors justify-self-end flex justify-center items-center"
+            aria-label="Editar cliente"
+          >
+            <Pencil className="h-6 w-6 text-gray-600" />
+          </button>
+          <button
+            onClick={() => {
+            }}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors justify-self-end flex justify-center items-center"
+            aria-label="Editar cliente"
+          >
+            <Trash className="h-6 w-6 text-red-500"/>
+          </button>
         </div>
 
         {/* Contenido principal */}
@@ -80,6 +124,16 @@ export default function ProductInfo() {
           </div>
         </div>
       </div>
+      <div className="w-full mt-4 flex justify-center">
+        <Button
+          onClick={() => {
+            setLoadProducts(true);
+          }}
+        >
+          Cargar Historial Ventas
+        </Button>
+      </div>
+      {loadProducts && <div>Hola</div>}
     </div>
   );
 }

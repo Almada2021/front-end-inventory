@@ -105,7 +105,7 @@ const items: MenuItem[] = [
     icon: TruckIcon,
   },
   {
-    title: "Ordenes",
+    title: "Pedidos",
     url: "/inventory/orders",
     icon: ListOrdered,
   },

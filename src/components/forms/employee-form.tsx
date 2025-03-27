@@ -23,18 +23,23 @@ interface EmployeeFormValues {
   password: string;
   roles: string[];
 }
+interface Props {
+  editMode?: boolean;
+  editValues?: EmployeeFormValues;
+  id?: string;
+}
 
-export default function EmployeeForm() {
+export default function EmployeeForm({ editMode = false, editValues, id }: Props) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formik = useFormik<EmployeeFormValues>({
     initialValues: {
-      name: "",
-      email: "",
+      name: editValues?.name || "",
+      email: editValues?.email || "",
       password: "",
-      roles: ["USER_ROLE"] // Default role
+      roles: ["USER_ROLE"], // Default role
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Full name is required"),
@@ -42,11 +47,10 @@ export default function EmployeeForm() {
         .email("Invalid email format")
         .required("Email is required"),
       password: Yup.string()
-        .min(6, "Password must be at least 6 characters")
-        .required("Password is required"),
+        .min(6, "Password must be at least 6 characters"),
       roles: Yup.array()
         .of(Yup.string())
-        .min(1, "At least one role must be selected")
+        .min(1, "At least one role must be selected"),
     }),
     onSubmit: async (
       values,
@@ -55,34 +59,49 @@ export default function EmployeeForm() {
       setIsSubmitting(true);
       try {
         // Send the data in JSON format to the registration endpoint
-        await BackendApi.post("/auth/register", values);
-        
-        // Update the employees cache if necessary
-        queryClient.invalidateQueries({ queryKey: ["employees"] });
-        
-        // Show success message
-        toast({
+        if (editMode) {
+          await BackendApi.post("/auth/register", values);
+          toast({
             title: "Registro exitoso",
             description: `Empleado ${values.name} ha sido registrado exitosamente.`,
             variant: "default",
-            className: "bg-green-50 border-2 border-green-500 p-4 max-w-md w-full shadow-lg", // Larger, more visible styling
+            className:
+              "bg-green-50 border-2 border-green-500 p-4 max-w-md w-full shadow-lg", // Larger, more visible styling
           });
-          
-        // Reset the form after successful submission
-        resetForm();
+
+          // Reset the form after successful submission
+          resetForm();
+        } else {
+          if (id) {
+            await BackendApi.put(`/auth/user/${id}`,{ ...values, password: editValues?.password});
+            toast({
+              title: "Empleado Actualizado",
+              description: "El empleado ha sido actualizado exitosamente.",
+              variant: "default"
+            })
+          }else {
+            throw "No existe id en el formulario"
+          }
+        }
+
+        // Update the employees cache if necessary
+        queryClient.invalidateQueries({ queryKey: ["employees"] });
+
+        // Show success message
       } catch (error) {
         // Handle error cases
         let msg = "Un Error inesperado ocurrio";
         if (error instanceof Error) {
-            msg = error.message;
+          msg = error.message;
         }
-        const errorMsg =msg;
+        const errorMsg = msg;
         toast({
-            title: "Fallo en el Registro",
-            description: errorMsg,
-            variant: "destructive",
-            className: "bg-red-50 border-2 border-red-500 p-4 max-w-md w-full shadow-lg", // Larger, more visible styling
-          });
+          title: "Fallo en el Registro",
+          description: errorMsg,
+          variant: "destructive",
+          className:
+            "bg-red-50 border-2 border-red-500 p-4 max-w-md w-full shadow-lg", // Larger, more visible styling
+        });
       } finally {
         setIsSubmitting(false);
       }
@@ -97,7 +116,7 @@ export default function EmployeeForm() {
       updatedRoles = [...formik.values.roles, roleId];
     } else {
       // Remove role if unchecked
-      updatedRoles = formik.values.roles.filter(role => role !== roleId);
+      updatedRoles = formik.values.roles.filter((role) => role !== roleId);
     }
     formik.setFieldValue("roles", updatedRoles);
   };
@@ -105,7 +124,7 @@ export default function EmployeeForm() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle>Nuevo Empleado</CardTitle>
+        <CardTitle>{editMode ? "Editar Empleado" : "Nuevo Empleado"}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={formik.handleSubmit}>
@@ -150,7 +169,7 @@ export default function EmployeeForm() {
               <Input
                 id="password"
                 name="password"
-                type="password"
+                type="text"
                 placeholder="••••••••"
                 value={formik.values.password}
                 onChange={formik.handleChange}
@@ -165,27 +184,44 @@ export default function EmployeeForm() {
             <div className="grid gap-2">
               <Label>Roles</Label>
               <div className="grid grid-cols-2 gap-2">
-                {AVAILABLE_ROLES.map(role => (
+                {AVAILABLE_ROLES.map((role) => (
                   <div key={role.id} className="flex items-center space-x-2">
-                    <Checkbox 
+                    <Checkbox
                       id={`role-${role.id}`}
                       checked={formik.values.roles.includes(role.id)}
-                      onCheckedChange={(checked) => handleRoleChange(role.id, checked as boolean)}
+                      onCheckedChange={(checked) =>
+                        handleRoleChange(role.id, checked as boolean)
+                      }
                       disabled={isSubmitting}
                     />
-                    <Label htmlFor={`role-${role.id}`} className="cursor-pointer">
+                    <Label
+                      htmlFor={`role-${role.id}`}
+                      className="cursor-pointer"
+                    >
                       {role.label}
                     </Label>
                   </div>
                 ))}
               </div>
               {formik.errors.roles && formik.touched.roles && (
-                <p className="text-xs text-red-600">{formik.errors.roles as string}</p>
+                <p className="text-xs text-red-600">
+                  {formik.errors.roles as string}
+                </p>
               )}
             </div>
 
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Registrando..." : "Registrar Empleado"}
+              {!editMode
+                ? isSubmitting
+                  ? "Registrando..."
+                  : "Registrar Empleado"
+                : null}
+
+              {editMode
+                ? isSubmitting
+                  ? "Editando..."
+                  : "Editar Empleado"
+                : null}
             </Button>
           </div>
         </form>

@@ -10,7 +10,9 @@ export default function ShowEmployees() {
     <div className="mt-20 md:mt-4">
       <div className="w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4">
         {employeesQuery.data?.users.map((employee) => (
-          <EmployeeCard key={employee.id} employee={employee} />
+          <div key={employee.id}>
+            <EmployeeCard employee={employee} />
+          </div>
         ))}
       </div>
     </div>

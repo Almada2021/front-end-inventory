@@ -97,8 +97,15 @@ export default function POSPage() {
         )}
         <TillSelectorScreen
           changeMode={(id: string, till: Till) => {
-            setConfirmTill(true);
-            setCurrentTill(till);
+            if(!till.status){
+              setConfirmTill(true);
+              setCurrentTill(till);
+
+            }else {
+              setTillStorage(till.id);
+              navigate(`./${tillStorage}`);
+
+            }
             // setMode("pos");1
           }}
           storeId={storeId}

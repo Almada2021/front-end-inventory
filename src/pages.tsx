@@ -30,6 +30,9 @@ export const NewEmployee = lazy(() => import("@/layouts/EmployeePage/NewEmployee
 
 export const ShowEmployees = lazy(() => import("@/layouts/EmployeePage/ShowEmployees/ShowEmployees"));
 
+export const EditEmployee = lazy(() => import("@/layouts/EmployeePage/EditEmployee/EditEmployee"));
+
+export const EmployeeInfo = lazy(() => import("@/layouts/EmployeePage/EmployeeInfo/EmployeeInfo"))
 // * Suppliers
 export const SuppliersScreen = lazy(
   () => import("@/layouts/Suppliers/SuppliersPage")
@@ -105,3 +108,9 @@ export const SalesPage = lazy(() => import("@/layouts/Sales/SalesPage"));
 
 
 export const SaleByIdPage = lazy(() => import("@/layouts/Sales/[id]/[id]"));
+
+
+
+// * Orders
+
+export const OrdersPage = lazy(() => import("@/layouts/OrdersPage/OrdersPage"));

@@ -1,27 +1,32 @@
 import Money from "@/components/Bills/Money/Money";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import useTillById from "@/hooks/till/useTillById";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
+import { ArrowRightLeft, History, LogOut } from "lucide-react";
+import { useState } from "react";
 import { useParams } from "react-router";
 
-// Datos temporales (luego los reemplazarás con la respuesta HTTP)
-
+type PageModes = "retire" | "tranfert" | "active";
 export default function TillById() {
   const { id } = useParams();
+
+  const [pageMode, setPageMode] = useState<PageModes>("active");
   const { tillsByIdQuery } = useTillById(id!);
   if (tillsByIdQuery.isFetching) return <LoadingScreen />;
 
   const till = tillsByIdQuery.data;
-  if (!id || !till) return <div>404</div>;
+  if (!id || !till) return <div>404 No Encontrado</div>;
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-PY").format(amount) + " Gs.";
   };
 
   return (
     <div className="min-h-screen w-full p-4 md:p-6 max-w-6xl mx-auto">
+      {pageMode == "tranfert" && <div>Transfert</div>}
       <div className="flex flex-col md:flex-row gap-6">
         {/* Sección principal */}
         <div className="flex-1">
@@ -75,7 +80,9 @@ export default function TillById() {
                           className="flex flex-col items-center p-4 border rounded-lg"
                         >
                           <Money
-                            src={`/money/${denomination}.jpg`}
+                            src={`/money/${denomination}.${
+                              Number(denomination) > 1000 ? "jpg" : "png"
+                            }`}
                             alt={`Billete de ${denomination} Gs.`}
                             className="w-24 h-auto mb-2"
                           />
@@ -135,6 +142,30 @@ export default function TillById() {
                   )}
                 </span>
               </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Operaciones</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <Button
+                onClick={() => {
+                  setPageMode("tranfert");
+                }}
+                className="flex justify-start"
+              >
+                <ArrowRightLeft size={24} />
+                Transferir Dinero a otra Caja
+              </Button>
+              <Button className="flex justify-start">
+                <LogOut size={24} />
+                Retirar del Sistema
+              </Button>
+              <Button className="flex justify-start">
+                <History size={24} />
+                Historial de Movimientos
+              </Button>
             </CardContent>
           </Card>
         </div>

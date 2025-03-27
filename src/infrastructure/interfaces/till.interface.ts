@@ -7,4 +7,5 @@ export interface Till {
   cardPayments: number;
   transferPayments: number;
   status: boolean;
+  type: "till" | "bankAcount";
 }

@@ -9,6 +9,7 @@ import AppSidebar from "./components/Sidebar/AppSidebar";
 import { ErrorBoundary } from "./components/Errors/ErrorBoundary";
 import ProtectedRoutes from "./layouts/guard/ProtectedRoutes";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as ToasterHot} from "react-hot-toast"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   RegisterPage,
@@ -40,6 +41,9 @@ import {
   ShowEmployees,
   ClientIdPage,
   SaleByIdPage,
+  EmployeeInfo,
+  OrdersPage,
+  EditEmployee,
 } from "@/pages";
 import ShowClient from "./layouts/Client/ShowClient/ShowClient";
 
@@ -86,8 +90,8 @@ createRoot(document.getElementById("root")!).render(
                           <Route index element={<EmployeeScreen />} />
                           <Route path="new" element={<NewEmployee />} />
                           <Route path="show" element={<ShowEmployees />} />
-
-
+                          <Route path="show/:id" element={<EmployeeInfo />} />          
+                          <Route path="edit/:id" element={<EditEmployee />} />        
                         </Route>
                         <Route path="suppliers">
                           <Route index element={<SuppliersScreen />} />
@@ -112,6 +116,9 @@ createRoot(document.getElementById("root")!).render(
                             element={<StoreById />}
                           ></Route>
                         </Route>
+                        <Route path="orders">
+                          <Route index element={<OrdersPage/>} />
+                        </Route>
                         <Route path="register" element={<RegisterPage />} />
                         {/* Till */}
                         <Route path="till/:id" element={<TillById />} />
@@ -126,6 +133,7 @@ createRoot(document.getElementById("root")!).render(
                     </Routes>
                   </Suspense>
                   <Toaster />
+                  <ToasterHot/>
                 </ProtectedRoutes>
               </AppSidebar>
             </BrowserRouter>
