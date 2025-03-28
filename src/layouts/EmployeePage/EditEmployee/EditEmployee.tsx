@@ -12,13 +12,14 @@ export default function EditEmployee() {
   return (
     <div className="w-full h-screen p-10 md:p-20 mt-20 md:mt-0">
       <EmployeeForm
+      id={emplooyeByIdQuery.data?.id}
         editValues={{
           name: emplooyeByIdQuery.data?.name || "",
           email: emplooyeByIdQuery.data?.email || "",
           password: emplooyeByIdQuery.data?.password || "",
           roles: emplooyeByIdQuery.data?.role || []
         }}
-        editMode
+        editMode={true}
       />
     </div>
   );

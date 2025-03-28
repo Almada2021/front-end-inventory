@@ -44,6 +44,7 @@ import {
   EmployeeInfo,
   OrdersPage,
   EditEmployee,
+  NewOrder,
 } from "@/pages";
 import ShowClient from "./layouts/Client/ShowClient/ShowClient";
 
@@ -118,6 +119,7 @@ createRoot(document.getElementById("root")!).render(
                         </Route>
                         <Route path="orders">
                           <Route index element={<OrdersPage/>} />
+                          <Route path="new" element={<NewOrder />} />
                         </Route>
                         <Route path="register" element={<RegisterPage />} />
                         {/* Till */}

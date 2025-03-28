@@ -59,7 +59,7 @@ export default function EmployeeForm({ editMode = false, editValues, id }: Props
       setIsSubmitting(true);
       try {
         // Send the data in JSON format to the registration endpoint
-        if (editMode) {
+        if (!editMode) {
           await BackendApi.post("/auth/register", values);
           toast({
             title: "Registro exitoso",
@@ -73,11 +73,14 @@ export default function EmployeeForm({ editMode = false, editValues, id }: Props
           resetForm();
         } else {
           if (id) {
-            await BackendApi.put(`/auth/user/${id}`,{ ...values, password: editValues?.password});
+            await BackendApi.put(`/auth/user/${id}`,{ ...values, password:values.password || editValues?.password});
             toast({
               title: "Empleado Actualizado",
               description: "El empleado ha sido actualizado exitosamente.",
-              variant: "default"
+              variant: "default",
+              className:
+              "bg-green-50 border-2 border-green-500 p-4 max-w-md w-full shadow-lg", // Larger, more visible styling
+
             })
           }else {
             throw "No existe id en el formulario"
@@ -90,6 +93,7 @@ export default function EmployeeForm({ editMode = false, editValues, id }: Props
         // Show success message
       } catch (error) {
         // Handle error cases
+        console.error(error);
         let msg = "Un Error inesperado ocurrio";
         if (error instanceof Error) {
           msg = error.message;
@@ -100,7 +104,7 @@ export default function EmployeeForm({ editMode = false, editValues, id }: Props
           description: errorMsg,
           variant: "destructive",
           className:
-            "bg-red-50 border-2 border-red-500 p-4 max-w-md w-full shadow-lg", // Larger, more visible styling
+            "bg-red-50 text-black border-2 border-red-500 p-4 max-w-md w-full shadow-lg", // Larger, more visible styling
         });
       } finally {
         setIsSubmitting(false);

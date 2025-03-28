@@ -1,4 +1,13 @@
 import Money from "@/components/Bills/Money/Money";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,16 +15,31 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import useTillById from "@/hooks/till/useTillById";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
-import { ArrowRightLeft, History, LogOut } from "lucide-react";
+import { DEFAULT_DENOMINATIONS } from "@/lib/database.types";
+import {
+  ArrowRightLeft,
+  Banknote,
+  CoinsIcon,
+  CreditCard,
+  History,
+  LogOut,
+} from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router";
-
+import TillSelector from "./TillSelector/TillSelector";
+import TillInfo from "./TillInfo/TillInfo";
 type PageModes = "retire" | "tranfert" | "active";
 export default function TillById() {
   const { id } = useParams();
 
   const [pageMode, setPageMode] = useState<PageModes>("active");
   const { tillsByIdQuery } = useTillById(id!);
+  const [tills, setTills] = useState<[string?, string?]>([]);
+  const [bills, setBills] = useState<Record<string, number>>({});
+  const [transfertMode, setTranfertMode] = useState<
+    "cash" | "card" | "transfer" | undefined
+  >(undefined);
+  // const [amount, setAmount] = useState<number>(0);
   if (tillsByIdQuery.isFetching) return <LoadingScreen />;
 
   const till = tillsByIdQuery.data;
@@ -26,7 +50,140 @@ export default function TillById() {
 
   return (
     <div className="min-h-screen w-full p-4 md:p-6 max-w-6xl mx-auto">
-      {pageMode == "tranfert" && <div>Transfert</div>}
+      <AlertDialog open={pageMode == "tranfert"}>
+        <AlertDialogContent className="w-full min-w-[80svw] ">
+          <AlertDialogTitle>Transferir</AlertDialogTitle>
+          <AlertDialogDescription>
+            Transferir dinero de una caja a otra
+          </AlertDialogDescription>
+          {!transfertMode && (
+            <div className="flex flex-col">
+              <h3 className="text-3xl font-bold">
+                Seleccionar Medio de Transferencia
+              </h3>
+              <div className="flex flex-row justify-evenly">
+                <Button
+                  onClick={() => setTranfertMode("cash")}
+                  className="text-2xl"
+                >
+                  <CoinsIcon size={24} />
+                  Efectivo
+                </Button>
+                <Button
+                  onClick={() => setTranfertMode("card")}
+                  className="text-2xl"
+                >
+                  <CreditCard size={24} />
+                  Tarjetas
+                </Button>
+                <Button
+                  className="text-2xl"
+                  onClick={() => setTranfertMode("transfer")}
+                >
+                  <Banknote size={24} />
+                  Transferencias
+                </Button>
+              </div>
+            </div>
+          )}
+          {transfertMode == "cash" && (
+            <div className="flex flex-col md:flex-row gap-4">
+              <div>
+                {!tills[0] && (
+                  <TillSelector
+                    storeId={tillsByIdQuery.data.storeId}
+                    selectTill={(value: string) => {
+                      setTills((val) => [val[0], value]);
+                    }}
+                  />
+                )}
+                <TillInfo id={tills[1]} />
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Billetes Seleccionados</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {tills[1] && (
+                      <div>
+                        {Object.entries(bills).map(
+                          ([denomination, quantity], index) => {
+                            return (
+                              <div
+                                key={`${
+                                  denomination + index + quantity
+                                }${denomination}`}
+                              >
+                                {formatCurrency(Number(denomination))}:{" "}
+                                {quantity}
+                              </div>
+                            );
+                          }
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+              {tills[1] && (
+                <div className="grid grid-cols-3 gap-2 max-h-[200px] md:max-h-full overflow-y-auto overflow-x-hidden">
+                  {DEFAULT_DENOMINATIONS.map((amount: string) => {
+                    return (
+                      <Money
+                        key={amount}
+                        onClick={() => {
+                          setBills((b) => ({
+                            ...b,
+                            [amount]: (b[amount] || 0) + 1,
+                          }));
+                        }}
+                        type={Number(amount) > 1000 ? "bill" : "coin"}
+                        alt={`${amount}Gs`}
+                        src={`/money/${amount}.${
+                          Number(amount) > 1000 ? "jpg" : "png"
+                        }`}
+                        className={`${
+                          Number(amount) > 1000 ? "p-4" : ""
+                        } bg-muted rounded-xl hover:scale-105 transition-transform`}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {transfertMode == "card" && (
+            <div className="flex flex-col md:flex-row gap-4">
+              <h3 className="text-3xl font-bold">
+                Tienes este saldo disponible para mover{" "}
+                {formatCurrency(tillsByIdQuery.data.cardPayments)} (seleccionar
+                Caja)
+              </h3>
+            </div>
+          )}
+
+          {transfertMode == "transfer" && (
+            <div className="flex flex-col md:flex-row gap-4">
+              <h3 className="text-3xl font-bold">
+                Tienes este saldo disponible para mover{" "}
+                {formatCurrency(tillsByIdQuery.data.transferPayments)}{" "}
+                (seleccionar Caja)
+              </h3>
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setTranfertMode(undefined);
+                setPageMode("active");
+              }}
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction>Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="flex flex-col md:flex-row gap-6">
         {/* Sección principal */}
         <div className="flex-1">
