@@ -45,8 +45,9 @@ import {
   OrdersPage,
   EditEmployee,
   NewOrder,
+  ShowOrders,
+  ShowClient
 } from "@/pages";
-import ShowClient from "./layouts/Client/ShowClient/ShowClient";
 
 const client = new QueryClient();
 createRoot(document.getElementById("root")!).render(
@@ -120,6 +121,7 @@ createRoot(document.getElementById("root")!).render(
                         <Route path="orders">
                           <Route index element={<OrdersPage/>} />
                           <Route path="new" element={<NewOrder />} />
+                          <Route path="show" element={<ShowOrders />} />
                         </Route>
                         <Route path="register" element={<RegisterPage />} />
                         {/* Till */}

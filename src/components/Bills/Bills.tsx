@@ -39,19 +39,33 @@ export default function Bills({
   const clickBill = (amount: number) => {
     const newValue = mode === "add" ? value + amount : value - amount;
     const updatedValue = Math.max(0, newValue);
-    setValue(updatedValue);
+    if(!counted){
+      setValue(updatedValue);
+    }
     setBills((v) => {
       const val = { ...v };
       const amountStr = `${amount}`;
       if (mode === "add") {
         if (val[amountStr]) {
           val[amountStr] += 1;
+          if(counted){
+            setValue(updatedValue);
+          }
+
         } else {
           val[amountStr] = 1;
+          if(counted){
+
+            setValue(updatedValue);
+          }
+
         }
       } else {
         if (val[amountStr]) {
           val[amountStr] -= 1;
+          if(counted){
+            setValue(updatedValue);
+          }
           if (val[amountStr] <= 0) {
             delete val[amountStr];
           }

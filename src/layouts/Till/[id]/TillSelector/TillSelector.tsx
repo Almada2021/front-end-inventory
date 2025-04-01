@@ -11,9 +11,16 @@ import { Till } from "@/infrastructure/interfaces/till.interface";
 interface Props {
   storeId: string;
   selectTill: (id: string) => void;
+  currentTill?: string;
 }
-export default function TillSelector({ storeId, selectTill }: Props) {
-  const { tillsByStoreQuery } = useTills(storeId);
+export default function TillSelector({
+  storeId,
+  selectTill,
+  currentTill,
+}: Props) {
+  const { tillsByStoreQuery } = useTills(storeId, {
+    exclude: currentTill || "",
+  });
   if (tillsByStoreQuery.isFetching) return null;
   return (
     <div className="min-w-[200px] flex flex-col">

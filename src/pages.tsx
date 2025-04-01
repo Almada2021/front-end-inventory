@@ -116,3 +116,5 @@ export const SaleByIdPage = lazy(() => import("@/layouts/Sales/[id]/[id]"));
 export const OrdersPage = lazy(() => import("@/layouts/OrdersPage/OrdersPage"));
 
 export const NewOrder = lazy(() => import("@/layouts/OrdersPage/NewOrder/NewOrder"));
+
+export const ShowOrders = lazy(() => import("@/layouts/OrdersPage/ShowOrders/ShowOrders"));

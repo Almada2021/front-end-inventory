@@ -22,7 +22,7 @@ export default function TillInfo({ id }: Props) {
             const amount = ndenomination * quantity;
             total += amount;
             return (
-              <div>
+              <div key={denomination + "TillInfo-CardContent"}>
                 <p>
                   <div className="text-green-400 inline-block font-bold">
                     {formatCurrency(ndenomination)}

@@ -1,5 +1,3 @@
-// import { Receipt } from "@/components/Receipt/Receipt";
-
 import CalendarSelector from "@/components/CalendarSelector/CalendarSelector";
 import { useState } from "react";
 import SalesDataTable from "@/components/DataTable/sales/SalesDataTable";

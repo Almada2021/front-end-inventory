@@ -52,7 +52,14 @@ export default function TillById() {
     <div className="min-h-screen w-full p-4 md:p-6 max-w-6xl mx-auto">
       <AlertDialog open={pageMode == "tranfert"}>
         <AlertDialogContent className="w-full min-w-[80svw] ">
-          <AlertDialogTitle>Transferir</AlertDialogTitle>
+          <AlertDialogTitle>
+            Transferir Desde {tillsByIdQuery.data.name} tienes{" "}
+            {formatCurrency(
+              tillsByIdQuery.data.totalCash +
+                tillsByIdQuery.data.cardPayments +
+                tillsByIdQuery.data.transferPayments
+            )}
+          </AlertDialogTitle>
           <AlertDialogDescription>
             Transferir dinero de una caja a otra
           </AlertDialogDescription>
@@ -91,6 +98,7 @@ export default function TillById() {
               <div>
                 {!tills[0] && (
                   <TillSelector
+                    currentTill={tillsByIdQuery.data.id}
                     storeId={tillsByIdQuery.data.storeId}
                     selectTill={(value: string) => {
                       setTills((val) => [val[0], value]);
@@ -98,53 +106,57 @@ export default function TillById() {
                   />
                 )}
                 <TillInfo id={tills[1]} />
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Billetes Seleccionados</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {tills[1] && (
-                      <div>
-                        {Object.entries(bills).map(
-                          ([denomination, quantity], index) => {
-                            return (
-                              <div
-                                key={`${
-                                  denomination + index + quantity
-                                }${denomination}`}
-                              >
-                                {formatCurrency(Number(denomination))}:{" "}
-                                {quantity}
-                              </div>
-                            );
-                          }
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <div className="text-green-300 font-bold text-xl mt-2">
+                  <div className="text-black inline-block">
+                    Vas a transferir{" "}
+                  </div>
+                  {formatCurrency(
+                    Object.entries(bills).reduce(
+                      (acc, [denomination, quantity]) => {
+                        return acc + Number(denomination) * quantity;
+                      },
+                      0
+                    )
+                  )}
+                </div>
               </div>
               {tills[1] && (
                 <div className="grid grid-cols-3 gap-2 max-h-[200px] md:max-h-full overflow-y-auto overflow-x-hidden">
                   {DEFAULT_DENOMINATIONS.map((amount: string) => {
                     return (
-                      <Money
-                        key={amount}
-                        onClick={() => {
-                          setBills((b) => ({
-                            ...b,
-                            [amount]: (b[amount] || 0) + 1,
-                          }));
-                        }}
-                        type={Number(amount) > 1000 ? "bill" : "coin"}
-                        alt={`${amount}Gs`}
-                        src={`/money/${amount}.${
-                          Number(amount) > 1000 ? "jpg" : "png"
-                        }`}
-                        className={`${
-                          Number(amount) > 1000 ? "p-4" : ""
-                        } bg-muted rounded-xl hover:scale-105 transition-transform`}
-                      />
+                      <div
+                        className="relative"
+                        key={amount + "alertdialogtransfert"}
+                      >
+                        <Money
+                          onClick={() => {
+                            setBills((b) => {
+                              if(b[amount] + 1 > tillsByIdQuery.data.bills[amount]){
+                                return b;
+                              }
+                              return({
+                              ...b,
+                              [amount]: (b[amount] || 0) + 1,
+                            })});
+                          }}
+                          type={Number(amount) > 1000 ? "bill" : "coin"}
+                          alt={`${amount}Gs`}
+                          src={`/money/${amount}.${
+                            Number(amount) > 1000 ? "jpg" : "png"
+                          }`}
+                          className={`${
+                            Number(amount) > 1000 ? "p-4" : ""
+                          } bg-muted rounded-xl hover:scale-105 transition-transform`}
+                        />
+                        <span className="absolute top-2 right-8 bg-white font-bold text-black px-2 py-1 rounded text-xl">
+                          Disp:{tillsByIdQuery.data.bills[amount]}
+                        </span>
+                        {bills[amount] > 0 && (
+                          <span className="absolute bottom-2 right-8 bg-primary font-bold text-white text-xl px-2 py-1 rounded">
+                            Sel: {bills[amount]}
+                          </span>
+                        )}
+                      </div>
                     );
                   })}
                 </div>

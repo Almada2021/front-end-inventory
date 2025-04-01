@@ -352,7 +352,6 @@ export default function CheckoutScreen() {
                 onBlur={() => {
                   setDisabledScan(false);
                 }}
-
                 mutateFunction={searchProductsAction}
                 onGetData={(data) => {
                   if (data && data?.length > 0) {
@@ -385,6 +384,7 @@ export default function CheckoutScreen() {
           )}
           {mode == "bills" && (
             <Bills
+              counted={true}
               onValueChange={(v, bills) => {
                 setClientMoney(v);
                 setBillsPay(bills);

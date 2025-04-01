@@ -9,3 +9,7 @@ export interface Till {
   status: boolean;
   type: "till" | "bankAcount";
 }
+
+export interface TillFilters {
+  exclude?: string,
+}

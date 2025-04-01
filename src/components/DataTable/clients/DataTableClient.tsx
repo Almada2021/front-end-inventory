@@ -248,7 +248,7 @@ export default function DataTableViewClient({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  No se encontraron resultados.
                 </TableCell>
               </TableRow>
             )}

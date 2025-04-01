@@ -1,15 +1,19 @@
 import { BackendApi } from "@/core/api/api";
-import { Till } from "@/infrastructure/interfaces/till.interface";
+import { Till, TillFilters } from "@/infrastructure/interfaces/till.interface";
 export interface TillByStoreResponse {
   tills: Till[];
 }
 
 export const getTillByStoreId = async (
-  id: string
+  id: string,
+  filters?: TillFilters
 ): Promise<{ tills: Till[] }> => {
   try {
     const tills = await BackendApi.get<TillByStoreResponse>(
-      `/till/store/${id}`
+      `/till/store/${id}`,
+      {
+        params: filters,
+      }
     );
     return tills.data;
   } catch (error) {
