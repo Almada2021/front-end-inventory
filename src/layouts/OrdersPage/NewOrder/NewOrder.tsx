@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useFormik, FormikProps } from "formik";
 import * as Yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, Plus, Trash2, Search } from "lucide-react";
+import { formatCurrency } from "@/lib/formatCurrency.utils";
 
 // Interfaces para el formulario
 interface OrderProduct {
@@ -79,6 +80,11 @@ interface ProductRowProps {
   onRemoveProduct: (index: number) => void;
   disableRemove: boolean;
   isProductsLoading: boolean;
+}
+
+interface OrderTotalProps {
+
+  total: number
 }
 
 // Componentes de UI
@@ -207,6 +213,22 @@ const ProductSearch: React.FC<ProductSearchProps> = ({
   </div>
 );
 
+const OrderTotal: React.FC<OrderTotalProps> = ({ total }) => {
+  // Calcular el total del pedido
+
+  return (
+    <div className="mt-6 p-4 bg-muted rounded-lg">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Total del Pedido</h3>
+        <span className="text-xl font-bold">{formatCurrency(total)}</span>
+      </div>
+      <p className="text-sm text-muted-foreground mt-1">
+        Este es el costo total basado en el precio base de los productos y sus cantidades.
+      </p>
+    </div>
+  );
+};
+
 const ProductRow: React.FC<ProductRowProps> = ({ 
   index, 
   formik, 
@@ -314,6 +336,7 @@ export default function NewOrder(): JSX.Element {
   const [selectedStore, setSelectedStore] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
+  let amount = 0;
 
   // Esquema de validación usando Yup
   const validationSchema = Yup.object({
@@ -345,7 +368,7 @@ export default function NewOrder(): JSX.Element {
     onSubmit: (values) => {
       // Limpiar productos vacíos antes de enviar
       const cleanedProducts = values.products.filter(p => p.product !== "");
-      const dataToSubmit = { ...values, products: cleanedProducts };
+      const dataToSubmit = { ...values, products: cleanedProducts, amount };
       createOrderMutation.mutate(dataToSubmit);
     },
   });
@@ -512,11 +535,24 @@ export default function NewOrder(): JSX.Element {
     );
   }, [availableProducts, selectedProductIds, formik.values.products]);
 
+  // All Products used to calculate total
+  const allProducts = products
+  const total = useMemo(() => {
+    return formik.values.products.reduce((sum, item) => {
+      if (!item.product) return sum;
+      
+      const productDetails = allProducts.find(p => p.id === item.product);
+      if (!productDetails) return sum;
+      
+      return sum + (productDetails.basePrice * item.quantity);
+    }, 0);
+  }, [formik.values.products, allProducts]);
+  amount = total;
   // Mostrar pantalla de carga si es necesario
   if (providersLoading || storesLoading || (selectedProvider && selectedProviderLoading)) {
     return <LoadingScreen />;
   }
-
+  
   return (
     <div className="container mx-auto p-4 max-w-4xl">
       <Card>
@@ -604,6 +640,11 @@ export default function NewOrder(): JSX.Element {
                 <p className="text-sm text-destructive mt-2">
                   {formik.errors.products}
                 </p>
+              )}
+              
+              {/* Total del pedido */}
+              {selectedProvider && !productsLoading && products.length > 0 && (
+                <OrderTotal total={total}/>
               )}
             </div>
           </CardContent>

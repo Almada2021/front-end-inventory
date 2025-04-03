@@ -8,7 +8,7 @@ type Translations = {
 };
 
 export const StatusTranslations : Translations={
-    "open": "Abierto",
+    "open": "Pendiente",
     "closed": "Cerrado",
     "cancelled": "Cancelado",
     "partially": "Parcialmente"

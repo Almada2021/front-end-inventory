@@ -12,6 +12,7 @@ import {
   OrderStatus,
   StatusTranslations,
 } from "@/infrastructure/interfaces/order/order.interface";
+import { formatCurrency } from "@/lib/formatCurrency.utils";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -156,6 +157,14 @@ const columns: ColumnDef<Order>[] = [
       return <div>{new Date(date).toLocaleDateString()}</div>;
     },
   },
+  {
+    accessorKey: "amount",
+    header: "Monto",
+    cell: ({ row }) => {
+      const amount = row.getValue("amount") as number;
+      return <div>{formatCurrency(amount)}</div>;
+    },
+  }
 ];
 
 interface Props {
