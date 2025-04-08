@@ -554,7 +554,7 @@ export default function NewOrder(): JSX.Element {
   }
   
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
+    <div className="container mx-auto p-4 max-w-4xl mt-10 md:mt-4">
       <Card>
         <FormHeader />
 

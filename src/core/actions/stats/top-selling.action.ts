@@ -14,7 +14,6 @@ export const getTopSellingProducts = async (): Promise<Datum[]> => {
     } 
     return topSellingProducts.data.data;
   } catch (error) {
-    window.location.reload();
     console.log(error);
     throw error;
   }

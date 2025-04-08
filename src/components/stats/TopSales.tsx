@@ -2,6 +2,8 @@ import useTopSelling from "@/hooks/stats/useTopSelling";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
 import { Trophy, Gem, Medal, Award, Star } from "lucide-react";
 import { Link } from "react-router";
+import Image from "../Image/Image";
+import { Skeleton } from "../ui/skeleton";
 
 const rankIcons = [
   <Trophy className="w-5 h-5 text-amber-400" />,
@@ -16,7 +18,7 @@ export default function TopSales() {
 
   if (topSellingQuery.isFetching){
 
-    return null;
+    return <Skeleton  className="h-10 w-full md:w-1/2 "/>;
   }
   const topProducts = topSellingQuery.data?.slice(0, 5) || [];
 
@@ -32,7 +34,7 @@ export default function TopSales() {
             <div className="flex-shrink-0 w-8 mr-3">
               {rankIcons[index] || <Star className="w-5 h-5 text-gray-400" />}
             </div>
-            <img
+            <Image
               src={item.product.photoUrl || "/placeholder-product.jpg"}
               alt={item.product.name}
               className="w-12 h-12 rounded-md object-cover mr-4"

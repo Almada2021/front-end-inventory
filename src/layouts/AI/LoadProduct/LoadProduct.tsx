@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Receipt, ScanBarcode, ArrowLeft } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 
 type Mode = "new" | "receipt" | "count" | null;
 
@@ -118,6 +119,17 @@ const EnhancedUploader = ({
 
 export default function LoadProductScreen() {
   const [selectedMode, setSelectedMode] = useState<Mode>(null);
+  const newProductLoad = useMutation({
+    mutationFn: async () => {
+      // Your mutation logic here
+    },
+    onSuccess: () => {
+      // Handle success
+    },
+    onError: (error) => {
+      // Handle error
+    },
+  });
   return (
     <div className="flex justify-center w-full h-full mt-10 md:mt-0 md:py-2">
       <div className="container max-w-4xl py-8">
@@ -147,7 +159,7 @@ export default function LoadProductScreen() {
               // Lógica de confirmación
               switch (selectedMode) {
                 case "new": {
-                  console.log("New");
+                  newProductLoad.mutate()
                 }
               }
             }}

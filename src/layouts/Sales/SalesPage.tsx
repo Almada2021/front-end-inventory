@@ -6,7 +6,9 @@ import { addDays, format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "lucide-react";
 import { BackendApi } from "@/core/api/api";
+import { useAdmin } from "@/hooks/browser/useAdmin";
 export default function SalesPage() {
+  const isAdmin = useAdmin();
   const [date, setDate] = useState<DateRange>({
     from: new Date(),
     to: addDays(new Date(), 0),
@@ -26,6 +28,9 @@ export default function SalesPage() {
     } catch (error) {
       console.log(error)
     }
+  }
+  if(!isAdmin){
+    return null;
   }
   return (
     <div className="w-full h-screen mt-20 md:mt-4">

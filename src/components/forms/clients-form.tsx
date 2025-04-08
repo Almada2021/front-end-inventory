@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BackendApi } from "@/core/api/api";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 
 interface ClientFormValues {
   id?: string;
   name: string;
   lastName: string;
   ruc: string;
+  address?: string;
 }
 interface Props {
   edit?: boolean;
@@ -26,11 +28,13 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
       name: valuesEdited?.name || "",
       lastName: valuesEdited?.lastName || "",
       ruc: valuesEdited?.ruc || "",
+      address: "",
     },
     validationSchema: Yup.object({
       name: Yup.string().required("El nombre es requerido"),
       lastName: Yup.string().required("El apellido es requerido"),
       ruc: Yup.string().required("El RUC es requerido"),
+      address: Yup.string().optional().nullable(),
     }),
     onSubmit: async (
       values,
@@ -50,6 +54,9 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
           if(onEdit) onEdit();
         }
       } catch (error) {
+        toast.error(`Error al crear cliente ${error}`, {
+          className: "w-full h-32 p-4",
+        } )
         console.error("Error al crear el cliente:", error);
       }
     },
@@ -58,7 +65,7 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle>{edit ? "Crear Cliente" : "Editar Cliente"}</CardTitle>
+        <CardTitle>{!edit ? "Crear Cliente" : "Editar Cliente"}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={formik.handleSubmit}>
@@ -106,10 +113,25 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
               />
               {formik.errors.ruc && formik.touched.ruc && (
                 <p className="text-xs text-red-600">{formik.errors.ruc}</p>
+              )}2
+            </div>
+             {/* Direccion */}
+             <div className="grid gap-2">
+              <Label htmlFor="ruc">Direccion</Label>
+              <Input
+                id="address"
+                name="address"
+                type="text"
+                placeholder="Casa"
+                value={formik.values.address}
+                onChange={formik.handleChange}
+              />
+              {formik.errors.ruc && formik.touched.ruc && (
+                <p className="text-xs text-red-600">{formik.errors.ruc}</p>
               )}
             </div>
             <Button type="submit">
-              {edit ? "Crear Cliente" : "Editar Cliente"}
+              {!edit ? "Crear Cliente" : "Editar Cliente"}
             </Button>
           </div>
         </form>

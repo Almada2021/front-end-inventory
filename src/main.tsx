@@ -46,7 +46,8 @@ import {
   EditEmployee,
   NewOrder,
   ShowOrders,
-  ShowClient
+  ShowClient,
+  OrderInfo
 } from "@/pages";
 
 const client = new QueryClient();
@@ -122,6 +123,7 @@ createRoot(document.getElementById("root")!).render(
                           <Route index element={<OrdersPage/>} />
                           <Route path="new" element={<NewOrder />} />
                           <Route path="show" element={<ShowOrders />} />
+                          <Route path=":id" element={<OrderInfo/>}/>
                         </Route>
                         <Route path="register" element={<RegisterPage />} />
                         {/* Till */}

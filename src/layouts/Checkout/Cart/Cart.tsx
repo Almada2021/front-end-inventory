@@ -81,8 +81,19 @@ export default function Cart({
                     min="1"
                     value={item.quantity}
                     onChange={(e) => {
-                      const value = Math.max(1, parseInt(e.target.value) || 1);
-                      onQuantityChange(item.id, value);
+                      // Improved input handling:
+                      const rawValue = e.target.value;
+                      const numericValue = parseInt(rawValue);
+
+                      // Handle empty/NaN case first
+                      if (rawValue === "" || isNaN(numericValue)) {
+                        onQuantityChange(item.id, 1); // Reset to minimum valid value
+                        return;
+                      }
+
+                      // Handle valid numbers with bounds checking
+                      const clampedValue = Math.max(1, numericValue);
+                      onQuantityChange(item.id, clampedValue);
                     }}
                     className="w-12 text-center hide-spinners"
                   />

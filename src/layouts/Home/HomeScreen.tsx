@@ -19,14 +19,14 @@ export default function HomeScreen({ show }: Props) {
 
   if (!show) return null;
   return (
-    <main className="mt-2 w-full 1">
+    <main className="mt-2 w-full 1 p-4 md:p-10 md:space-y-4">
       <h2 className="text-3xl font-bold mt-10 md:mt-4">
         Bienvenido {userInfo?.name}
       </h2>
       <h2 className="text-sm text-gray-500 ">{userInfo?.email}</h2>
       <h2 className="text-xs ">{userInfo?.id}</h2>
       <div className="w-full flex flex-row flex-wrap">
-        <div className="max-h-[400px] w-full md:w-1/2 bg-blue-400">
+        <div className="max-h-[400px] w-full md:w-1/2 mb-10">
           <SalesByDayGraph />
         </div>
         <TopSales />

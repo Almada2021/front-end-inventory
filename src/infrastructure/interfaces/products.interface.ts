@@ -13,4 +13,6 @@ export interface Product {
   providers: string[];
   salesIds: string[];
   orderIds: string[];
+  barCode?: string;
+  rfef?: string;
 }

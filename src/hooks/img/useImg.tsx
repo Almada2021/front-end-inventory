@@ -12,6 +12,7 @@ export default function useImg(src: string) {
     queryFn: () => fetchImg(src),
     staleTime: Infinity,
     refetchInterval: STALE_24 * 7,
+    retry: 3,
   });
   return imgQuery;
 }

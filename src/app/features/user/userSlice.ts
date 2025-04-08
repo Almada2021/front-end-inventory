@@ -10,6 +10,7 @@ export interface UserInfo {
   id: string;
   email: string;
   name: string;
+  roles: string[];
 }
 export interface UserState {
   loading: boolean;
@@ -44,8 +45,8 @@ export const authSlice = createSlice({
         userLogin.fulfilled,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (state: UserState, action: { payload: any }) => {
-          console.log(action);
           state.loading = false;
+          console.log(action.payload.user, "lgglgllg");
           state.userInfo = action.payload.user;
           state.token = action.payload.token;
         }

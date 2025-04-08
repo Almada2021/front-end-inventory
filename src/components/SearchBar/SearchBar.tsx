@@ -6,6 +6,7 @@ interface Props<T> {
   mutationKey?: string[];
   onGetData?: (data: T[] | undefined) => void;
   onNotify?: (query: string) => void;
+  automate?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
   mode?: "min" | "max";
@@ -18,6 +19,7 @@ export default function SearchBar<T>({
   onNotify = (query: string) => {
     console.log(query);
   },
+  automate = false,
   onFocus = () => {},
   onBlur = () => {},
   mode = "max",
@@ -36,11 +38,23 @@ export default function SearchBar<T>({
     (query: string) => {
       onNotify(query);
     },
-    [onNotify]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onNotify, automate]
   );
   useEffect(() => {
     memoizedNotify(query);
   }, [query, memoizedNotify]);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (automate) {
+        SearchFunction();
+      }
+    }, 300);
+    return () => {
+      clearTimeout(handler);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[query, automate])
   return (
     <section
       aria-description="Search bar"

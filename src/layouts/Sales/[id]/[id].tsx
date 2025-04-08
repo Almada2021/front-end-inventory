@@ -8,13 +8,12 @@ import {
   Wallet,
   User,
   Package,
-  CheckCircle,
-  XCircle,
+  CheckCircle
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Receipt } from "@/components/Receipt/Receipt";
 import useClient from "@/hooks/clients/useClient";
 import useUserById from "@/hooks/users/useUserById";
+import BadgeList from "../BadgeList/BadgeList";
 
 export default function SalesById() {
   const { id } = useParams();
@@ -134,7 +133,11 @@ export default function SalesById() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {saleData.products.map((product, index) => (
+          <BadgeList
+            products={saleData.products}
+          />
+          {/* {saleData.products.map((product, index) => {
+            return(
             <motion.div
               key={product._id}
               initial={{ opacity: 0, y: 20 }}
@@ -147,30 +150,9 @@ export default function SalesById() {
                   : "bg-green-50 border-green-200"
               )}
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-lg text-gray-800">
-                    {product.product}
-                    {product.cancelled && (
-                      <span className="text-red-600 ml-2">(Anulado)</span>
-                    )}
-                  </h3>
-                  <p className="text-gray-600">Cantidad: {product.quantity}</p>
-                </div>
-                <Badge
-                  variant={product.cancelled ? "destructive" : "default"}
-                  className="flex items-center gap-1"
-                >
-                  {product.cancelled ? (
-                    <XCircle className="h-4 w-4" />
-                  ) : (
-                    <CheckCircle className="h-4 w-4" />
-                  )}
-                  {product.cancelled ? "Anulado" : "Completado"}
-                </Badge>
-              </div>
+              <SaleProductBadge product={product} />
             </motion.div>
-          ))}
+          )})} */}
         </div>
       </div>
 

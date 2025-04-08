@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function useProductsByIds(ids: string[]) {
   const getProductsByIds = useQuery({
-    queryKey: ["producst", "ids", ids.join("-")],
+    queryKey: ["products", "ids", ids.join("-")],
     queryFn: async () => await getProductsByIdsAction(ids),
     staleTime: STALE_24,
     enabled: ids.length > 0,

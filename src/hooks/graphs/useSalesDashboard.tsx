@@ -8,7 +8,7 @@ export default function useSalesDashboard(date: Date, date2: Date) {
     const salesByDayQuery = useQuery({
       queryFn: () => salesByDayDashboardAction(startDate, endDate),
       queryKey: ["salesByDay", "dashboard", startDate, endDate], // Include both dates in the query key
-      staleTime: 1000 * 60 * 60 * 6
+      staleTime: 1000 * 60 * 60 * 1
     });
   return {
     salesByDayQuery

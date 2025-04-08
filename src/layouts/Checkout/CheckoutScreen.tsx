@@ -65,11 +65,10 @@ export default function CheckoutScreen() {
   const closeTillMutate = useMutation({
     mutationFn: async () => {
       try {
-        await BackendApi.patch<Till>(`/till/open/${id}`).then(async (till) => {
-          const data = await till.data;
-          if (typeof data.id == "string") {
-            setTillStorage(null);
-          }
+        await BackendApi.patch<Till>(`/till/open/${id}`).then(async () => {
+          setTillStorage(null);
+          navigate("/inventory/checkout");
+          window.location.reload();
         });
       } catch (error) {
         console.log(error);
@@ -177,11 +176,24 @@ export default function CheckoutScreen() {
   };
 
   const pushCart = (product: Product, quantity: number) => {
-    if (product.stock < quantity && !product.uncounted) return;
+    if (product.stock < quantity && !product.uncounted){
+      return;
+    } 
     if (cart.length == 0) {
-      setCart([{ product, quantity, id: product.id }]);
+      setCart([
+        {
+          product,
+          quantity,
+          id: product.id,
+          uncounted: product.uncounted,
+          stock: product.stock,
+        },
+      ]);
     } else {
       const existsIndex = cart.findIndex((current) => current.id == product.id);
+      if (product.stock < cart[existsIndex]?.quantity + 1 && !product.uncounted) {
+        return;
+      } 
       if (existsIndex != -1) {
         const newQuantity = cart[existsIndex].quantity + 1;
         setCart((cart) => {
@@ -189,7 +201,16 @@ export default function CheckoutScreen() {
           return [...cart];
         });
       } else {
-        setCart((c) => [...c, { product, quantity, id: product.id }]);
+        setCart((c) => [
+          ...c,
+          {
+            product,
+            quantity,
+            id: product.id,
+            uncounted: product.uncounted,
+            stock: product.stock,
+          },
+        ]);
       }
     }
   };
@@ -197,7 +218,7 @@ export default function CheckoutScreen() {
     setCart((currentCart) =>
       currentCart
         .map((item) =>
-          item.id === productId ? { ...item, quantity: newQuantity } : item
+          item.id === productId && item.uncounted || item.stock >= newQuantity ? { ...item, quantity: newQuantity } : item
         )
         .filter((item) => item.quantity > 0)
     );
@@ -304,7 +325,8 @@ export default function CheckoutScreen() {
           title="¿Estás seguro de que deseas volver?"
           message="Regresarás al modo de selección de Tiendas.y la caja se cerrara ¿Deseas continuar?"
           onConfirm={async () => {
-            closeTillMutate.mutate();
+            closeTillMutate.mutate()
+           
           }}
           onCancel={() => {
             setBackToSelection(false);
@@ -352,10 +374,19 @@ export default function CheckoutScreen() {
                 onBlur={() => {
                   setDisabledScan(false);
                 }}
+                automate={true}
                 mutateFunction={searchProductsAction}
                 onGetData={(data) => {
                   if (data && data?.length > 0) {
                     setProducts(data as Product[]);
+                  }else if(products.length > 0 && data?.length == 0){
+                    console.log("")
+                  }
+                }}
+                onNotify={(query: string) => {
+                  if(query.length == 0 ){
+
+                    setProducts([])
                   }
                 }}
                 mode="min"

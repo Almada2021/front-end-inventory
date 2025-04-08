@@ -1,6 +1,6 @@
 import { TrendingUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { subDays } from "date-fns";
+import { addDays, subDays } from "date-fns";
 import {
   Card,
   CardContent,
@@ -16,6 +16,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import useSalesDashboard from "@/hooks/graphs/useSalesDashboard";
+import { Skeleton } from "../ui/skeleton";
 
 const chartConfig = {
   desktop: {
@@ -29,7 +30,8 @@ interface Props {
 }
 export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
   const startDate = subDays(date, range);
-  const { salesByDayQuery } = useSalesDashboard(startDate, date);
+  const endDate = addDays(date, 1);
+  const { salesByDayQuery } = useSalesDashboard(startDate, endDate);
   const salesData = salesByDayQuery.data;
   const parseDataToGraph = Object.entries(salesData || {}).map(
     ([key, value]) => ({
@@ -59,7 +61,9 @@ export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
    }
    const formattedTrendPercentage = trendPercentage.toFixed(1);
 
-  if (salesByDayQuery.isFetching) return null;
+  if (salesByDayQuery.isFetching) {
+    return  <Skeleton  className="h-10 w-full md:w-1/2 "/>
+  }
 
   return (
     <Card>
@@ -88,6 +92,9 @@ export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
               tickLine={false}
               tickMargin={10}
               axisLine={false}
+              style={{
+                fontWeight: 700,
+              }}
               tickFormatter={(value) => value}
             />
             <ChartTooltip

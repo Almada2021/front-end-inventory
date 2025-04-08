@@ -7,6 +7,7 @@ import useUserById from "@/hooks/users/useUserById";
 import useStoreByTillId from "@/hooks/store/useStoreByTillId";
 import { TRANSLATE_PAYMENT_METHODS } from "@/constants/translations/payments.methods";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
+import { useClientById } from "@/hooks/clients/useClientById";
 
 type PaymentMethod = keyof typeof TRANSLATE_PAYMENT_METHODS;
 const PaymentMethods: PaymentMethod[] = ["cash", "card", "transfer"];
@@ -26,6 +27,7 @@ interface ReceiptProps {
     billsCashBack: Record<string, number>;
     createdAt: string;
     paymentMethod?: string;
+    client?: string;
   };
 }
 
@@ -33,6 +35,7 @@ export const Receipt = ({ data }: ReceiptProps) => {
   const componentRef = useRef<HTMLDivElement>(null);
   const { userByIdQuery } = useUserById(data.sellerId);
   const { storeByTillId } = useStoreByTillId(data.till);
+  const {clientByIdQuery} = useClientById(data.client || "")
   // memoized Paid by customer
   const paidByCustomer = useMemo(() => {
     return Object.entries(data.bills).reduce(
@@ -75,7 +78,7 @@ export const Receipt = ({ data }: ReceiptProps) => {
               })}
             </p>
             <p className="text-sm">Vendedor: {userByIdQuery.data?.name}</p>
-            <p className="text-sm">Cliente:{""}</p>
+            <p className="text-sm">Cliente:{" "} {clientByIdQuery.data ? `${clientByIdQuery.data?.name + " " + clientByIdQuery.data?.lastName}` :"N/A" }</p>
           </div>
         </div>
 

@@ -2,6 +2,9 @@ export interface OrdersResponse {
     orders: Order[];
 }
 
+export interface SingeOrderRes {
+    order: Order;
+}
 export type OrderStatus = "open" | "closed" | "cancelled" | "partially";
 type Translations = {
     [key in OrderStatus]: string;

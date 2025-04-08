@@ -27,6 +27,7 @@ import { BackendApi } from "@/core/api/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "react-hot-toast";
+import { useAppSelector } from "@/config/react-redux.adapter";
 interface IValues {
   id: string;
   name: string;
@@ -35,27 +36,35 @@ interface IValues {
   image: string;
   uncounted: boolean;
   stock: number;
+  providers: string[];
   barCode?: number | undefined;
   rfef?: string;
 }
 interface IProductsForm extends React.ComponentPropsWithoutRef<"div"> {
   values?: IValues;
   editMode?: boolean;
+  resolveEditFn?: ()=> void;
 }
 
 export default function ProductsForm({
   editMode = false,
+  resolveEditFn = () => {
+    console.log("edit mode active");
+  },
   className,
   values,
   ...props
 }: IProductsForm) {
-  const [providers, setProviders] = useState<string[]>([]);
+  const spreadProviders = values?.providers || []
+  const [providers, setProviders] = useState<string[]>([...spreadProviders]);
   const [isProviderDialogOpen, setIsProviderDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const clientQuery = useQueryClient();
   const [providerNames, setProviderNames] = useState<Record<string, string>>(
     {}
   );
+  const userId = useAppSelector((state) => state.auth.userInfo?.id);
+
   const id = values?.id || "";
   const formik = useFormik({
     initialValues: {
@@ -105,7 +114,10 @@ export default function ProductsForm({
         formData.append("basePrice", values.basePrice.toString());
         formData.append("uncounted", values.uncounted.toString());
         formData.append("stock", values.stock.toString());
-
+        if (!userId) {
+          throw new Error("User ID is required");
+        }
+        formData.append("userId", userId);
         if (values.barCode !== undefined) {
           formData.append("barCode", values.barCode.toString());
         }
@@ -123,29 +135,30 @@ export default function ProductsForm({
         }
         if (!editMode) {
           await BackendApi.post("/products", formData)
-          .then(() => {
-            toast.success("Producto Agregado correctamente", {
-              className: 'w-full h-32 p-4'
+            .then(() => {
+              toast.success("Producto Agregado correctamente", {
+                className: "w-full h-32 p-4",
+              });
+            })
+            .catch((error) => {
+              toast.error("Error al agregar el producto", {
+                className: "w-full h-32 p-4",
+              });
+              console.error(error);
             });
-          })
-          .catch((error) => {
-            toast.error("Error al agregar el producto", {
-              className: 'w-full h-32 p-4'
-            });
-            console.error(error);
-          })
         } else {
           await BackendApi.put(`/products/${id}`, formData)
-          .then(() => {
-            toast.success("Producto actualizado correctamente", {
-              className: 'w-full h-32 p-4'
+            .then(() => {
+              toast.success("Producto actualizado correctamente", {
+                className: "w-full h-32 p-4",
+              });
+              resolveEditFn();
+            })
+            .catch(() => {
+              toast.error("Error al actualizar el producto", {
+                className: "w-full h-32 p-4",
+              });
             });
-          })
-          .catch(() => {
-            toast.error("Error al actualizar el producto", {
-              className: 'w-full h-32 p-4'
-            });
-          })
         }
         clientQuery.invalidateQueries({ queryKey: ["products"] });
         resetForm();

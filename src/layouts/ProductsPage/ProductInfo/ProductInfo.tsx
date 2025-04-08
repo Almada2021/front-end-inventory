@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router";
+import ProviderList from "./ProvidersItem/ProviderList";
+import ProductChanges from "./ProductChanges/ProductChanges";
 // import SkeletonLoader from "@/components/SkeletonLoader"; // Asume un componente de carga
 
 export default function ProductInfo() {
@@ -20,6 +22,7 @@ export default function ProductInfo() {
   const { getProductsByIds } = useProductsByIds([id!]);
   const [loadProducts, setLoadProducts] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [mode, setMode] = useState<"changes" | "sales">("changes");
   if (getProductsByIds.isLoading) return null;
   if (!getProductsByIds.data?.[0]) return <div>Producto no encontrado</div>;
 
@@ -31,6 +34,10 @@ export default function ProductInfo() {
       <div className="w-full max-w-6xl mx-auto p-4 md:p-8">
         <ProductsForm
           editMode={editMode}
+          resolveEditFn={() => {
+            setEditMode(false);
+            getProductsByIds.refetch();
+          }}
           values={{
             id: getProductsByIds.data[0].id,
             name: getProductsByIds.data[0].name,
@@ -38,9 +45,10 @@ export default function ProductInfo() {
             basePrice: getProductsByIds.data[0].basePrice,
             image: getProductsByIds.data[0].photoUrl,
             stock: getProductsByIds.data[0].stock,
+            providers: getProductsByIds.data[0].providers,
             uncounted: getProductsByIds.data[0].uncounted,
-            barCode: 0,
-            rfef: "",
+            barCode: Number(getProductsByIds.data[0].barCode),
+            rfef: getProductsByIds.data[0].rfef,
           }}
         />
       </div>
@@ -64,12 +72,11 @@ export default function ProductInfo() {
             <Pencil className="h-6 w-6 text-gray-600" />
           </button>
           <button
-            onClick={() => {
-            }}
+            onClick={() => {}}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors justify-self-end flex justify-center items-center"
             aria-label="Editar cliente"
           >
-            <Trash className="h-6 w-6 text-red-500"/>
+            <Trash className="h-6 w-6 text-red-500" />
           </button>
         </div>
 
@@ -112,7 +119,7 @@ export default function ProductInfo() {
             <div className="space-y-4">
               <DetailItem
                 title="Proveedores"
-                value={product.providers.join(", ")}
+                value={<ProviderList ids={product.providers} />}
                 icon={<UsersIcon className="w-5 h-5" />}
               />
               <DetailItem
@@ -124,16 +131,30 @@ export default function ProductInfo() {
           </div>
         </div>
       </div>
-      <div className="w-full mt-4 flex justify-center">
+      <div className="w-full mt-4 flex justify-center gap-2">
         <Button
           onClick={() => {
+            setMode("sales");
             setLoadProducts(true);
           }}
         >
           Cargar Historial Ventas
         </Button>
+        <Button
+          onClick={() => {
+            setMode("changes");
+            setLoadProducts(true);
+          }}
+        >
+          Historial de Cambios
+        </Button>
       </div>
-      {loadProducts && <div>Hola</div>}
+      {mode == "changes" && (
+        <>
+          <ProductChanges id={getProductsByIds.data[0].id} />
+        </>
+      )}
+      {mode == "sales" && loadProducts && <div>Hola</div>}
     </div>
   );
 }
@@ -166,7 +187,7 @@ const DetailItem = ({
   icon,
 }: {
   title: string;
-  value: string;
+  value: string | React.ReactNode;
   icon: React.ReactNode;
 }) => (
   <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">

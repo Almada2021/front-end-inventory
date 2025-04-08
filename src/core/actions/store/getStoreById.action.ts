@@ -11,13 +11,13 @@ export const getStoreByIdAction = async (
   id: string
 ): Promise<SingleStoreResponse> => {
   try {
-    const store = await BackendApi.get<SingleStoreResponse>(
+    const response = await BackendApi.get<SingleStoreResponse>(
       `/stores/show/${id}`
     );
-    if (!store) throw "Store Not Found";
-    return store.data;
+    if (!response.data) throw new Error("Store Not Found");
+    return response.data;
   } catch (error) {
-    console.log(error);
+    console.error('Error fetching store:', error);
     throw error;
   }
 };
