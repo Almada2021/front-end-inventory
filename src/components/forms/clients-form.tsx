@@ -14,6 +14,7 @@ interface ClientFormValues {
   lastName: string;
   ruc: string;
   address?: string;
+  phoneNumber?: string
 }
 interface Props {
   edit?: boolean;
@@ -22,19 +23,20 @@ interface Props {
 }
 export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Props) {
   const queryClient = useQueryClient();
-
   const formik = useFormik<ClientFormValues>({
     initialValues: {
       name: valuesEdited?.name || "",
       lastName: valuesEdited?.lastName || "",
       ruc: valuesEdited?.ruc || "",
-      address: "",
+      address: valuesEdited?.address ||"",
+      phoneNumber: valuesEdited?.phoneNumber ||"",
     },
     validationSchema: Yup.object({
       name: Yup.string().required("El nombre es requerido"),
       lastName: Yup.string().required("El apellido es requerido"),
       ruc: Yup.string().required("El RUC es requerido"),
       address: Yup.string().optional().nullable(),
+      phoneNumber: Yup.string().optional().nullable(),
     }),
     onSubmit: async (
       values,
@@ -48,10 +50,16 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
           // Actualizamos la caché de clientes (si es necesario)
           queryClient.invalidateQueries({ queryKey: ["clients"] });
           resetForm();
+          toast.success("Cliente creado exitosamente", {
+            className: "w-full h-32 p-4",
+          });
         }else {
           await BackendApi.patch(`/client/update/${valuesEdited?.id}`,values);
           queryClient.invalidateQueries({ queryKey: ["clients"] });
           if(onEdit) onEdit();
+          toast.success("Cliente Editado correctamente",{
+            className: "w-full h-32 p-4",
+          });
         }
       } catch (error) {
         toast.error(`Error al crear cliente ${error}`, {
@@ -113,7 +121,7 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
               />
               {formik.errors.ruc && formik.touched.ruc && (
                 <p className="text-xs text-red-600">{formik.errors.ruc}</p>
-              )}2
+              )}
             </div>
              {/* Direccion */}
              <div className="grid gap-2">
@@ -126,8 +134,23 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
                 value={formik.values.address}
                 onChange={formik.handleChange}
               />
-              {formik.errors.ruc && formik.touched.ruc && (
-                <p className="text-xs text-red-600">{formik.errors.ruc}</p>
+              {formik.errors.address && formik.touched.address && (
+                <p className="text-xs text-red-600">{formik.errors.address}</p>
+              )}
+            </div>
+            {/* Telefono */}
+            <div className="grid gap-2">
+              <Label htmlFor="phoneNumber">Telefono</Label>
+              <Input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="text"
+                placeholder="0919919"
+                value={formik.values.phoneNumber}
+                onChange={formik.handleChange}
+              />
+              {formik.errors.phoneNumber && formik.touched.phoneNumber && (
+                <p className="text-xs text-red-600">{formik.errors.phoneNumber}</p>
               )}
             </div>
             <Button type="submit">

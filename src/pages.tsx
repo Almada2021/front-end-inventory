@@ -14,6 +14,10 @@ export const AiScreen = lazy(() => import("@/layouts/AI/AiScreen"));
 export const LoadProduct = lazy(
   () => import("@/layouts/AI/LoadProduct/LoadProduct")
 );
+
+export const StockOptimization = lazy(
+  () => import("@/layouts/AI/StockOptimization/StockOptimization")
+);
 //* POS
 export const POSPage = lazy(() => import("@/layouts/Checkout/POSPage"));
 
@@ -120,3 +124,9 @@ export const NewOrder = lazy(() => import("@/layouts/OrdersPage/NewOrder/NewOrde
 export const ShowOrders = lazy(() => import("@/layouts/OrdersPage/ShowOrders/ShowOrders"));
 
 export const OrderInfo = lazy(() => import("@/layouts/OrdersPage/OrderInfo/OrderInfo"));
+
+
+// Reports Page
+
+
+export const ReportsPage = lazy(() => import("@/layouts/ReportsPage/ReportsPage"));

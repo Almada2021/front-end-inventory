@@ -3,6 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Receipt, ScanBarcode, ArrowLeft } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
+import { BackendApi } from "@/core/api/api";
+import LoadingScreen from "@/layouts/Loading/LoadingScreen";
+import toast from "react-hot-toast";
 
 type Mode = "new" | "receipt" | "count" | null;
 
@@ -52,11 +55,18 @@ const EnhancedUploader = ({
   title: string;
   description: string;
   onBack: () => void;
-  onConfirm: () => void;
+  onConfirm: (file: React.RefObject<HTMLInputElement>) => void;
 }) => {
   const [preview, setPreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const confirmFn = async () => {
+    try {
+      await onConfirm(fileInputRef);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -68,7 +78,15 @@ const EnhancedUploader = ({
           <p className="text-muted-foreground">{description}</p>
         </div>
       </div>
-
+      <div>
+      <input 
+        type="number"
+        alt="Precio"
+        className="border-b-2 w-full"
+        min={50}
+        
+      />
+      </div>
       <div className="space-y-4">
         <div
           className="border-2 border-dashed rounded-xl aspect-square flex flex-col items-center justify-center gap-4 p-6 text-center hover:bg-accent/30 transition-colors cursor-pointer"
@@ -86,7 +104,7 @@ const EnhancedUploader = ({
               <div>
                 <p className="font-medium">Haz clic para subir</p>
                 <p className="text-sm text-muted-foreground">
-                  PNG, JPG o PDF (máx. 10MB)
+                  PNG, JPG (máx. 20MB)
                 </p>
               </div>
             </>
@@ -96,18 +114,23 @@ const EnhancedUploader = ({
         <Input
           ref={fileInputRef}
           type="file"
-          accept="image/*, .pdf"
+          max={20000}
+          accept="image/*"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) setPreview(URL.createObjectURL(file));
+            if(file?.size && file?.size <= 18000000){
+              if (file) setPreview(URL.createObjectURL(file));
+            }else{
+              toast.error("No se permite ficheros de mas de 20 MB")
+            }
           }}
         />
 
         <Button
           className="w-full"
           size="lg"
-          onClick={onConfirm}
+          onClick={confirmFn}
           disabled={!preview}
         >
           Confirmar
@@ -119,17 +142,39 @@ const EnhancedUploader = ({
 
 export default function LoadProductScreen() {
   const [selectedMode, setSelectedMode] = useState<Mode>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const newProductLoad = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (ref: React.RefObject<HTMLInputElement>) => {
       // Your mutation logic here
+      if (!ref.current?.files || ref.current.files.length === 0) {
+        throw new Error("No file selected. Please choose a file to proceed.");
+      }
+      const formData = new FormData();
+
+      // Create and send FormData
+      formData.append("img", ref.current.files[0]);
+      setLoading(true);
+      const response = await BackendApi.post("/ai/from-file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setLoading(false)
+      return response.data;
+      // const data = await BackendApi.post("/ai/from-file",)
     },
     onSuccess: () => {
       // Handle success
+      toast.success("El Producto fue creado con exito");
     },
     onError: (error) => {
+      toast.error(error.message);
       // Handle error
     },
   });
+  if(loading){
+    return <LoadingScreen/>
+  }
   return (
     <div className="flex justify-center w-full h-full mt-10 md:mt-0 md:py-2">
       <div className="container max-w-4xl py-8">
@@ -155,11 +200,11 @@ export default function LoadProductScreen() {
                 : "Escanea múltiples productos para inventario"
             }
             onBack={() => setSelectedMode(null)}
-            onConfirm={() => {
+            onConfirm={(file: React.RefObject<HTMLInputElement>) => {
               // Lógica de confirmación
               switch (selectedMode) {
                 case "new": {
-                  newProductLoad.mutate()
+                  newProductLoad.mutate(file);
                 }
               }
             }}

@@ -24,6 +24,7 @@ export interface Order {
     storeId:    string;
     date:       Date;
     providerId: string;
+    amount: number;
 }
 
 export interface ProductElement {

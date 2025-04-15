@@ -23,15 +23,22 @@ import {
   CreditCard,
   History,
   LogOut,
+  Trash,
 } from "lucide-react";
 import { useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import TillSelector from "./TillSelector/TillSelector";
 import TillInfo from "./TillInfo/TillInfo";
+import { useMutation } from "@tanstack/react-query";
+import { BackendApi } from "@/core/api/api";
+import { useAppSelector } from "@/config/react-redux.adapter";
+import toast from "react-hot-toast";
+import { useAdmin } from "@/hooks/browser/useAdmin";
 type PageModes = "retire" | "tranfert" | "active";
 export default function TillById() {
   const { id } = useParams();
-
+  const isAdmin = useAdmin();
+  const navigate = useNavigate();
   const [pageMode, setPageMode] = useState<PageModes>("active");
   const { tillsByIdQuery } = useTillById(id!);
   const [tills, setTills] = useState<[string?, string?]>([]);
@@ -39,10 +46,51 @@ export default function TillById() {
   const [transfertMode, setTranfertMode] = useState<
     "cash" | "card" | "transfer" | undefined
   >(undefined);
+  const userId = useAppSelector((state) => state.auth.userInfo?.id);
+  const [deleteMode, setDeleteMode] = useState<boolean>(false);
+  const amount = Object.entries(bills).reduce(
+    (acc, [denomination, quantity]) => {
+      return acc + Number(denomination) * quantity;
+    },
+    0
+  );
+  // Mutate Transfert
+  const mutateTransfert = useMutation({
+    mutationFn: async () => {
+      try {
+        if (!bills) {
+          throw new Error("Necesitas billetes");
+        }
+        const data = {
+          billsToTransfert: bills,
+          amount,
+          tillToTransfert: id,
+          tillToReceived: tills[1],
+          method: transfertMode,
+          user: userId,
+        };
+        const response = await BackendApi.post("/till/transfert-money", data);
+        console.log(response);
+        setBills({});
+        setPageMode("active");
+        tillsByIdQuery.refetch();
+        toast.success("Se Transfirio correctamente", {
+          className: "text-xl ",
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    mutationKey: ["transfert", "till", `${id}`],
+  });
   // const [amount, setAmount] = useState<number>(0);
   if (tillsByIdQuery.isFetching) return <LoadingScreen />;
 
   const till = tillsByIdQuery.data;
+  if(!isAdmin){
+     navigate("/inventory");
+     return null;
+  }
   if (!id || !till) return <div>404 No Encontrado</div>;
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-PY").format(amount) + " Gs.";
@@ -50,6 +98,7 @@ export default function TillById() {
 
   return (
     <div className="min-h-screen w-full p-4 md:p-6 max-w-6xl mx-auto">
+      {/* Transfert Dialog */}
       <AlertDialog open={pageMode == "tranfert"}>
         <AlertDialogContent className="w-full min-w-[80svw] ">
           <AlertDialogTitle>
@@ -121,7 +170,7 @@ export default function TillById() {
                 </div>
               </div>
               {tills[1] && (
-                <div className="grid grid-cols-3 gap-2 max-h-[200px] md:max-h-full overflow-y-auto overflow-x-hidden">
+                <div className="grid grid-cols-3 gap-2 max-h-[200px] md:max-h-full overflow-y-auto overflow-x-hidden ">
                   {DEFAULT_DENOMINATIONS.map((amount: string) => {
                     return (
                       <div
@@ -131,13 +180,18 @@ export default function TillById() {
                         <Money
                           onClick={() => {
                             setBills((b) => {
-                              if(b[amount] + 1 > tillsByIdQuery.data.bills[amount]){
+                              if (
+                                b[amount] + 1 >
+                                tillsByIdQuery.data.bills[amount]
+                                || tillsByIdQuery.data.bills[amount] == 0
+                              ) {
                                 return b;
                               }
-                              return({
-                              ...b,
-                              [amount]: (b[amount] || 0) + 1,
-                            })});
+                              return {
+                                ...b,
+                                [amount]: (b[amount] || 0) + 1,
+                              };
+                            });
                           }}
                           type={Number(amount) > 1000 ? "bill" : "coin"}
                           alt={`${amount}Gs`}
@@ -148,11 +202,11 @@ export default function TillById() {
                             Number(amount) > 1000 ? "p-4" : ""
                           } bg-muted rounded-xl hover:scale-105 transition-transform`}
                         />
-                        <span className="absolute top-2 right-8 bg-white font-bold text-black px-2 py-1 rounded text-xl">
+                        <span className="absolute top-2 right-8 bg-white font-bold text-black px-2 py-1 rounded text-sm md:text-xl">
                           Disp:{tillsByIdQuery.data.bills[amount]}
                         </span>
                         {bills[amount] > 0 && (
-                          <span className="absolute bottom-2 right-8 bg-primary font-bold text-white text-xl px-2 py-1 rounded">
+                          <span className="absolute bottom-2 right-8 bg-primary font-bold text-white text-sm md:text-xl px-2 py-1 rounded">
                             Sel: {bills[amount]}
                           </span>
                         )}
@@ -192,8 +246,33 @@ export default function TillById() {
             >
               Cancelar
             </AlertDialogCancel>
-            <AlertDialogAction>Confirmar</AlertDialogAction>
+            <AlertDialogAction
+              onClick={() => {
+                mutateTransfert.mutate();
+              }}
+            >
+              Confirmar
+            </AlertDialogAction>
           </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={deleteMode}>
+        <AlertDialogContent>
+
+            <AlertDialogTitle>
+              ¿Estas seguro que deseas eliminar la caja?
+            </AlertDialogTitle>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeleteMode(false)}>
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={async () => {
+                await BackendApi.delete(`/till/${tillsByIdQuery.data.id}`)
+                navigate(-1)
+              }}>
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
       <div className="flex flex-col md:flex-row gap-6">
@@ -334,6 +413,14 @@ export default function TillById() {
               <Button className="flex justify-start">
                 <History size={24} />
                 Historial de Movimientos
+              </Button>
+              <Button 
+                onClick={() => {
+                  setDeleteMode(true)
+                }}
+                variant="destructive" className="flex justify-start">
+                <Trash size={24} />
+                Eliminar
               </Button>
             </CardContent>
           </Card>

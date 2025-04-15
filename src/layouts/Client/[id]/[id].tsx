@@ -1,45 +1,65 @@
 import useClient from "@/hooks/clients/useClient";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
-import { useParams } from "react-router";
-import { Pencil, User, IdCard, Home, ClipboardList } from "lucide-react";
+import { Link, useParams } from "react-router";
+import {
+  Pencil,
+  User,
+  IdCard,
+  Home,
+  ClipboardList,
+  PhoneCall,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import ClientsForm from "@/components/forms/clients-form";
 import { Button } from "@/components/ui/button";
+import { useSalesByClient } from "@/hooks/sales/useSalesByClient";
+import { Sale } from "@/infrastructure/interfaces/sale/sale.interface";
+import { formatCurrency } from "@/lib/formatCurrency.utils";
 
 export default function ClientIdPage() {
   const { id } = useParams();
   const { getClientQuery } = useClient(String(id), 1);
   const [editMode, setEditMode] = useState(false);
-  if (getClientQuery.isFetching) return <LoadingScreen />;
+  const { getSalesByClientQuery } = useSalesByClient(id || "");
+  const sales: Sale[] = getSalesByClientQuery.data?.sales || [];
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+  const totalPages = Math.ceil(sales.length / pageSize);
+  const paginatedSales = sales.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  if (getClientQuery.isFetching || getSalesByClientQuery.isFetching)
+    return <LoadingScreen />;
   const client = getClientQuery.data?.clients[0];
 
   if (!client) return <div>Cliente no encontrado</div>;
   if (editMode)
     return (
-      <div className="w-full mt-20 md:mt-4 flex flex-col gap-2">
+      <div className="w-full mt-20 px-4 md:mt-4 flex flex-col gap-2">
         <div>
-
-        <Button
-          onClick={() => { setEditMode(false)}}
-        >
-          Volver
-        </Button>
+          <Button
+            onClick={() => {
+              setEditMode(false);
+            }}
+          >
+            Volver
+          </Button>
         </div>
         <ClientsForm
           onEdit={() => {
-           
-            setEditMode(false)
+            setEditMode(false);
             window.location.reload();
-          }} 
+          }}
           edit={true}
           valuesEdited={client}
         />
       </div>
     );
   return (
-    <div className="min-h-screen bg-gray-50 p-6 w-full">
+    <div className="min-h-screen bg-gray-50 p-6 w-full mt-10 md:mt-4">
       {/* Encabezado del cliente */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -112,6 +132,23 @@ export default function ClientIdPage() {
             </div>
           </div>
         </motion.div>
+        <motion.div
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          className="bg-white p-6 rounded-xl shadow-md border-2 border-green-100"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <PhoneCall className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <h3 className="text-sm text-gray-500">Telefono</h3>
+              <p className="text-lg font-medium text-gray-800">
+                {client.phoneNumber || "N/A"}
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       {/* Sección de detalles */}
@@ -137,6 +174,59 @@ export default function ClientIdPage() {
             icon={<ClipboardList className="h-5 w-5 text-gray-500" />}
           />
         </div>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100 mt-2 flex flex-col"
+      >
+        {paginatedSales.length == 0 && (
+          <>
+            <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+              No se encontraron Ventas
+            </h2>
+          </>
+        )}
+        {paginatedSales.map((sale: Sale) => {
+          return (
+            <motion.div
+              key={sale.id}
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white rounded-xl shadow border border-gray-200 mb-2"
+            >
+              {/* Enlace a la ruta de detalle de la venta */}
+              <Link
+                to={`/inventory/sales/${sale.id}`}
+                className="text-blue-600 font-bold hover:underline"
+              >
+                {sale.id}
+              </Link>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <span className="text-gray-700">
+                  {formatCurrency(sale.amount)}
+                </span>
+                <span className="text-gray-500">
+                  {new Date(sale.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            </motion.div>
+          );
+        })}
+        {totalPages > 1 && (
+          <div className="flex justify-center gap-4 mt-4">
+            <Button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              Anterior
+            </Button>
+            <Button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Siguiente
+            </Button>
+          </div>
+        )}
       </motion.div>
     </div>
   );
@@ -174,4 +264,3 @@ function DetailItem({
     </div>
   );
 }
-// ... rest of code remains same

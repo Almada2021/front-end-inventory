@@ -15,7 +15,7 @@ import { useState } from "react";
 import { useParams } from "react-router";
 import ProviderList from "./ProvidersItem/ProviderList";
 import ProductChanges from "./ProductChanges/ProductChanges";
-// import SkeletonLoader from "@/components/SkeletonLoader"; // Asume un componente de carga
+import ProductSales from "./ProductSales/ProductSales";
 
 export default function ProductInfo() {
   const { id } = useParams();
@@ -154,7 +154,7 @@ export default function ProductInfo() {
           <ProductChanges id={getProductsByIds.data[0].id} />
         </>
       )}
-      {mode == "sales" && loadProducts && <div>Hola</div>}
+      {mode == "sales" && loadProducts && <ProductSales/>}
     </div>
   );
 }

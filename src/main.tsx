@@ -9,7 +9,7 @@ import AppSidebar from "./components/Sidebar/AppSidebar";
 import { ErrorBoundary } from "./components/Errors/ErrorBoundary";
 import ProtectedRoutes from "./layouts/guard/ProtectedRoutes";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as ToasterHot} from "react-hot-toast"
+import { Toaster as ToasterHot } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   RegisterPage,
@@ -47,7 +47,9 @@ import {
   NewOrder,
   ShowOrders,
   ShowClient,
-  OrderInfo
+  OrderInfo,
+  ReportsPage,
+  StockOptimization,
 } from "@/pages";
 
 const client = new QueryClient();
@@ -64,12 +66,17 @@ createRoot(document.getElementById("root")!).render(
                     <Routes>
                       <Route path="/" element={<App />} />
                       <Route path="inventory">
+                        <Route path="reports" element={<ReportsPage />} />
                         <Route index element={<HomeScreen show />} />
                         <Route path="ai">
                           <Route index element={<AiScreen />} />
                           <Route
                             path="load-product"
                             element={<LoadProduct />}
+                          />
+                          <Route
+                            path="stock-optimization"
+                            element={<StockOptimization />}
                           />
                         </Route>
                         <Route path="clients">
@@ -89,12 +96,12 @@ createRoot(document.getElementById("root")!).render(
                           <Route path="show" element={<ShowProducts />}></Route>
                           <Route path=":id" element={<ProductInfo />}></Route>
                         </Route>
-                        <Route path="employee" >
+                        <Route path="employee">
                           <Route index element={<EmployeeScreen />} />
                           <Route path="new" element={<NewEmployee />} />
                           <Route path="show" element={<ShowEmployees />} />
-                          <Route path="show/:id" element={<EmployeeInfo />} />          
-                          <Route path="edit/:id" element={<EditEmployee />} />        
+                          <Route path="show/:id" element={<EmployeeInfo />} />
+                          <Route path="edit/:id" element={<EditEmployee />} />
                         </Route>
                         <Route path="suppliers">
                           <Route index element={<SuppliersScreen />} />
@@ -104,7 +111,7 @@ createRoot(document.getElementById("root")!).render(
                         </Route>
                         <Route path="sales">
                           <Route index element={<SalesPage />} />
-                          <Route path=":id" element={<SaleByIdPage/>}/>
+                          <Route path=":id" element={<SaleByIdPage />} />
                         </Route>
                         <Route path="stores">
                           <Route index element={<StoresAndBill />} />
@@ -120,16 +127,15 @@ createRoot(document.getElementById("root")!).render(
                           ></Route>
                         </Route>
                         <Route path="orders">
-                          <Route index element={<OrdersPage/>} />
+                          <Route index element={<OrdersPage />} />
                           <Route path="new" element={<NewOrder />} />
                           <Route path="show" element={<ShowOrders />} />
-                          <Route path=":id" element={<OrderInfo/>}/>
+                          <Route path=":id" element={<OrderInfo />} />
                         </Route>
                         <Route path="register" element={<RegisterPage />} />
                         {/* Till */}
                         <Route path="till/:id" element={<TillById />} />
                       </Route>
-
                       <Route path="/test" element={<App />} />
                       <Route path="/login" element={<LoginPage show />} />
                       <Route
@@ -139,7 +145,7 @@ createRoot(document.getElementById("root")!).render(
                     </Routes>
                   </Suspense>
                   <Toaster />
-                  <ToasterHot/>
+                  <ToasterHot />
                 </ProtectedRoutes>
               </AppSidebar>
             </BrowserRouter>

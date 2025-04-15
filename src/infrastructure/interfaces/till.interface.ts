@@ -12,4 +12,5 @@ export interface Till {
 
 export interface TillFilters {
   exclude?: string,
+  type?: string,
 }

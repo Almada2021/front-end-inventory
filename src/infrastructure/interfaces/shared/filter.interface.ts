@@ -3,4 +3,5 @@ export interface FilterOptionsRequest {
   limit: number;
   startDate?: string;
   endDate?: string;
+  status?: string;
 }

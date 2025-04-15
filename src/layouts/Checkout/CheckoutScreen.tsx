@@ -339,7 +339,7 @@ export default function CheckoutScreen() {
         >
           <div
             className={`w-full px-4 mb-2 flex md:min-h-[60px] ${
-              mode == "products" && "justify-center items-center"
+              mode == "products" && "justify-center items-center overflow-x-auto"
             }`}
           >
             <Button

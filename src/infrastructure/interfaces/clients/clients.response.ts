@@ -9,4 +9,5 @@ export interface Client {
   ruc: string;
   salesHistory: string[];
   address: string;
+  phoneNumber: string;
 }

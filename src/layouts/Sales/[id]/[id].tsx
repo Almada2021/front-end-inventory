@@ -21,21 +21,19 @@ export default function SalesById() {
   const { getClientQuery }= useClient(salesByIdQuery.data?.client, 1)
   const { userByIdQuery } = useUserById(salesByIdQuery?.data?.sellerId || "");
   
-  // const {} = use
   if (!id) return null;
   if (salesByIdQuery.isFetching) return <LoadingScreen />;
 
   const saleData = salesByIdQuery.data;
   if (!saleData) return <div>Venta no encontrada</div>;
 
-  // Formateador de moneda
   const formatter = new Intl.NumberFormat("es-PY", {
     style: "currency",
     currency: "PYG",
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 w-full">
+    <div className="min-h-screen bg-gray-50 p-6 w-full mt-10 md:mt-4">
       {/* Encabezado de la venta */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

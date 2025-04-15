@@ -1,5 +1,3 @@
-// import { RootState } from "@/app/store";
-// import { useAppSelector } from "@/config/react-redux.adapter";
 import { signOut } from "@/app/features/user/userSlice";
 import { RootState } from "@/app/store";
 import {
@@ -111,7 +109,7 @@ const items: MenuItem[] = [
   },
   {
     title: "Reportes",
-    url: "#",
+    url: "/inventory/reports",
     icon: FileSpreadsheet,
   },
   {

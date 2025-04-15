@@ -24,7 +24,7 @@ const AiModules: AiItem[] = [
   },
   {
     title: "Optimización de Stock",
-    url: "/inventory/stock-optimization",
+    url: "/inventory/ai/stock-optimization",
     description: "Recomendaciones de niveles de inventario",
     icon: <BarChart className="w-8 h-8" />,
   },

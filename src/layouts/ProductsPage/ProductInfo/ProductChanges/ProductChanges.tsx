@@ -1,5 +1,16 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, Tag, DollarSign, Truck } from "lucide-react";
+import {
+  Clock,
+  Tag,
+  DollarSign,
+  Truck,
+  TagIcon,
+  BoxIcon,
+  PackageIcon,
+  Barcode,
+  NotebookIcon,
+  PictureInPicture,
+} from "lucide-react";
 import useProductsHistory from "@/hooks/products/history/useProductsHistory";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
 import useProvider from "@/hooks/providers/useProvider";
@@ -39,16 +50,12 @@ const ChangeItem = ({
   </div>
 );
 
-const ProviderGetter = ({providerId}:{providerId: string}) => {
-    const {getProviderById} = useProvider(providerId);
-    if(getProviderById.isFetching){
-        return null;
-    }
-    return (
-        <>
-            {getProviderById.data?.name || null}
-        </>
-    )
+const ProviderGetter = ({ providerId }: { providerId: string }) => {
+  const { getProviderById } = useProvider(providerId);
+  if (getProviderById.isFetching) {
+    return null;
+  }
+  return <>{getProviderById.data?.name || null}</>;
 };
 const ProviderChange = ({
   from,
@@ -72,9 +79,7 @@ const ProviderChange = ({
           <Truck className="w-4 h-4" />
           {removed.map((p) => (
             <span key={p} className="badge-destructive">
-              <ProviderGetter
-                providerId={p} 
-              />
+              <ProviderGetter providerId={p} />
             </span>
           ))}
         </div>
@@ -84,9 +89,7 @@ const ProviderChange = ({
           <Truck className="w-4 h-4" />
           {added.map((p) => (
             <span key={p} className="badge-success">
-               <ProviderGetter
-                providerId={p} 
-              />
+              <ProviderGetter providerId={p} />
             </span>
           ))}
         </div>
@@ -134,16 +137,71 @@ export default function ProductChanges({ id }: Props) {
                   to={entry.changes.name.to}
                 />
               )}
+              {entry.changes.stock && (
+                <ChangeItem
+                  icon={BoxIcon}
+                  title="Stock del producto"
+                  from={entry.changes.stock.from}
+                  to={entry.changes.stock.to}
+                />
+              )}
+
+              {entry.changes.rfef && (
+                <ChangeItem
+                  icon={NotebookIcon}
+                  title="RFEF"
+                  from={entry.changes.rfef.from}
+                  to={entry.changes.rfef.to}
+                />
+              )}
+              {entry.changes.barCode && (
+                <ChangeItem
+                  icon={Barcode}
+                  title="Codigo de Barras"
+                  from={entry.changes.barCode.from}
+                  to={entry.changes.barCode.to}
+                />
+              )}
+              {entry.changes.uncounted && (
+                <ChangeItem
+                  icon={PackageIcon}
+                  title="No Contabilizado"
+                  from={entry.changes.uncounted.from ? "Si" : "No"}
+                  to={
+                    entry.changes.uncounted.to == "true" ||
+                    entry.changes.uncounted.to == true
+                      ? "Si"
+                      : "No"
+                  }
+                />
+              )}
 
               {entry.changes.price && (
                 <ChangeItem
                   icon={DollarSign}
                   title="Precio"
-                  from={`${formatCurrency( Number(entry.changes.price.from))}`}
+                  from={`${formatCurrency(Number(entry.changes.price.from))}`}
                   to={`${formatCurrency(Number(entry.changes.price.to))}`}
                 />
               )}
-
+              {entry.changes.basePrice && (
+                <ChangeItem
+                  icon={TagIcon}
+                  title="Precio de Costo"
+                  from={`${formatCurrency(
+                    Number(entry.changes.basePrice.from)
+                  )}`}
+                  to={`${formatCurrency(Number(entry.changes.basePrice.to))}`}
+                />
+              )}
+              {entry.changes.photoUrl &&(
+                <ChangeItem
+                  icon={PictureInPicture}
+                  title="Foto"
+                  from={entry.changes.photoUrl.from}
+                  to={entry.changes.photoUrl.to}
+                  />
+              )}
               {entry.changes.providers && (
                 <div className="p-3 bg-muted/30 rounded-lg space-y-3">
                   <div className="flex items-center gap-3">

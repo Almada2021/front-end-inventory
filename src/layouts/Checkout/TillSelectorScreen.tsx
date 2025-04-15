@@ -12,7 +12,9 @@ const TillSelectorScreen = memo(function StoreSelectorScreen({
   changeMode,
   storeId,
 }: Props) {
-  const { tillsByStoreQuery } = useTills(storeId!);
+  const { tillsByStoreQuery } = useTills(storeId!, {
+    type: "till"
+  });
 
   const memoizedChangeMode = useCallback(
     (id: string, till: Till) => {

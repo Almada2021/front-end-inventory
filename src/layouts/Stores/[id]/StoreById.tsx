@@ -8,13 +8,26 @@ import useTills from "@/hooks/till/useTills";
 import { Till } from "@/infrastructure/interfaces/till.interface";
 import { TillCard } from "@/components/Cards/Till/TillCard";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/formatCurrency.utils";
+import useOrders from "@/hooks/order/useOrders";
+import { useAdmin } from "@/hooks/browser/useAdmin";
 
 export default function StoreById() {
   const { id } = useParams();
+  const isAdmin = useAdmin();
   const { storeById } = useStoreById(id || "");
   const { data: store } = storeById;
+  const {getOrdersQuery} = useOrders({
+    page: 1,
+    limit: 1000,
+    status: "open"
+  })
   const navigate = useNavigate();
   const { tillsByStoreQuery } = useTills(id!);
+  if(!isAdmin){
+    navigate("/inventory")
+    return null;
+  }
   if (storeById.isFetching || tillsByStoreQuery.isFetching)
     return <LoadingScreen />;
   if (!store) return <div>No Encontrado</div>;
@@ -54,7 +67,15 @@ export default function StoreById() {
             </div>
             <div>
               <h3 className="text-sm text-gray-500">Total en cajas</h3>
-              <p className="text-2xl font-bold text-gray-800">--- Gs</p>
+              <p className="text-2xl font-bold text-gray-800">
+                {formatCurrency(
+                  tillsByStoreQuery.data?.tills.reduce(
+                    (acc, till) => acc + till.totalCash,
+                    0
+                  ) || 0
+                )}{" "}
+                Gs
+              </p>
             </div>
           </div>
         </motion.div>
@@ -70,7 +91,7 @@ export default function StoreById() {
             </div>
             <div>
               <h3 className="text-sm text-gray-500">Pedidos pendientes</h3>
-              <p className="text-2xl font-bold text-gray-800">---</p>
+              <p className="text-2xl font-bold text-gray-800">{formatCurrency(getOrdersQuery.data?.orders.reduce((acc, order) => acc + order.amount,0) || 0)}</p>
             </div>
           </div>
         </motion.div>
