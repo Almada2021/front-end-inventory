@@ -13,6 +13,7 @@ import {
   TillActionRequirements,
 } from "@/core/actions/tills/newTillAction";
 import { useParams } from "react-router";
+import toast from "react-hot-toast";
 
 const DENOMINATIONS = [
   "100000",
@@ -91,10 +92,12 @@ export default function NewTilll({
     initialValues: {
       name: "",
       contabilizada: true,
+      bank: false,
     },
     validationSchema: Yup.object({
       name: Yup.string().required("El nombre de la caja es requerido"),
       contabilizada: Yup.boolean().optional(),
+      bank: Yup.boolean().optional(),
     }),
     onSubmit: async (values) => {
       const formData = {
@@ -106,8 +109,11 @@ export default function NewTilll({
           (acc, [denom, qty]) => acc + parseInt(denom) * qty,
           0
         ),
+        // uncounted: for
+        type: values.bank ? "bankAcount" : "till",
       };
       newTillMutate.mutate(formData);
+      toast.success("La Caja se Creo correctamente")
       formik.resetForm();
     },
   });
@@ -146,16 +152,29 @@ export default function NewTilll({
               </div>
 
               {/* Checkbox Contabilizada */}
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="contabilizada"
-                  name="contabilizada"
-                  checked={formik.values.contabilizada}
-                  onCheckedChange={(checked) =>
-                    formik.setFieldValue("contabilizada", checked)
-                  }
-                />
-                <Label htmlFor="contabilizada">Caja contabilizada</Label>
+              <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="contabilizada"
+                    name="contabilizada"
+                    checked={formik.values.contabilizada}
+                    onCheckedChange={(checked) =>
+                      formik.setFieldValue("contabilizada", checked)
+                    }
+                  />
+                  <Label htmlFor="contabilizada">Caja contabilizada</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="bank"
+                    name="bank"
+                    checked={formik.values.bank}
+                    onCheckedChange={(checked) =>
+                      formik.setFieldValue("bank", checked)
+                    }
+                  />
+                  <Label htmlFor="contabilizada">Es un Banco</Label>
+                </div>
               </div>
 
               {/* Configuración de efectivo */}

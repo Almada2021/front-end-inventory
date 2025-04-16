@@ -60,7 +60,7 @@ export default function SearchBar<T>({
       aria-description="Search bar"
       className={` ${
         mode == "max" && "min-h-[120px] max-h-[140px] p-20"
-      }  flex justify-center items-center  w-full`}
+      }  flex justify-center items-center  w-full min-w-[160px]`}
     >
       <form
         onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {

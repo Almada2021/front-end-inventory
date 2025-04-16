@@ -87,6 +87,7 @@ export default function TillById() {
   if (tillsByIdQuery.isFetching) return <LoadingScreen />;
 
   const till = tillsByIdQuery.data;
+  const type  = till?.type
   if(!isAdmin){
      navigate("/inventory");
      return null;
@@ -293,7 +294,7 @@ export default function TillById() {
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <p className="text-muted-foreground">Efectivo Total</p>
+                  <p className="text-muted-foreground">{type == "till" ? "Efectivo Total" : "Saldo Total"}</p>
                   <p className="text-2xl font-semibold text-green-600">
                     {formatCurrency(till.totalCash)}
                   </p>
@@ -314,10 +315,12 @@ export default function TillById() {
             </Card>
 
             {/* Detalle de Billetes */}
+              {type == "till" && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Desglose de Efectivo</CardTitle>
               </CardHeader>
+
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                   {Object.entries(till.bills).map(
@@ -351,6 +354,7 @@ export default function TillById() {
                 </div>
               </CardContent>
             </Card>
+              )}
           </ScrollArea>
         </div>
 
@@ -362,7 +366,7 @@ export default function TillById() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between">
-                <span>Efectivo:</span>
+                <span>{type == "till" ? "Efectivo:" : "saldo"}</span>
                 <span className="font-semibold">
                   {formatCurrency(till.totalCash)}
                 </span>
@@ -404,7 +408,7 @@ export default function TillById() {
                 className="flex justify-start"
               >
                 <ArrowRightLeft size={24} />
-                Transferir Dinero a otra Caja
+                {type == "till" ? "Transferir Dinero a otra Caja" : "Transferir Dinero a otra cuenta"}
               </Button>
               <Button className="flex justify-start">
                 <LogOut size={24} />

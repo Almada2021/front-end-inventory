@@ -34,9 +34,9 @@ export default function SalesPage() {
   }
   return (
     <div className="w-full h-screen mt-20 md:mt-4">
-      <div className="mx-4 flex">
+      <div className="mx-4 flex flex-col md:flex-row gap-2">
         <CalendarSelector
-          className="w-full"
+          className="w-full "
           date={date}
           setDate={(date: DateRange | undefined) => {
             if(date != undefined){

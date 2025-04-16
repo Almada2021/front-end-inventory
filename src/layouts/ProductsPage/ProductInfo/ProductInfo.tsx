@@ -131,7 +131,7 @@ export default function ProductInfo() {
           </div>
         </div>
       </div>
-      <div className="w-full mt-4 flex justify-center gap-2">
+      <div className="w-full mt-4 flex justify-center gap-2 mb-10 md:mb-2">
         <Button
           onClick={() => {
             setMode("sales");

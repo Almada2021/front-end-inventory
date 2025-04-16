@@ -128,7 +128,7 @@ export const Receipt = ({ data }: ReceiptProps) => {
           </div>
 
           {bills && Object.keys(bills).length > 0 && (
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span>Billetes Pagados:</span>
               {Object.entries(bills).map(([bill, quantity]) => (
                 <div
@@ -147,12 +147,12 @@ export const Receipt = ({ data }: ReceiptProps) => {
             </div>
           )}
           {cashBack && Object.keys(cashBack).length > 0 && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span>Vuelto:</span>
               {Object.entries(cashBack).map(([bill, quantity]) => (
                 <div
                   key={bill}
-                  className="bg-gray-100 px-2 py-1 rounded flex items-center"
+                  className="bg-gray-100 px-2 py-1 rounded flex items-center "
                 >
                   {quantity}x {formatCurrency(Number(bill))}
                   <button

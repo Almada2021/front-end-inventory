@@ -33,7 +33,7 @@ export default function StoreById() {
   if (!store) return <div>No Encontrado</div>;
   const tills = tillsByStoreQuery.data?.tills;
   return (
-    <div className="min-h-screen bg-gray-50 p-6 w-full">
+    <div className="min-h-screen bg-gray-50 p-6 w-full mt-10 md:mt-4 ">
       {/* Encabezado de la tienda */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

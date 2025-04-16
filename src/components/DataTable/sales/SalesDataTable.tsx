@@ -270,7 +270,7 @@ export default function SalesDataTable({ date }: Props) {
   if (salesQuery.isFetching) return null;
 
   return (
-    <div className="mx-4 mt-4 w-full">
+    <div className="mx-4 mt-4 w-full max-w-[80vw]">
       <div className="flex items-center justify-between py-4">
         <div className="flex gap-2 items-center">
           <div className="relative max-w-sm">

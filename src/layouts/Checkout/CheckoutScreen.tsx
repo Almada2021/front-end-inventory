@@ -176,9 +176,9 @@ export default function CheckoutScreen() {
   };
 
   const pushCart = (product: Product, quantity: number) => {
-    if (product.stock < quantity && !product.uncounted){
+    if (product.stock < quantity && !product.uncounted) {
       return;
-    } 
+    }
     if (cart.length == 0) {
       setCart([
         {
@@ -191,9 +191,12 @@ export default function CheckoutScreen() {
       ]);
     } else {
       const existsIndex = cart.findIndex((current) => current.id == product.id);
-      if (product.stock < cart[existsIndex]?.quantity + 1 && !product.uncounted) {
+      if (
+        product.stock < cart[existsIndex]?.quantity + 1 &&
+        !product.uncounted
+      ) {
         return;
-      } 
+      }
       if (existsIndex != -1) {
         const newQuantity = cart[existsIndex].quantity + 1;
         setCart((cart) => {
@@ -218,7 +221,9 @@ export default function CheckoutScreen() {
     setCart((currentCart) =>
       currentCart
         .map((item) =>
-          item.id === productId && item.uncounted || item.stock >= newQuantity ? { ...item, quantity: newQuantity } : item
+          (item.id === productId && item.uncounted) || item.stock >= newQuantity
+            ? { ...item, quantity: newQuantity }
+            : item
         )
         .filter((item) => item.quantity > 0)
     );
@@ -325,8 +330,7 @@ export default function CheckoutScreen() {
           title="¿Estás seguro de que deseas volver?"
           message="Regresarás al modo de selección de Tiendas.y la caja se cerrara ¿Deseas continuar?"
           onConfirm={async () => {
-            closeTillMutate.mutate()
-           
+            closeTillMutate.mutate();
           }}
           onCancel={() => {
             setBackToSelection(false);
@@ -339,7 +343,8 @@ export default function CheckoutScreen() {
         >
           <div
             className={`w-full px-4 mb-2 flex md:min-h-[60px] ${
-              mode == "products" && "justify-center items-center overflow-x-auto"
+              mode == "products" &&
+              "justify-center items-center overflow-x-auto "
             }`}
           >
             <Button
@@ -348,7 +353,7 @@ export default function CheckoutScreen() {
                 changeMode("back");
               }}
               className={`gap-2 text-lg border-2 border-white border-solid flex items-center ${
-                mode == "products" && "text-red-500"
+                mode == "products" && "text-red-500 ml-14 md:ml-0"
               }`}
             >
               <ArrowLeftCircleIcon size={48} />
@@ -379,14 +384,13 @@ export default function CheckoutScreen() {
                 onGetData={(data) => {
                   if (data && data?.length > 0) {
                     setProducts(data as Product[]);
-                  }else if(products.length > 0 && data?.length == 0){
-                    console.log("")
+                  } else if (products.length > 0 && data?.length == 0) {
+                    console.log("");
                   }
                 }}
                 onNotify={(query: string) => {
-                  if(query.length == 0 ){
-
-                    setProducts([])
+                  if (query.length == 0 && products.length != 0) {
+                    setProducts([]);
                   }
                 }}
                 mode="min"

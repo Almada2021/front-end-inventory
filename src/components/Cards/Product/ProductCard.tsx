@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 
 interface Props {
   product: Product;
-  variant?: "detail" | "checkout";
+  variant?: "detail" | "checkout" | "virtual";
   onClick?: () => void;
 }
 
@@ -15,10 +15,52 @@ export default function ProductCard({
 }: Props) {
   const navigate = useNavigate();
   const pressCard = () => {
-    if (variant == "checkout" && onClick) {
+    if ((variant === "checkout" || variant === "virtual") && onClick) {
       onClick();
     }
   };
+
+  // Para la variante virtualizada, eliminamos efectos de transformación y transición
+  if (variant === "virtual") {
+    return (
+      <div
+        onClick={pressCard}
+        className="w-full bg-white h-[350px] rounded-xl shadow-md cursor-pointer relative active:bg-green-500 hover:bg-slate-100"
+      >
+        {/* Contenedor de imagen simplificado */}
+        <div className="relative h-3/4 w-full overflow-hidden">
+          <Image
+            title={`Ver Producto ${product.name}`}
+            className="h-full w-full object-cover"
+            src={product.photoUrl}
+          />
+
+          {/* Badge de precio sin efectos */}
+          <span className="absolute top-2 right-2 bg-green-600 text-white px-3 py-1 rounded-full text-xl font-bold">
+            {product.price.toLocaleString()} Gs
+          </span>
+        </div>
+
+        {/* Contenido inferior sin efectos */}
+        <section className="p-4 flex flex-col justify-between h-1/4">
+          <h3 className="text-lg font-semibold text-gray-800 truncate line-clamp-2 leading-tight">
+            {product.name.length > 40
+              ? `${product.name.substring(0, 40)}...`
+              : product.name}
+          </h3>
+        </section>
+
+        {/* Etiqueta de stock (opcional) sin efectos */}
+        {!product.uncounted && product.stock <= 10 && (
+          <span className="absolute top-2 left-2 bg-red-100 text-red-800 px-2 py-1 rounded-md text-xs font-medium">
+            Últimas {product.stock} unidades
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // Versión original con efectos para variantes "detail" y "checkout"
   return (
     <div
       onClick={pressCard}
