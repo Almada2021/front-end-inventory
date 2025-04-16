@@ -8,9 +8,10 @@ interface Props
   src: string;
 }
 export default function Image({ src, ...props }: Props) {
- 
   const isAnURL = /^(https?:\/\/)/.test(src);
-  const { data, isLoading, isError } = useImg(isAnURL ? src : `${import.meta.env.VITE_BACKEND_URL}/static/${src}`);
+  const { data, isLoading, isError } = useImg(
+    isAnURL ? src : `${import.meta.env.VITE_BACKEND_URL}/static/${src}`
+  );
   if (isLoading) return null;
   if (isError) return <img src="" alt="Error" />;
   if (!src) {

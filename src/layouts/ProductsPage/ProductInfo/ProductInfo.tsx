@@ -154,7 +154,7 @@ export default function ProductInfo() {
           <ProductChanges id={getProductsByIds.data[0].id} />
         </>
       )}
-      {mode == "sales" && loadProducts && <ProductSales/>}
+      {mode == "sales" && loadProducts && <ProductSales id={getProductsByIds.data[0].id}/>}
     </div>
   );
 }

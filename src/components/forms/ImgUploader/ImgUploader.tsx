@@ -1,6 +1,7 @@
 import { RefObject, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import Image from "@/components/Image/Image";
 interface Props {
   validation: boolean;
   validationMessage: string;
@@ -18,6 +19,7 @@ export default function ImgUploader({
   setFieldValue,
 }: Props) {
   const [previewImg, setPreviewImg] = useState<string>("");
+  const [hasChangedImage, setHasChangedImage] = useState<boolean>(false);
 
   return (
     <div className="grid ">
@@ -34,12 +36,13 @@ export default function ImgUploader({
           const file = event.target.files?.[0];
           setPreviewImg(URL.createObjectURL(file!));
           setFieldValue("image", file || null);
+          setHasChangedImage(true);
         }}
       />
       {validation && (
         <p className="text-xs text-red-600">{validationMessage}</p>
       )}
-      {imgUrl && previewImg == "" && (
+      {imgUrl && previewImg == "" && !hasChangedImage && (
         <div
           onClick={() => {
             if (fileInputRef.current) {
@@ -48,12 +51,12 @@ export default function ImgUploader({
           }}
           className="border-dotted border-primary border-2 min-h-[150px] flex justify-center items-center"
         >
-          <img
+          <Image
             className="w-full max-h-[150px] object-contain"
             src={imgUrl}
             alt={`Producto: ${alt}`}
             title={`Producto: ${alt}`}
-          ></img>
+          />
         </div>
       )}
       {previewImg != "" && (
@@ -65,15 +68,29 @@ export default function ImgUploader({
           }}
           className="border-dotted border-primary border-2 min-h-[150px] flex justify-center items-center"
         >
-          <img
+          <Image
             className="w-full max-h-[150px] object-contain"
             src={previewImg}
             alt={`Producto: ${alt}`}
             title={`Producto: ${alt}`}
-          ></img>
+          />
         </div>
       )}
-      {previewImg == "" && (
+      {previewImg == "" && hasChangedImage && (
+        <div
+          onClick={() => {
+            if (fileInputRef.current) {
+              fileInputRef.current.click();
+            }
+          }}
+          className="border-dotted border-primary border-2 min-h-[150px] flex justify-center items-center"
+        >
+          <h3 className="text-primary font-bold text-center">
+            Click Para Elegir la foto del producto
+          </h3>
+        </div>
+      )}
+      {previewImg == "" && !hasChangedImage && !imgUrl && (
         <div
           onClick={() => {
             if (fileInputRef.current) {

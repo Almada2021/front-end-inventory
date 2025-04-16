@@ -36,6 +36,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Loader2, Plus, Trash2, Search } from "lucide-react";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
+import { useAdmin } from "@/hooks/browser/useAdmin";
 
 // Interfaces para el formulario
 interface OrderProduct {
@@ -331,6 +332,7 @@ const ProductRow: React.FC<ProductRowProps> = ({
  */
 export default function NewOrder(): JSX.Element {
   const navigate = useNavigate();
+  const isAdmin = useAdmin();
   const queryClient = useQueryClient();
   const [selectedProvider, setSelectedProvider] = useState<string>("");
   const [selectedStore, setSelectedStore] = useState<string>("");
@@ -548,6 +550,9 @@ export default function NewOrder(): JSX.Element {
     }, 0);
   }, [formik.values.products, allProducts]);
   amount = total;
+  if(!isAdmin){
+    navigate("/inventory")
+  }
   // Mostrar pantalla de carga si es necesario
   if (providersLoading || storesLoading || (selectedProvider && selectedProviderLoading)) {
     return <LoadingScreen />;

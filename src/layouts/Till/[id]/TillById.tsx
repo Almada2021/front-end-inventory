@@ -34,6 +34,7 @@ import { BackendApi } from "@/core/api/api";
 import { useAppSelector } from "@/config/react-redux.adapter";
 import toast from "react-hot-toast";
 import { useAdmin } from "@/hooks/browser/useAdmin";
+import MoneyInput from "@/components/MoneyInput/MoneyInput";
 type PageModes = "retire" | "tranfert" | "active";
 export default function TillById() {
   const { id } = useParams();
@@ -54,21 +55,37 @@ export default function TillById() {
     },
     0
   );
+
+  const [moneyCard, setMoneyCard] = useState(1000);
   // Mutate Transfert
   const mutateTransfert = useMutation({
     mutationFn: async () => {
       try {
-        if (!bills) {
-          throw new Error("Necesitas billetes");
+        let data: { [key: string]: unknown } = {};
+        if (transfertMode == "cash") {
+          if (!bills) {
+            throw new Error("Necesitas billetes");
+          }
+
+          data = {
+            billsToTransfert: bills,
+            amount,
+            tillToTransfert: id,
+            tillToReceived: tills[1],
+            method: transfertMode,
+            user: userId,
+          };
         }
-        const data = {
-          billsToTransfert: bills,
-          amount,
-          tillToTransfert: id,
-          tillToReceived: tills[1],
-          method: transfertMode,
-          user: userId,
-        };
+        if (transfertMode == "card") {
+          data = {
+            billsToTransfert: {},
+            amount: moneyCard,
+            tillToTransfert: id,
+            tillToReceived: tills[1],
+            method: transfertMode,
+            user: userId,
+          };
+        }
         const response = await BackendApi.post("/till/transfert-money", data);
         console.log(response);
         setBills({});
@@ -87,10 +104,10 @@ export default function TillById() {
   if (tillsByIdQuery.isFetching) return <LoadingScreen />;
 
   const till = tillsByIdQuery.data;
-  const type  = till?.type
-  if(!isAdmin){
-     navigate("/inventory");
-     return null;
+  const type = till?.type;
+  if (!isAdmin) {
+    navigate("/inventory");
+    return null;
   }
   if (!id || !till) return <div>404 No Encontrado</div>;
   const formatCurrency = (amount: number) => {
@@ -104,11 +121,12 @@ export default function TillById() {
         <AlertDialogContent className="w-full min-w-[80svw] ">
           <AlertDialogTitle>
             Transferir Desde {tillsByIdQuery.data.name} tienes{" "}
-            {formatCurrency(
-              tillsByIdQuery.data.totalCash +
-                tillsByIdQuery.data.cardPayments +
-                tillsByIdQuery.data.transferPayments
-            )}
+            {transfertMode == "cash" &&
+              formatCurrency(tillsByIdQuery.data.totalCash)}
+            {transfertMode == "card" &&
+              formatCurrency(tillsByIdQuery.data.cardPayments)}
+            {transfertMode == "transfer" &&
+              formatCurrency(tillsByIdQuery.data.transferPayments)}
           </AlertDialogTitle>
           <AlertDialogDescription>
             Transferir dinero de una caja a otra
@@ -156,18 +174,20 @@ export default function TillById() {
                   />
                 )}
                 <TillInfo id={tills[1]} />
-                <div className="text-green-300 font-bold text-xl mt-2">
-                  <div className="text-black inline-block">
-                    Vas a transferir{" "}
-                  </div>
-                  {formatCurrency(
-                    Object.entries(bills).reduce(
-                      (acc, [denomination, quantity]) => {
-                        return acc + Number(denomination) * quantity;
-                      },
-                      0
-                    )
-                  )}
+                <div className="mt-4 p-4 bg-green-50 rounded-lg shadow-sm flex items-center justify-between">
+                  <span className="text-gray-800 font-medium">
+                    Vas a transferir
+                  </span>
+                  <span className="text-green-600 font-bold text-xl">
+                    {transfertMode === "cash" &&
+                      formatCurrency(
+                        Object.entries(bills).reduce(
+                          (acc, [denomination, quantity]) =>
+                            acc + Number(denomination) * quantity,
+                          0
+                        )
+                      )}
+                  </span>
                 </div>
               </div>
               {tills[1] && (
@@ -183,8 +203,8 @@ export default function TillById() {
                             setBills((b) => {
                               if (
                                 b[amount] + 1 >
-                                tillsByIdQuery.data.bills[amount]
-                                || tillsByIdQuery.data.bills[amount] == 0
+                                  tillsByIdQuery.data.bills[amount] ||
+                                tillsByIdQuery.data.bills[amount] == 0
                               ) {
                                 return b;
                               }
@@ -221,11 +241,30 @@ export default function TillById() {
 
           {transfertMode == "card" && (
             <div className="flex flex-col md:flex-row gap-4">
-              <h3 className="text-3xl font-bold">
-                Tienes este saldo disponible para mover{" "}
-                {formatCurrency(tillsByIdQuery.data.cardPayments)} (seleccionar
-                Caja)
-              </h3>
+              <div>
+                {!tills[0] && (
+                  <TillSelector
+                    currentTill={tillsByIdQuery.data.id}
+                    storeId={tillsByIdQuery.data.storeId}
+                    selectTill={(value: string) => {
+                      setTills((val) => [val[0], value]);
+                    }}
+                  />
+                )}
+                <TillInfo id={tills[1]} />
+                <div className="text-green-300 font-bold text-xl mt-2">
+                  <div className="text-black inline-block">
+                    Vas a transferir <p></p> {formatCurrency(moneyCard)}
+                  </div>
+                </div>
+              </div>
+              <div className=" w-full flex justify-center items-center">
+                <MoneyInput
+                  maxAmount={tillsByIdQuery.data.cardPayments}
+                  moneyCard={moneyCard}
+                  setMoneyCard={setMoneyCard}
+                />
+              </div>
             </div>
           )}
 
@@ -257,23 +296,25 @@ export default function TillById() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
       <AlertDialog open={deleteMode}>
         <AlertDialogContent>
-
-            <AlertDialogTitle>
-              ¿Estas seguro que deseas eliminar la caja?
-            </AlertDialogTitle>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setDeleteMode(false)}>
-                Cancelar
-              </AlertDialogCancel>
-              <AlertDialogAction onClick={async () => {
-                await BackendApi.delete(`/till/${tillsByIdQuery.data.id}`)
-                navigate(-1)
-              }}>
-                Eliminar
-              </AlertDialogAction>
-            </AlertDialogFooter>
+          <AlertDialogTitle>
+            ¿Estas seguro que deseas eliminar la caja?
+          </AlertDialogTitle>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteMode(false)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                await BackendApi.delete(`/till/${tillsByIdQuery.data.id}`);
+                navigate(-1);
+              }}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
       <div className="flex flex-col md:flex-row gap-6">
@@ -294,7 +335,9 @@ export default function TillById() {
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <p className="text-muted-foreground">{type == "till" ? "Efectivo Total" : "Saldo Total"}</p>
+                  <p className="text-muted-foreground">
+                    {type == "till" ? "Efectivo Total" : "Saldo Total"}
+                  </p>
                   <p className="text-2xl font-semibold text-green-600">
                     {formatCurrency(till.totalCash)}
                   </p>
@@ -315,46 +358,48 @@ export default function TillById() {
             </Card>
 
             {/* Detalle de Billetes */}
-              {type == "till" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Desglose de Efectivo</CardTitle>
-              </CardHeader>
+            {type == "till" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">
+                    Desglose de Efectivo
+                  </CardTitle>
+                </CardHeader>
 
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {Object.entries(till.bills).map(
-                    ([denomination, quantity]) =>
-                      quantity > 0 && (
-                        <div
-                          key={denomination}
-                          className="flex flex-col items-center p-4 border rounded-lg"
-                        >
-                          <Money
-                            src={`/money/${denomination}.${
-                              Number(denomination) > 1000 ? "jpg" : "png"
-                            }`}
-                            alt={`Billete de ${denomination} Gs.`}
-                            className="w-24 h-auto mb-2"
-                          />
-                          <div className="text-center">
-                            <p className="font-medium">{denomination} Gs.</p>
-                            <p className="text-muted-foreground">
-                              Cantidad: {quantity}
-                            </p>
-                            <p className="text-green-600 font-semibold">
-                              {formatCurrency(
-                                parseInt(denomination) * quantity
-                              )}
-                            </p>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {Object.entries(till.bills).map(
+                      ([denomination, quantity]) =>
+                        quantity > 0 && (
+                          <div
+                            key={denomination}
+                            className="flex flex-col items-center p-4 border rounded-lg"
+                          >
+                            <Money
+                              src={`/money/${denomination}.${
+                                Number(denomination) > 1000 ? "jpg" : "png"
+                              }`}
+                              alt={`Billete de ${denomination} Gs.`}
+                              className="w-24 h-auto mb-2"
+                            />
+                            <div className="text-center">
+                              <p className="font-medium">{denomination} Gs.</p>
+                              <p className="text-muted-foreground">
+                                Cantidad: {quantity}
+                              </p>
+                              <p className="text-green-600 font-semibold">
+                                {formatCurrency(
+                                  parseInt(denomination) * quantity
+                                )}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      )
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-              )}
+                        )
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </ScrollArea>
         </div>
 
@@ -408,7 +453,9 @@ export default function TillById() {
                 className="flex justify-start"
               >
                 <ArrowRightLeft size={24} />
-                {type == "till" ? "Transferir Dinero a otra Caja" : "Transferir Dinero a otra cuenta"}
+                {type == "till"
+                  ? "Transferir Dinero a otra Caja"
+                  : "Transferir Dinero a otra cuenta"}
               </Button>
               <Button className="flex justify-start">
                 <LogOut size={24} />
@@ -418,11 +465,13 @@ export default function TillById() {
                 <History size={24} />
                 Historial de Movimientos
               </Button>
-              <Button 
+              <Button
                 onClick={() => {
-                  setDeleteMode(true)
+                  setDeleteMode(true);
                 }}
-                variant="destructive" className="flex justify-start">
+                variant="destructive"
+                className="flex justify-start"
+              >
                 <Trash size={24} />
                 Eliminar
               </Button>

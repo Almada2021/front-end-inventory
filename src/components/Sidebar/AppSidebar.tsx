@@ -15,6 +15,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useAppSelector } from "@/config/react-redux.adapter";
+import { useAdmin } from "@/hooks/browser/useAdmin";
 import { validateTime } from "@/lib/jwt.utils";
 import {
   DropdownMenu,
@@ -123,6 +124,7 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
   const { userInfo, token } = useAppSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const isAdmin = useAdmin();
   const out = () => {
     dispatch(signOut());
     navigate("/");
@@ -172,6 +174,8 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+            {isAdmin && (
+
             <SidebarGroup>
               <SidebarMenu draggable={false}>
                 <SidebarGroupLabel>Modulos de Administrador</SidebarGroupLabel>
@@ -187,6 +191,7 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                 ))}
               </SidebarMenu>
             </SidebarGroup>
+            )}
           </SidebarContent>
           <SidebarFooter>
             <SidebarMenu>

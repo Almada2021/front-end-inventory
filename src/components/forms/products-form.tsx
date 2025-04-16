@@ -18,7 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import DataTableView from "../DataTable/DataTable";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useRef, useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 import ImgUploader from "./ImgUploader/ImgUploader";
@@ -43,7 +43,7 @@ interface IValues {
 interface IProductsForm extends React.ComponentPropsWithoutRef<"div"> {
   values?: IValues;
   editMode?: boolean;
-  resolveEditFn?: ()=> void;
+  resolveEditFn?: () => void;
 }
 
 export default function ProductsForm({
@@ -55,7 +55,7 @@ export default function ProductsForm({
   values,
   ...props
 }: IProductsForm) {
-  const spreadProviders = values?.providers || []
+  const spreadProviders = values?.providers || [];
   const [providers, setProviders] = useState<string[]>([...spreadProviders]);
   const [isProviderDialogOpen, setIsProviderDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -63,6 +63,7 @@ export default function ProductsForm({
   const [providerNames, setProviderNames] = useState<Record<string, string>>(
     {}
   );
+  const [hasChanges, setHasChanges] = useState(false);
   const userId = useAppSelector((state) => state.auth.userInfo?.id);
 
   const id = values?.id || "";
@@ -118,8 +119,13 @@ export default function ProductsForm({
           throw new Error("User ID is required");
         }
         formData.append("userId", userId);
-        if (values.barCode !== undefined) {
+
+        // Only append barCode if it's defined and not null
+        if (values.barCode !== undefined && values.barCode !== null) {
           formData.append("barCode", values.barCode.toString());
+        } else if (editMode && values?.barCode === undefined) {
+          // If editing and barCode is undefined, keep the original
+          formData.append("keepOriginalBarCode", "true");
         }
 
         if (values.rfef) {
@@ -130,9 +136,18 @@ export default function ProductsForm({
           formData.append("providers", element);
         });
 
+        // Only append image if a new one was selected
         if (values.image) {
           formData.append("img", values.image);
+        } else if (
+          editMode &&
+          values?.image === null &&
+          values?.image !== undefined
+        ) {
+          // If editing and no new image was selected, keep the original image
+          formData.append("keepOriginalImage", "true");
         }
+
         if (!editMode) {
           await BackendApi.post("/products", formData)
             .then(() => {
@@ -163,11 +178,91 @@ export default function ProductsForm({
         clientQuery.invalidateQueries({ queryKey: ["products"] });
         resetForm();
         setProviders([]);
+        setHasChanges(false);
       } catch (err) {
         console.log(err);
       }
     },
   });
+
+  // Check for changes when form values or providers change
+  useEffect(() => {
+    if (!editMode) {
+      // If not in edit mode, any input means there are changes
+      setHasChanges(true);
+      return;
+    }
+
+    // In edit mode, compare current values with initial values
+    const hasFormChanges = Object.keys(formik.values).some((key) => {
+      const formikValue = formik.values[key as keyof typeof formik.values];
+      const initialValue = values?.[key as keyof typeof values];
+
+      // Skip image comparison as it's handled separately
+      if (key === "image") return false;
+
+      // Handle empty or undefined values
+      if (
+        (formikValue === undefined ||
+          formikValue === null ||
+          formikValue === "") &&
+        (initialValue === undefined ||
+          initialValue === null ||
+          initialValue === "")
+      ) {
+        return false;
+      }
+
+      // Special handling for numbers to ensure proper comparison
+      if (typeof initialValue === "number") {
+        const numericValue = Number(formikValue);
+        return !isNaN(numericValue) && numericValue !== initialValue;
+      }
+
+      // Special handling for barCode which might be undefined
+      if (key === "barCode") {
+        if (
+          formikValue === undefined ||
+          formikValue === null ||
+          formikValue === ""
+        ) {
+          return false;
+        }
+        return String(formikValue) !== String(initialValue);
+      }
+
+      // Special handling for booleans
+      if (typeof initialValue === "boolean") {
+        return Boolean(formikValue) !== initialValue;
+      }
+
+      // Default string comparison
+      return String(formikValue) !== String(initialValue);
+    });
+
+    // Compare providers
+    const hasProviderChanges = (() => {
+      const currentProviders = [...providers].sort();
+      const initialProviders = [...spreadProviders].sort();
+      return (
+        JSON.stringify(currentProviders) !== JSON.stringify(initialProviders)
+      );
+    })();
+
+    // Check if image has changed
+    const hasImageChange = formik.values.image !== null;
+
+    setHasChanges(hasFormChanges || hasProviderChanges || hasImageChange);
+  }, [formik.values, providers, editMode, values, spreadProviders]);
+
+  // Prevent form submission if there are no changes
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (editMode && !hasChanges) {
+      e.preventDefault();
+      return;
+    }
+    formik.handleSubmit(e);
+  };
 
   return (
     <div className={cn("flex flex-col ", className)} {...props}>
@@ -211,7 +306,7 @@ export default function ProductsForm({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <form onSubmit={formik.handleSubmit} encType="multipart/form-data">
+            <form onSubmit={handleSubmit} encType="multipart/form-data">
               <div className="grid gap-6 md:grid-cols-2">
                 {/* Left Column */}
                 <div className="grid gap-4">
@@ -382,8 +477,16 @@ export default function ProductsForm({
               </div>
 
               {/* Submit button - full width */}
-              <Button type="submit" className="w-full mt-6">
-                {editMode ? "Editar Producto" : "Crear Producto"}
+              <Button
+                type="submit"
+                className="w-full mt-6"
+                disabled={editMode && !hasChanges}
+              >
+                {editMode
+                  ? hasChanges
+                    ? "Guardar Cambios"
+                    : "No Hay Cambios que Guardar"
+                  : "Crear Producto"}
               </Button>
             </form>
           </CardContent>
