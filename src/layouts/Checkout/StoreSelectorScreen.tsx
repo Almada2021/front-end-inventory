@@ -20,7 +20,7 @@ const StoreSelectorScreen = memo(function StoreSelectorScreen({
   const { storesQuery } = useStores();
   if (storesQuery.isFetching) return <LoadingScreen />;
   return (
-    <div className="p-10">
+    <div className="p-10 mt-4 md:mt-0">
       {storesQuery?.data?.map((store, index) => (
         <motion.div
           key={store.id}

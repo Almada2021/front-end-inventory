@@ -37,7 +37,7 @@ const MobileCart = ({
   return (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetTrigger asChild>
-        <Button 
+        <Button
           className="fixed bottom-0 left-0 right-0 bg-primary text-primary-foreground p-4 flex justify-center items-center gap-2 z-50 rounded-none"
           onClick={() => setSheetOpen(true)}
         >
@@ -68,12 +68,16 @@ const MobileCart = ({
 
                 <div className="flex items-center gap-2">
                   <Button
-                    variant="outline"
+                    variant={item.quantity == 1 ? "destructive" : "outline"}
                     size="sm"
                     onClick={() => onQuantityChange(item.id, item.quantity - 1)}
-                    disabled={item.quantity <= 1}
+                    disabled={item.quantity <= 0}
                   >
-                    <Minus className="h-4 w-4" />
+                    {item.quantity == 1 ? (
+                      <X className="h-4 w-4" />
+                    ) : (
+                      <Minus className="h-4 w-4" />
+                    )}
                   </Button>
 
                   <Input
@@ -159,103 +163,8 @@ export default function Cart({
   );
   useEffect(() => {
     notifyTotal(total);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [total]);
-
-  // const MobileCart = () => (
-  //   <Sheet>
-  //     <SheetTrigger className="fixed bottom-0 left-0 right-0 bg-primary text-primary-foreground p-4 flex justify-center items-center gap-2 z-50">
-  //       <ChevronUp className="h-5 w-5" />
-  //       <span>Ver Carrito ({cart.length})</span>
-  //       <span>{formatCurrency(total)}</span>
-  //     </SheetTrigger>
-
-  //     <SheetContent className="h-[90vh]">
-  //       <SheetHeader className="text-left pb-4 border-b">
-  //         <SheetTitle className="text-lg font-semibold">Carrito</SheetTitle>
-  //         {/* Add a SheetDescription component here */}
-  //         <SheetDescription>
-  //           Carrito de compras con {cart.length} productos
-  //         </SheetDescription>
-  //       </SheetHeader>
-
-  //       <ScrollArea className="h-[calc(100%-180px)] pr-4">
-  //         {cart.map((item) => (
-  //           <div key={item.id} className="py-3 border-b">
-  //             <div className="flex justify-between items-center gap-2">
-  //               <div className="flex-1">
-  //                 <p className="font-medium truncate">{item.product.name}</p>
-  //                 <p className="text-sm text-muted-foreground">
-  //                   {item.product.price.toLocaleString()} Gs.
-  //                 </p>
-  //               </div>
-
-  //               <div className="flex items-center gap-2">
-  //                 <Button
-  //                   variant="outline"
-  //                   size="sm"
-  //                   onClick={() => onQuantityChange(item.id, item.quantity - 1)}
-  //                   disabled={item.quantity <= 1}
-  //                 >
-  //                   <Minus className="h-4 w-4" />
-  //                 </Button>
-
-  //                 <Input
-  //                   type="number"
-  //                   min="1"
-  //                   value={item.quantity}
-  //                   onChange={(e) => {
-  //                     // Improved input handling:
-  //                     const rawValue = e.target.value;
-  //                     const numericValue = parseInt(rawValue);
-
-  //                     // Handle empty/NaN case first
-  //                     if (rawValue === "" || isNaN(numericValue)) {
-  //                       onQuantityChange(item.id, 1); // Reset to minimum valid value
-  //                       return;
-  //                     }
-
-  //                     // Handle valid numbers with bounds checking
-  //                     const clampedValue = Math.max(1, numericValue);
-  //                     onQuantityChange(item.id, clampedValue);
-  //                   }}
-  //                   className="w-12 text-center hide-spinners"
-  //                 />
-
-  //                 <Button
-  //                   variant="outline"
-  //                   size="sm"
-  //                   onClick={(e) => {
-  //                     e.preventDefault();
-  //                     onQuantityChange(item.id, item.quantity + 1);
-  //                   }}
-  //                 >
-  //                   <Plus className="h-4 w-4" />
-  //                 </Button>
-  //               </div>
-  //             </div>
-  //           </div>
-  //         ))}
-  //       </ScrollArea>
-
-  //       <div className="absolute bottom-0 left-0 right-0 bg-background p-4 border-t">
-  //         <div className="flex justify-between items-center mb-4">
-  //           <span className="font-semibold">Total:</span>
-  //           <span className="font-bold">{formatCurrency(total)} Gs</span>
-  //         </div>
-  //         <Button
-  //           disabled={clientMoney < total && mode === "bills"}
-  //           onClick={() => {
-  //             changeMode();
-  //           }}
-  //           className="w-full"
-  //         >
-  //           Continuar
-  //         </Button>
-  //       </div>
-  //     </SheetContent>
-  //   </Sheet>
-  // );
 
   if (isMobile) {
     return (

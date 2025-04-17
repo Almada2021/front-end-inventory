@@ -6,10 +6,10 @@ interface Filters {
   limit: number;
 }
 export default function useTransfertHistory(id: string, filters: Filters) {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["transfert-history", id],
+  const transfertHistoryQuery = useQuery({
+    queryKey: ["transfert-history", id, filters.page, filters.limit],
     queryFn: () => getTransfertHistoryByTillIdAction(id, filters),
     enabled: !!id && id.length > 0,
   });
-  return { data, isLoading, error };
+  return { transfertHistoryQuery };
 }

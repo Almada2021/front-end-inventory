@@ -351,8 +351,10 @@ export default function TillById() {
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                mutateTransfert.mutate();
+              onClick={async () => {
+                await mutateTransfert.mutate();
+                setTranfertMode(undefined);
+                setPageMode("active");
               }}
             >
               Confirmar

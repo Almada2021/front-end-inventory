@@ -20,7 +20,7 @@ export default function EmployeeDetailsPage() {
 
   if (emplooyeByIdQuery.isError) {
     return (
-      <Card className="w-full max-w-md mx-auto">
+      <Card className="w-full max-w-md mx-auto mt-10 md:mt-4">
         <CardHeader className="text-center">
           <CardTitle className="text-red-600">
             Error al cargar datos del empleado
@@ -41,7 +41,7 @@ export default function EmployeeDetailsPage() {
   const employee = emplooyeByIdQuery.data;
   if (!employee) return null;
   return (
-    <div className="p-8 md:p-16 max-w-4xl mx-auto">
+    <div className="p-8 md:p-16 max-w-4xl mx-auto mt-10 md:mt-4">
       <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">
         <ArrowLeft className="mr-2 h-4 w-4" /> Volver
       </Button>
@@ -103,7 +103,9 @@ export default function EmployeeDetailsPage() {
 
           <div className="flex justify-end mt-8">
             <Button
-              onClick={() => navigate(`/inventory/employee/edit/${employee.id}`)}
+              onClick={() =>
+                navigate(`/inventory/employee/edit/${employee.id}`)
+              }
               className="mr-2"
             >
               Editar Empleado

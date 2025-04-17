@@ -18,6 +18,7 @@ export default function MoneyInput({
     // Quitamos ceros iniciales
     if (Number(e.target.value) > maxAmount) {
       setError(`Saldo insuficiente. Máximo: ${formatCurrency(maxAmount)}`);
+      setMoneyCard(1);
       return;
     }
     const value = e.target.value.replace(/^0+/, "");

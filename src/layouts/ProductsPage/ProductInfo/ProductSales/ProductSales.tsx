@@ -15,6 +15,9 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Receipt, TrendingUp, Users } from "lucide-react";
+import ClientInfo from "@/components/Infos/ClientInfo";
+import { TRANSLATE_PAYMENT_METHODS } from "@/constants/translations/payments.methods";
+import { useNavigate } from "react-router";
 
 interface Props {
   id: string;
@@ -22,7 +25,7 @@ interface Props {
 
 export default function ProductSales({ id }: Props) {
   const { salesByProductQuery } = useSalesByProductId(id!);
-
+  const navigate = useNavigate();
   if (salesByProductQuery.isFetching) {
     return <LoadingScreen />;
   }
@@ -116,6 +119,7 @@ export default function ProductSales({ id }: Props) {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>ID</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Cantidad</TableHead>
@@ -133,18 +137,42 @@ export default function ProductSales({ id }: Props) {
                   return (
                     <TableRow key={sale.id}>
                       <TableCell>
-                        {format(new Date(sale.createdAt), "PPP", {
+                        <div
+                          onClick={() => {
+                            navigate(`/inventory/sales/${sale.id}`);
+                          }}
+                          className="text-blue-500 cursor-pointer hover:underline"
+                        >
+                          {sale.id}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(sale.createdAt), "PPP HH:mm", {
                           locale: es,
                         })}
                       </TableCell>
-                      <TableCell>{sale.client}</TableCell>
+                      <TableCell>
+                        <ClientInfo
+                          renderFn={(data) => {
+                            return (
+                              <>
+                                {data.name} {data.lastName}
+                              </>
+                            );
+                          }}
+                          clientId={sale.client}
+                          keyValue="name"
+                        />
+                      </TableCell>
                       <TableCell>{productInSale?.quantity || 0}</TableCell>
                       <TableCell>{formatCurrency(sale.amount)}</TableCell>
                       <TableCell className="text-green-600">
                         {formatCurrency(sale.profits)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{sale.paymentMethod}</Badge>
+                        <Badge variant="outline">
+                          {TRANSLATE_PAYMENT_METHODS[sale.paymentMethod]}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge

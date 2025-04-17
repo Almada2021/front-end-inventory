@@ -19,7 +19,7 @@ export default function PaymentMethod({ onSelectMethod }: Props) {
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center  ">
+    <div className="w-full h-full px-4 md:px-0 flex items-center justify-center  ">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">

@@ -220,11 +220,19 @@ export default function CheckoutScreen() {
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     setCart((currentCart) =>
       currentCart
-        .map((item) =>
-          (item.id === productId && item.uncounted) || item.stock >= newQuantity
-            ? { ...item, quantity: newQuantity }
-            : item
-        )
+        .map((item) => {
+          if (item.id === productId) {
+            // If setting quantity to 0 (removing item), don't check stock
+            if (newQuantity === 0) {
+              return { ...item, quantity: 0 };
+            }
+            // Otherwise, check stock constraints
+            if (item.uncounted || item.stock >= newQuantity) {
+              return { ...item, quantity: newQuantity };
+            }
+          }
+          return item;
+        })
         .filter((item) => item.quantity > 0)
     );
   };
@@ -339,7 +347,7 @@ export default function CheckoutScreen() {
         <section
           className={`${
             mode !== "paymentMethod" && "lg:w-3/4"
-          } w-full mt-10 md:mt-4`}
+          } w-full mt-14 md:mt-4`}
         >
           <div
             className={`w-full px-4 mb-2 flex md:min-h-[60px] ${

@@ -13,7 +13,7 @@ const TillSelectorScreen = memo(function StoreSelectorScreen({
   storeId,
 }: Props) {
   const { tillsByStoreQuery } = useTills(storeId!, {
-    type: "till"
+    type: "till",
   });
 
   const memoizedChangeMode = useCallback(
@@ -25,7 +25,7 @@ const TillSelectorScreen = memo(function StoreSelectorScreen({
   if (tillsByStoreQuery.isFetching) return <LoadingScreen />;
   const tills = tillsByStoreQuery.data?.tills;
   return (
-    <div className="p-10 grid grid-cols-4 col-span-full w-full gap-2 ">
+    <div className="p-10 mt-4 md:mt-0 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 col-span-full w-full gap-2 ">
       {tills?.map((till: Till, index: number) => (
         <motion.div
           onClick={() => {

@@ -38,7 +38,7 @@ export default function SupplierInfo() {
   }
   if (!getProviderById.data) {
     return (
-      <div className="w-full h-screen flex flex-col items-center justify-center">
+      <div className="w-full h-screen flex flex-col items-center justify-center mt-10 md:mt-4">
         <Frown size={64} />
         <h3 className="text-primary text-3xl font-bold">No Encontrado</h3>
         <Button
@@ -52,7 +52,7 @@ export default function SupplierInfo() {
     );
   }
   return (
-    <div className="w-full p-4 md:p-6 max-w-6xl mx-auto">
+    <div className="w-full p-4 md:p-6 max-w-6xl mx-auto mt-10 md:mt-4">
       {/* Sección de información del proveedor */}
       <div className="mb-8 space-y-6">
         <div className="border rounded-lg p-6 shadow-sm">

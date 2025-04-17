@@ -1,11 +1,13 @@
 export interface TransfertHistoryResponse {
-  history: History[];
+  history: TransfertHistory[];
+  numberOfPages: number;
 }
 
-export interface History {
+export interface TransfertHistory {
   id: string;
   amount: number;
   user: string;
   method: string;
   bills: Record<string, number>;
+  createdAt: string;
 }
