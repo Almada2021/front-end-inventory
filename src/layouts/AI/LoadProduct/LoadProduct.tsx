@@ -52,6 +52,7 @@ const EnhancedUploader = ({
   description,
   onBack,
   onConfirm,
+  selectedMode,
 }: {
   title: string;
   description: string;
@@ -60,6 +61,7 @@ const EnhancedUploader = ({
     file: React.RefObject<HTMLInputElement>,
     custom: { [key: string]: string | number | undefined }
   ) => void;
+  selectedMode: Mode;
 }) => {
   const [preview, setPreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -92,38 +94,42 @@ const EnhancedUploader = ({
           <p className="text-muted-foreground">{description}</p>
         </div>
       </div>
-      <div className="flex flex-col 1 md:flex-row gap-4 px-4 md:px-0">
-        <CheckboxInput
-          label="Precio"
-          inputPlaceholder="Precio"
-          inputProps={{ step: 1000 }}
-          notify={(val) => setCustom({ ...custom, price: val })}
-        />
-        <CheckboxInput
-          label="Stock"
-          inputPlaceholder="Stock"
-          inputProps={{ step: 1 }}
-          notify={(val) => setCustom({ ...custom, stock: val })}
-        />
-      </div>
-      <div className="flex flex-col md:flex-row gap-4 px-4 md:px-01">
-        <CheckboxInput
-          label="Precio de Costo"
-          inputPlaceholder="Precio de Costo"
-          inputProps={{ step: 1000 }}
-          notify={(val) => setCustom({ ...custom, basePrice: val })}
-        />
-        <CheckboxInput
-          label="Nombre del Producto"
-          inputPlaceholder="Nombre del Producto"
-          inputProps={{ step: 1000 }}
-          type="text"
-          notify={(val) => setCustom({ ...custom, name: val })}
-        />
-      </div>
+      {selectedMode === "new" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 md:px-0">
+          <CheckboxInput
+            label="Precio"
+            inputPlaceholder="Precio"
+            inputProps={{ step: 1000 }}
+            uncheck={() => setCustom({ ...custom, price: undefined })}
+            notify={(val) => setCustom({ ...custom, price: val })}
+          />
+          <CheckboxInput
+            label="Stock"
+            inputPlaceholder="Stock"
+            inputProps={{ step: 1 }}
+            uncheck={() => setCustom({ ...custom, stock: undefined })}
+            notify={(val) => setCustom({ ...custom, stock: val })}
+          />
+          <CheckboxInput
+            label="Precio de Costo"
+            inputPlaceholder="Precio de Costo"
+            inputProps={{ step: 1000 }}
+            uncheck={() => setCustom({ ...custom, basePrice: undefined })}
+            notify={(val) => setCustom({ ...custom, basePrice: val })}
+          />
+          <CheckboxInput
+            label="Nombre del Producto"
+            inputPlaceholder="Nombre del Producto"
+            inputProps={{ step: 1000 }}
+            type="text"
+            uncheck={() => setCustom({ ...custom, name: undefined })}
+            notify={(val) => setCustom({ ...custom, name: val })}
+          />
+        </div>
+      )}
       <div className="space-y-4 px-4 md:px-0">
         <div
-          className="border-2 border-dashed rounded-xl aspect-square flex flex-col items-center justify-center gap-4 p-6 text-center hover:bg-accent/30 transition-colors cursor-pointer"
+          className="border-2 border-dashed rounded-xl aspect-square max-h-[60vh] w-full flex flex-col items-center justify-center gap-4 p-6 text-center hover:bg-accent/30 transition-colors cursor-pointer"
           onClick={() => fileInputRef.current?.click()}
         >
           {preview ? (
@@ -216,7 +222,7 @@ export default function LoadProductScreen() {
     );
   }
   return (
-    <div className="flex justify-center w-full h-full mt-10 md:mt-0 md:py-2">
+    <div className="flex justify-center w-full h-full mt-8 md:mt-0 md:py-2 px-4 md:px-0">
       <div className="container max-w-4xl py-8">
         {!selectedMode ? (
           <div className="space-y-8">
@@ -225,6 +231,7 @@ export default function LoadProductScreen() {
           </div>
         ) : (
           <EnhancedUploader
+            selectedMode={selectedMode}
             title={
               selectedMode === "new"
                 ? "Nuevo Producto"
@@ -259,6 +266,7 @@ export default function LoadProductScreen() {
                   `;
                   setPrompt(promptFromCustom);
                   newProductLoad.mutate(file);
+                  break;
                 }
               }
             }}
