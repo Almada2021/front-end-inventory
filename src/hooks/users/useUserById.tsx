@@ -5,8 +5,7 @@ export default function useUserById(id: string) {
   const userByIdQuery = useQuery({
     queryKey: ["user", "show", id],
     queryFn: () => getUserByIdAction(id),
-    staleTime: 1000 * 60,
-    refetchInterval: 1000 * 60 * 60,
+    staleTime: 1000 * 60 * 5,
   });
   return {
     userByIdQuery,

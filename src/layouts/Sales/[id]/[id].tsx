@@ -8,19 +8,21 @@ import {
   Wallet,
   User,
   Package,
-  CheckCircle
+  CheckCircle,
+  ArrowDownNarrowWide,
 } from "lucide-react";
 import { Receipt } from "@/components/Receipt/Receipt";
 import useClient from "@/hooks/clients/useClient";
 import useUserById from "@/hooks/users/useUserById";
 import BadgeList from "../BadgeList/BadgeList";
+import { Button } from "@/components/ui/button";
 
 export default function SalesById() {
   const { id } = useParams();
   const { salesByIdQuery } = useSaleById(id!);
-  const { getClientQuery }= useClient(salesByIdQuery.data?.client, 1)
+  const { getClientQuery } = useClient(salesByIdQuery.data?.client, 1);
   const { userByIdQuery } = useUserById(salesByIdQuery?.data?.sellerId || "");
-  
+
   if (!id) return null;
   if (salesByIdQuery.isFetching) return <LoadingScreen />;
 
@@ -40,7 +42,7 @@ export default function SalesById() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-2xl p-6 shadow-lg mb-6 border-2 border-gray-100"
       >
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
           <div className="p-3 bg-green-100 rounded-xl">
             <Wallet className="h-8 w-8 text-green-600" />
           </div>
@@ -60,6 +62,12 @@ export default function SalesById() {
                 })}
               </p>
             </div>
+          </div>
+          <div className="flex items-center gap-2 ml-2">
+            <Button size="lg">
+              <ArrowDownNarrowWide className="w-4 h-4" />
+              Revertir Movimiento
+            </Button>
           </div>
         </div>
       </motion.div>
@@ -114,8 +122,9 @@ export default function SalesById() {
             <div>
               <h3 className="text-sm text-gray-500">Cliente</h3>
               <p className="text-xl font-bold text-gray-800 truncate">
-                {getClientQuery.data?.clients?.[0]?.name ||saleData.client || "Desconocido"}
-                {" "}
+                {getClientQuery.data?.clients?.[0]?.name ||
+                  saleData.client ||
+                  "Desconocido"}{" "}
                 {getClientQuery.data?.clients?.[0]?.lastName}
               </p>
             </div>
@@ -131,26 +140,7 @@ export default function SalesById() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <BadgeList
-            products={saleData.products}
-          />
-          {/* {saleData.products.map((product, index) => {
-            return(
-            <motion.div
-              key={product._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={cn(
-                "p-4 rounded-xl border-2",
-                product.cancelled
-                  ? "bg-red-50 border-red-200"
-                  : "bg-green-50 border-green-200"
-              )}
-            >
-              <SaleProductBadge product={product} />
-            </motion.div>
-          )})} */}
+          <BadgeList products={saleData.products} />
         </div>
       </div>
 
@@ -177,7 +167,8 @@ export default function SalesById() {
               {saleData.till}
             </p>
             <p className="text-sm">
-              <span className="font-medium">Vendedor:</span> {userByIdQuery.data?.name || "N/A"}
+              <span className="font-medium">Vendedor:</span>{" "}
+              {userByIdQuery.data?.name || "N/A"}
             </p>
           </div>
         </div>

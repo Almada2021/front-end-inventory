@@ -57,7 +57,7 @@ export const Receipt = ({ data }: ReceiptProps) => {
 
   if (userByIdQuery.isFetching || storeByTillId.isFetching)
     return (
-      <div className="h-full w-full flex justify-center items-center px-4">
+      <div className="h-full w-full flex justify-center items-center px-4 mt-10">
         <LoadingScreen />
       </div>
     );
