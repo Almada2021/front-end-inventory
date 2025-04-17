@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/chart";
 import useSalesDashboard from "@/hooks/graphs/useSalesDashboard";
 import { Skeleton } from "../ui/skeleton";
+import { formatCurrency } from "@/lib/formatCurrency.utils";
 
 const chartConfig = {
   desktop: {
@@ -45,24 +46,26 @@ export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
     { length: Math.floor(yAxisMax / 100000) + 1 },
     (_, i) => i * 100000
   );
-   // Calcular tendencia basada en los últimos dos días
-   let trendPercentage = 0;
-   let trendDirection = "alza"; // Dirección predeterminada
-   
-   if (parseDataToGraph.length >= 2) {
-     const lastDaySales = parseDataToGraph[parseDataToGraph.length - 1].ventas;
-     const penultimateDaySales = parseDataToGraph[parseDataToGraph.length - 2].ventas;
-     
-     if (penultimateDaySales > 0) {
-       trendPercentage = ((lastDaySales - penultimateDaySales) / penultimateDaySales) * 100;
-       trendDirection = trendPercentage >= 0 ? "alza" : "baja";
-       trendPercentage = Math.abs(trendPercentage);
-     }
-   }
-   const formattedTrendPercentage = trendPercentage.toFixed(1);
+  // Calcular tendencia basada en los últimos dos días
+  let trendPercentage = 0;
+  let trendDirection = "alza"; // Dirección predeterminada
+
+  if (parseDataToGraph.length >= 2) {
+    const lastDaySales = parseDataToGraph[parseDataToGraph.length - 1].ventas;
+    const penultimateDaySales =
+      parseDataToGraph[parseDataToGraph.length - 2].ventas;
+
+    if (penultimateDaySales > 0) {
+      trendPercentage =
+        ((lastDaySales - penultimateDaySales) / penultimateDaySales) * 100;
+      trendDirection = trendPercentage >= 0 ? "alza" : "baja";
+      trendPercentage = Math.abs(trendPercentage);
+    }
+  }
+  const formattedTrendPercentage = trendPercentage.toFixed(1);
 
   if (salesByDayQuery.isFetching) {
-    return  <Skeleton  className="h-10 w-full md:w-1/2 "/>
+    return <Skeleton className="h-10 w-full md:w-1/2 " />;
   }
 
   return (
@@ -81,10 +84,14 @@ export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
             <YAxis
               tickLine={false}
               axisLine={false}
-              tickMargin={10}
+              tickMargin={20}
+              width={100}
               ticks={yAxisTicks}
               tickFormatter={(value: number) =>
-                new Intl.NumberFormat("es-PY").format(value)
+                new Intl.NumberFormat("es-PY", {
+                  notation: "compact",
+                  maximumFractionDigits: 1,
+                }).format(value)
               }
             />
             <XAxis
@@ -107,8 +114,13 @@ export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
-          Tendencia {trendDirection == "alza" ? "al": "a la"} {trendDirection} del {formattedTrendPercentage}% entre
-          los últimos días
+          Tendencia {trendDirection == "alza" ? "al" : "a la"} {trendDirection}{" "}
+          del {formattedTrendPercentage}% entre los últimos días hoy:{" "}
+          <div className="bg-green-500 rounded-md px-2">
+            {formatCurrency(
+              parseDataToGraph[parseDataToGraph.length - 1].ventas
+            )}
+          </div>
           <TrendingUp
             className={`h-4 w-4 ${
               trendDirection === "baja" ? "rotate-180" : ""

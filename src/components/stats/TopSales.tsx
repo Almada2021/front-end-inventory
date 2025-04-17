@@ -16,9 +16,8 @@ const rankIcons = [
 export default function TopSales() {
   const { topSellingQuery } = useTopSelling();
 
-  if (topSellingQuery.isFetching){
-
-    return <Skeleton  className="h-10 w-full md:w-1/2 "/>;
+  if (topSellingQuery.isFetching) {
+    return <Skeleton className="h-10 w-full md:w-1/2 " />;
   }
   const topProducts = topSellingQuery.data?.slice(0, 5) || [];
 
@@ -44,7 +43,7 @@ export default function TopSales() {
                 to={`/inventory/products/${item.product._id}`}
                 className="font-medium truncate hover:text-blue-600"
               >
-                {item.product.name}
+                {item.product.name.substring(0, 16)}
               </Link>
               <div className="flex justify-between text-sm text-gray-500">
                 <span>

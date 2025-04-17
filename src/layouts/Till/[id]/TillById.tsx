@@ -426,7 +426,7 @@ export default function TillById() {
                 </CardHeader>
 
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {Object.entries(till.bills).map(
                       ([denomination, quantity]) =>
                         quantity > 0 && (
@@ -520,7 +520,12 @@ export default function TillById() {
                 <LogOut size={24} />
                 Retirar del Sistema
               </Button>
-              <Button className="flex justify-start">
+              <Button
+                onClick={() => {
+                  navigate(`/inventory/till/history/${id}`);
+                }}
+                className="flex justify-start"
+              >
                 <History size={24} />
                 Historial de Movimientos
               </Button>

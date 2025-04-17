@@ -21,20 +21,28 @@ export default function HomeScreen({ show }: Props) {
 
   if (!show) return null;
   return (
-    <main className="mt-2 w-full 1 p-4 md:p-10 md:space-y-4">
-      <h2 className="text-3xl font-bold mt-10 md:mt-4">
-        Bienvenido {userInfo?.name}
-      </h2>
-      <h2 className="text-sm text-gray-500 ">{userInfo?.email}</h2>
-      <h2 className="text-xs ">{userInfo?.id}</h2>
-      {isAdmin && (
-
-      <div className="w-full flex flex-row flex-wrap">
-        <div className="max-h-[400px] w-full md:w-1/2 mb-10">
-          <SalesByDayGraph />
-        </div>
-        <TopSales />
+    <main className="w-full px-4 py-6 md:p-10 space-y-4 mt-10 md:mt-4">
+      <div className="space-y-2">
+        <h2 className="text-2xl md:text-3xl font-bold">
+          Bienvenido {userInfo?.name}
+        </h2>
+        <h2 className="text-sm text-gray-500">{userInfo?.email}</h2>
+        <h2 className="text-xs text-gray-400">{userInfo?.id}</h2>
       </div>
+
+      {isAdmin && (
+        <div className="w-full flex flex-col md:flex-row md:flex-wrap gap-6 mt-6">
+          <div className="w-full md:w-1/2">
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <SalesByDayGraph />
+            </div>
+          </div>
+          <div className="w-full md:w-[45%]">
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <TopSales />
+            </div>
+          </div>
+        </div>
       )}
     </main>
   );
