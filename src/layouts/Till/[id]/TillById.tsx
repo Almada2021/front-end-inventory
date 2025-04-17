@@ -126,7 +126,7 @@ export default function TillById() {
   };
 
   return (
-    <div className="min-h-screen w-full p-4 md:p-6 max-w-6xl mx-auto">
+    <div className="min-h-screen w-full p-4 md:p-6 max-w-6xl mx-auto mt-10 md:mt-0">
       {/* Transfert Dialog */}
       <AlertDialog open={pageMode == "tranfert"}>
         <AlertDialogContent className="w-full min-w-[80svw] ">
@@ -376,6 +376,7 @@ export default function TillById() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* <AlertDialog open={} */}
       <div className="flex flex-col md:flex-row gap-6">
         {/* Sección principal */}
         <div className="flex-1">

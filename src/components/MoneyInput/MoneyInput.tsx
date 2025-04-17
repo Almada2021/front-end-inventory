@@ -16,14 +16,18 @@ export default function MoneyInput({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Quitamos ceros iniciales
-    const  value = e.target.value.replace(/^0+/, "");
+    if (Number(e.target.value) > maxAmount) {
+      setError(`Saldo insuficiente. Máximo: ${formatCurrency(maxAmount)}`);
+      return;
+    }
+    const value = e.target.value.replace(/^0+/, "");
     if (!value) {
       setMoneyCard(1);
       setError("");
       return;
     }
     const num = Number(value);
-    
+
     if (num > maxAmount) {
       // Mostramos error pero actualizamos el valor
       setError(`Saldo insuficiente. Máximo: ${formatCurrency(maxAmount)}`);
@@ -32,7 +36,6 @@ export default function MoneyInput({
     }
     setMoneyCard(num);
   };
-  
 
   return (
     <div className="mt-4">
