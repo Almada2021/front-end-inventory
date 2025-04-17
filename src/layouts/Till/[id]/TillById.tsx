@@ -47,6 +47,7 @@ export default function TillById() {
   const [transfertMode, setTranfertMode] = useState<
     "cash" | "card" | "transfer" | undefined
   >(undefined);
+  const [operationMode, setOperationMode] = useState<"add" | "subtract">("add");
   const userId = useAppSelector((state) => state.auth.userInfo?.id);
   const [deleteMode, setDeleteMode] = useState<boolean>(false);
   const amount = Object.entries(bills).reduce(
@@ -143,10 +144,10 @@ export default function TillById() {
           </AlertDialogDescription>
           {!transfertMode && (
             <div className="flex flex-col">
-              <h3 className="text-3xl font-bold">
+              <h3 className="text-md md:text-3xl font-bold">
                 Seleccionar Medio de Transferencia
               </h3>
-              <div className="flex flex-row justify-evenly">
+              <div className="flex flex-col md:flex-row gap-2 justify-evenly">
                 <Button
                   onClick={() => setTranfertMode("cash")}
                   className="text-2xl"
@@ -199,9 +200,27 @@ export default function TillById() {
                       )}
                   </span>
                 </div>
+                <div className="flex justify-center gap-2 mt-4">
+                  <Button
+                    variant={operationMode === "add" ? "default" : "outline"}
+                    onClick={() => setOperationMode("add")}
+                    className="flex items-center gap-1"
+                  >
+                    <span className="text-xl">+</span> Agregar
+                  </Button>
+                  <Button
+                    variant={
+                      operationMode === "subtract" ? "default" : "outline"
+                    }
+                    onClick={() => setOperationMode("subtract")}
+                    className="flex items-center gap-1"
+                  >
+                    <span className="text-xl">-</span> Restar
+                  </Button>
+                </div>
               </div>
               {tills[1] && (
-                <div className="grid grid-cols-3 gap-2 max-h-[200px] md:max-h-full overflow-y-auto overflow-x-hidden ">
+                <div className="grid grid-cols-2 md:grid-cols-3  gap-2 max-h-[200px] md:max-h-full overflow-y-auto overflow-x-hidden ">
                   {DEFAULT_DENOMINATIONS.map((amount: string) => {
                     return (
                       <div
@@ -211,17 +230,28 @@ export default function TillById() {
                         <Money
                           onClick={() => {
                             setBills((b) => {
-                              if (
-                                b[amount] + 1 >
-                                  tillsByIdQuery.data.bills[amount] ||
-                                tillsByIdQuery.data.bills[amount] == 0
-                              ) {
-                                return b;
+                              if (operationMode === "add") {
+                                if (
+                                  b[amount] + 1 >
+                                    tillsByIdQuery.data.bills[amount] ||
+                                  tillsByIdQuery.data.bills[amount] == 0
+                                ) {
+                                  return b;
+                                }
+                                return {
+                                  ...b,
+                                  [amount]: (b[amount] || 0) + 1,
+                                };
+                              } else {
+                                // Subtract mode
+                                if (!b[amount] || b[amount] <= 0) {
+                                  return b;
+                                }
+                                return {
+                                  ...b,
+                                  [amount]: b[amount] - 1,
+                                };
                               }
-                              return {
-                                ...b,
-                                [amount]: (b[amount] || 0) + 1,
-                              };
                             });
                           }}
                           type={Number(amount) > 1000 ? "bill" : "coin"}

@@ -17,18 +17,16 @@ export default function Money({
 }: Props) {
   const [isPressed, setIsPressed] = useState(false);
 
-  const handleInteraction = (state: boolean) => {
-    setIsPressed(state);
-    if (state && onClick) onClick();
-  };
-
   return (
     <button
       title={alt}
-      onTouchStart={() => handleInteraction(true)}
-      onTouchEnd={() => handleInteraction(false)}
-      onMouseDown={() => handleInteraction(true)}
-      onMouseUp={() => handleInteraction(false)}
+      onClick={() => {
+        if (onClick) onClick();
+      }}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onTouchStart={() => setIsPressed(true)}
+      onTouchEnd={() => setIsPressed(false)}
       className={`active:scale-95 transition-transform ${className} ${
         isPressed ? "opacity-75" : "opacity-100"
       } select-none`}
