@@ -90,7 +90,11 @@ const columns: ColumnDef<Sale>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => `${formatCurrency(row.getValue("amount"))}`,
+    cell: ({ row }) => (
+      <div className="bg-green-500 rounded-md p-2 font-bold text-center shadow-md ">
+        {`${formatCurrency(row.getValue("amount"))}`}
+      </div>
+    ),
   },
   {
     accessorKey: "profits",
@@ -180,7 +184,9 @@ export default function SalesDataTable({ date }: Props) {
     startDate: date ? format(date.from!, "yyyy-MM-dd") : "",
     endDate: date?.to ? format(date.to, "yyyy-MM-dd") : "",
   });
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "createdAt", desc: true },
+  ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
@@ -188,6 +194,7 @@ export default function SalesDataTable({ date }: Props) {
 
   // Nuevos estados para filtros avanzados
   // Modificar el estado inicial
+  console.log(sorting, "sorting");
   const maxPossibleAmount = useMemo(() => {
     if (!salesQuery.data || salesQuery.data.length === 0) return 10000;
 
