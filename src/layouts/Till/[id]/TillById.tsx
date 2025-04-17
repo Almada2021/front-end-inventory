@@ -112,7 +112,12 @@ export default function TillById() {
     mutationKey: ["transfert", "till", `${id}`],
   });
   // const [amount, setAmount] = useState<number>(0);
-  if (tillsByIdQuery.isFetching) return <LoadingScreen />;
+  if (tillsByIdQuery.isFetching)
+    return (
+      <div className="flex w-full justify-center items-center h-screen px-10">
+        <LoadingScreen />
+      </div>
+    );
 
   const till = tillsByIdQuery.data;
   const type = till?.type;

@@ -30,13 +30,21 @@ export const EmployeeScreen = lazy(
   () => import("@/layouts/EmployeePage/EmployeePage")
 );
 
-export const NewEmployee = lazy(() => import("@/layouts/EmployeePage/NewEmployee/NewEmployee"));
+export const NewEmployee = lazy(
+  () => import("@/layouts/EmployeePage/NewEmployee/NewEmployee")
+);
 
-export const ShowEmployees = lazy(() => import("@/layouts/EmployeePage/ShowEmployees/ShowEmployees"));
+export const ShowEmployees = lazy(
+  () => import("@/layouts/EmployeePage/ShowEmployees/ShowEmployees")
+);
 
-export const EditEmployee = lazy(() => import("@/layouts/EmployeePage/EditEmployee/EditEmployee"));
+export const EditEmployee = lazy(
+  () => import("@/layouts/EmployeePage/EditEmployee/EditEmployee")
+);
 
-export const EmployeeInfo = lazy(() => import("@/layouts/EmployeePage/EmployeeInfo/EmployeeInfo"))
+export const EmployeeInfo = lazy(
+  () => import("@/layouts/EmployeePage/EmployeeInfo/EmployeeInfo")
+);
 // * Suppliers
 export const SuppliersScreen = lazy(
   () => import("@/layouts/Suppliers/SuppliersPage")
@@ -93,6 +101,12 @@ export const NewTill = lazy(() => import("@/layouts/Till/NewTill/NewTilll"));
 
 export const TillById = lazy(() => import("@/layouts/Till/[id]/TillById"));
 
+// * Till History
+
+export const TillHistory = lazy(
+  () => import("@/layouts/Till/[id]/history/TillHistory")
+);
+
 // * Clients
 
 export const ClientPage = lazy(() => import("@/layouts/Client/ClientPage"));
@@ -110,23 +124,26 @@ export const ClientIdPage = lazy(() => import("@/layouts/Client/[id]/[id]"));
 
 export const SalesPage = lazy(() => import("@/layouts/Sales/SalesPage"));
 
-
 export const SaleByIdPage = lazy(() => import("@/layouts/Sales/[id]/[id]"));
-
-
 
 // * Orders
 
 export const OrdersPage = lazy(() => import("@/layouts/OrdersPage/OrdersPage"));
 
-export const NewOrder = lazy(() => import("@/layouts/OrdersPage/NewOrder/NewOrder"));
+export const NewOrder = lazy(
+  () => import("@/layouts/OrdersPage/NewOrder/NewOrder")
+);
 
-export const ShowOrders = lazy(() => import("@/layouts/OrdersPage/ShowOrders/ShowOrders"));
+export const ShowOrders = lazy(
+  () => import("@/layouts/OrdersPage/ShowOrders/ShowOrders")
+);
 
-export const OrderInfo = lazy(() => import("@/layouts/OrdersPage/OrderInfo/OrderInfo"));
-
+export const OrderInfo = lazy(
+  () => import("@/layouts/OrdersPage/OrderInfo/OrderInfo")
+);
 
 // Reports Page
 
-
-export const ReportsPage = lazy(() => import("@/layouts/ReportsPage/ReportsPage"));
+export const ReportsPage = lazy(
+  () => import("@/layouts/ReportsPage/ReportsPage")
+);

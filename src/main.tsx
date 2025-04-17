@@ -50,6 +50,7 @@ import {
   OrderInfo,
   ReportsPage,
   StockOptimization,
+  TillHistory,
 } from "@/pages";
 
 const client = new QueryClient();
@@ -135,6 +136,10 @@ createRoot(document.getElementById("root")!).render(
                         <Route path="register" element={<RegisterPage />} />
                         {/* Till */}
                         <Route path="till/:id" element={<TillById />} />
+                        <Route
+                          path="till/history/:id"
+                          element={<TillHistory />}
+                        />
                       </Route>
                       <Route path="/test" element={<App />} />
                       <Route path="/login" element={<LoginPage show />} />
