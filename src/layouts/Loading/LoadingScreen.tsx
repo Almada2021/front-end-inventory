@@ -13,7 +13,7 @@ export default function LoadingScreen() {
     };
   }, [load]);
   return (
-    <main className="w-full h-screen px-[40svw] flex flex-col gap-20 justify-center items-center">
+    <main className="w-full h-full  flex flex-col gap-20 justify-center items-center">
       <a
         title="Logo"
         href="#"

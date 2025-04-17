@@ -8,7 +8,7 @@ export const BackendApi = axios.create({
 });
 
 // Add an interceptor to set the token on each request
-BackendApi.interceptors.request.use(config => {
+BackendApi.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

@@ -1,10 +1,10 @@
 import Image from "@/components/Image/Image";
 import { Product } from "@/infrastructure/interfaces/products.interface";
+import { formatCurrency } from "@/lib/formatCurrency.utils";
 import { useNavigate } from "react-router";
-
 interface Props {
   product: Product;
-  variant?: "detail" | "checkout" | "virtual";
+  variant?: "detail" | "virtual";
   onClick?: () => void;
 }
 
@@ -15,19 +15,17 @@ export default function ProductCard({
 }: Props) {
   const navigate = useNavigate();
   const pressCard = () => {
-    if ((variant === "checkout" || variant === "virtual") && onClick) {
+    if (variant === "virtual" && onClick) {
       onClick();
     }
   };
 
-  // Para la variante virtualizada, eliminamos efectos de transformación y transición
   if (variant === "virtual") {
     return (
       <div
         onClick={pressCard}
-        className="w-full select-none bg-white h-[350px] rounded-xl shadow-md cursor-pointer relative active:bg-green-500 hover:bg-slate-100"
+        className="w-full select-none bg-white h-[350px]  rounded-xl shadow-md cursor-pointer relative active:bg-green-500 hover:bg-slate-100"
       >
-        {/* Contenedor de imagen simplificado */}
         <div className="relative h-3/4 w-full overflow-hidden">
           <Image
             title={`Ver Producto ${product.name}`}
@@ -35,13 +33,11 @@ export default function ProductCard({
             src={product.photoUrl}
           />
 
-          {/* Badge de precio sin efectos */}
           <span className="absolute top-2 right-2 bg-green-600 text-white px-3 py-1 rounded-full text-xl font-bold select-none">
-            {product.price.toLocaleString()} Gs
+            {formatCurrency(product.price)}
           </span>
         </div>
 
-        {/* Contenido inferior sin efectos */}
         <section className="p-4 flex flex-col justify-between h-1/4">
           <h3 className="text-lg font-semibold text-gray-800 truncate line-clamp-2 leading-tight select-none">
             {product.name.length > 40
@@ -50,7 +46,6 @@ export default function ProductCard({
           </h3>
         </section>
 
-        {/* Etiqueta de stock (opcional) sin efectos */}
         {!product.uncounted && product.stock <= 10 && (
           <span className="absolute top-2 left-2 bg-red-100 text-red-800 px-2 py-1 rounded-md text-xs font-medium select-none">
             Últimas {product.stock} unidades
@@ -60,17 +55,11 @@ export default function ProductCard({
     );
   }
 
-  // Versión original con efectos para variantes "detail" y "checkout"
   return (
     <div
       onClick={pressCard}
-      className={`w-full ${
-        variant == "checkout"
-          ? "bg-white active:bg-green-400 select-none h-[350px] active:h-[349px]"
-          : "bg-white h-[350px"
-      }  rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden hover:transform hover:scale-[1.02] relative`}
+      className="w-full bg-white h-[350px] rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden hover:transform hover:scale-[1.02] relative"
     >
-      {/* Contenedor de imagen con overlay y badge de precio */}
       <div className="relative h-3/4 w-full overflow-hidden">
         <Image
           title={`Ver Producto ${product.name}`}
@@ -78,29 +67,23 @@ export default function ProductCard({
           src={product.photoUrl}
         />
 
-        {/* Overlay de hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        {/* Badge de precio */}
         <span className="absolute top-2 right-2 bg-green-600  text-white px-3 py-1 rounded-full text-xl font-bold backdrop-blur-sm">
           {product.price.toLocaleString()} Gs
         </span>
       </div>
 
-      {/* Contenido inferior */}
-      <section className={"p-4 flex flex-col justify-between h-1/4"}>
+      <section className="p-4 flex flex-col justify-between h-1/4">
         <h3 className="text-lg font-semibold text-gray-800 line-clamp-2 mb-2">
           {product.name}
         </h3>
 
-        {/* Botón flotante en hover */}
         <button
           onClick={() => navigate(`../${product.id}`)}
-          className={`${
-            variant == "checkout" ? "hidden" : "absolute"
-          } inset-0 m-auto w-fit h-fit opacity-0 group-hover:opacity-100 transition-opacity duration-300
+          className="absolute inset-0 m-auto w-fit h-fit opacity-0 group-hover:opacity-100 transition-opacity duration-300
           bg-primary text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:bg-primary-dark
-          flex items-center gap-2 transform hover:scale-105`}
+          flex items-center gap-2 transform hover:scale-105"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -120,10 +103,14 @@ export default function ProductCard({
         </button>
       </section>
 
-      {/* Etiqueta de stock (opcional) */}
       {!product.uncounted && product.stock <= 10 && (
-        <span className="absolute top-2 left-2 bg-red-100 text-red-800 px-2 py-1 rounded-md text-xs font-medium">
+        <span className="hidden md:block md:absolute top-2 left-2 bg-red-100 text-red-800 px-2 py-1 rounded-md text-xs font-medium">
           Últimas {product.stock} unidades
+        </span>
+      )}
+      {!product.uncounted && product.stock <= 10 && (
+        <span className="block absolute md:hidden top-2 left-2 bg-red-100 text-red-800 px-2 py-1 rounded-md text-xl font-medium">
+          {product.stock}
         </span>
       )}
     </div>

@@ -57,6 +57,7 @@ export default function TillById() {
   );
 
   const [moneyCard, setMoneyCard] = useState(1000);
+  const [moneyTransfer, setMoneyTransfer] = useState(0);
   // Mutate Transfert
   const mutateTransfert = useMutation({
     mutationFn: async () => {
@@ -84,6 +85,15 @@ export default function TillById() {
             tillToReceived: tills[1],
             method: transfertMode,
             user: userId,
+          };
+        }
+        if (transfertMode == "transfer") {
+          data = {
+            billsToTransfert: {},
+            amount: moneyTransfer,
+            tillToTransfert: id,
+            tillToReceived: tills[1],
+            method: transfertMode,
           };
         }
         const response = await BackendApi.post("/till/transfert-money", data);
@@ -270,11 +280,30 @@ export default function TillById() {
 
           {transfertMode == "transfer" && (
             <div className="flex flex-col md:flex-row gap-4">
-              <h3 className="text-3xl font-bold">
-                Tienes este saldo disponible para mover{" "}
-                {formatCurrency(tillsByIdQuery.data.transferPayments)}{" "}
-                (seleccionar Caja)
-              </h3>
+              <div>
+                {!tills[0] && (
+                  <TillSelector
+                    currentTill={tillsByIdQuery.data.id}
+                    storeId={tillsByIdQuery.data.storeId}
+                    selectTill={(value: string) => {
+                      setTills((val) => [val[0], value]);
+                    }}
+                  />
+                )}
+                <TillInfo id={tills[1]} />
+                <div className="text-green-300 font-bold text-xl mt-2">
+                  <div className="text-black inline-block">
+                    Vas a transferir <p></p> {formatCurrency(moneyTransfer)}
+                  </div>
+                </div>
+              </div>
+              <div className=" w-full flex justify-center items-center">
+                <MoneyInput
+                  maxAmount={tillsByIdQuery.data.transferPayments}
+                  moneyCard={moneyTransfer}
+                  setMoneyCard={setMoneyTransfer}
+                />
+              </div>
             </div>
           )}
           <AlertDialogFooter>

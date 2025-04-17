@@ -37,7 +37,10 @@ export default function ShowStores() {
               {/* Dirección con icono */}
               <div className="flex items-center gap-2 text-gray-600">
                 <PinIcon size={24} color="#03C" />
-                <p className="text-sm">{store.address}</p>
+                <p className="text-sm">
+                  {store.address.substring(0, 45)}
+                  {store.address.length > 45 && "..."}
+                </p>
               </div>
 
               {/* Detalles adicionales */}

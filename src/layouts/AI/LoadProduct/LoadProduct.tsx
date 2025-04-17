@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { BackendApi } from "@/core/api/api";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 import toast from "react-hot-toast";
+import CheckboxInput from "@/components/CheckboxInput/CheckboxInput";
 
 type Mode = "new" | "receipt" | "count" | null;
 
@@ -55,18 +56,31 @@ const EnhancedUploader = ({
   title: string;
   description: string;
   onBack: () => void;
-  onConfirm: (file: React.RefObject<HTMLInputElement>) => void;
+  onConfirm: (
+    file: React.RefObject<HTMLInputElement>,
+    custom: { [key: string]: string | number | undefined }
+  ) => void;
 }) => {
   const [preview, setPreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const initialCustom: { [key: string]: string | number | undefined } = {
+    price: undefined,
+    basePrice: undefined,
+    name: undefined,
+    stock: undefined,
+  };
+  const [custom, setCustom] = useState<{
+    [key: string]: string | number | undefined;
+  }>(initialCustom);
   const confirmFn = async () => {
     try {
-      await onConfirm(fileInputRef);
+      await onConfirm(fileInputRef, custom);
     } catch (error) {
       console.log(error);
       throw error;
     }
   };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -78,16 +92,36 @@ const EnhancedUploader = ({
           <p className="text-muted-foreground">{description}</p>
         </div>
       </div>
-      <div>
-      <input 
-        type="number"
-        alt="Precio"
-        className="border-b-2 w-full"
-        min={50}
-        
-      />
+      <div className="flex flex-col 1 md:flex-row gap-4 px-4 md:px-0">
+        <CheckboxInput
+          label="Precio"
+          inputPlaceholder="Precio"
+          inputProps={{ step: 1000 }}
+          notify={(val) => setCustom({ ...custom, price: val })}
+        />
+        <CheckboxInput
+          label="Stock"
+          inputPlaceholder="Stock"
+          inputProps={{ step: 1 }}
+          notify={(val) => setCustom({ ...custom, stock: val })}
+        />
       </div>
-      <div className="space-y-4">
+      <div className="flex flex-col md:flex-row gap-4 px-4 md:px-01">
+        <CheckboxInput
+          label="Precio de Costo"
+          inputPlaceholder="Precio de Costo"
+          inputProps={{ step: 1000 }}
+          notify={(val) => setCustom({ ...custom, basePrice: val })}
+        />
+        <CheckboxInput
+          label="Nombre del Producto"
+          inputPlaceholder="Nombre del Producto"
+          inputProps={{ step: 1000 }}
+          type="text"
+          notify={(val) => setCustom({ ...custom, name: val })}
+        />
+      </div>
+      <div className="space-y-4 px-4 md:px-0">
         <div
           className="border-2 border-dashed rounded-xl aspect-square flex flex-col items-center justify-center gap-4 p-6 text-center hover:bg-accent/30 transition-colors cursor-pointer"
           onClick={() => fileInputRef.current?.click()}
@@ -119,10 +153,10 @@ const EnhancedUploader = ({
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if(file?.size && file?.size <= 18000000){
+            if (file?.size && file?.size <= 18000000) {
               if (file) setPreview(URL.createObjectURL(file));
-            }else{
-              toast.error("No se permite ficheros de mas de 20 MB")
+            } else {
+              toast.error("No se permite ficheros de mas de 20 MB");
             }
           }}
         />
@@ -143,6 +177,7 @@ const EnhancedUploader = ({
 export default function LoadProductScreen() {
   const [selectedMode, setSelectedMode] = useState<Mode>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [prompt, setPrompt] = useState<string>("");
   const newProductLoad = useMutation({
     mutationFn: async (ref: React.RefObject<HTMLInputElement>) => {
       // Your mutation logic here
@@ -153,13 +188,14 @@ export default function LoadProductScreen() {
 
       // Create and send FormData
       formData.append("img", ref.current.files[0]);
+      if (prompt) formData.append("custom", prompt);
       setLoading(true);
       const response = await BackendApi.post("/ai/from-file", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      setLoading(false)
+      setLoading(false);
       return response.data;
       // const data = await BackendApi.post("/ai/from-file",)
     },
@@ -172,8 +208,12 @@ export default function LoadProductScreen() {
       // Handle error
     },
   });
-  if(loading){
-    return <LoadingScreen/>
+  if (loading) {
+    return (
+      <div className="w-full px-4">
+        <LoadingScreen />
+      </div>
+    );
   }
   return (
     <div className="flex justify-center w-full h-full mt-10 md:mt-0 md:py-2">
@@ -200,10 +240,24 @@ export default function LoadProductScreen() {
                 : "Escanea múltiples productos para inventario"
             }
             onBack={() => setSelectedMode(null)}
-            onConfirm={(file: React.RefObject<HTMLInputElement>) => {
+            onConfirm={(
+              file: React.RefObject<HTMLInputElement>,
+              custom: { [key: string]: string | number | undefined }
+            ) => {
               // Lógica de confirmación
               switch (selectedMode) {
                 case "new": {
+                  const promptFromCustom: string = `
+                    ${custom?.name ? `Nombre: ${custom.name}` : ""}
+                    ${custom?.price ? `Precio: ${custom.price}` : ""}
+                    ${custom?.stock ? `Stock: ${custom.stock}` : ""}
+                    ${
+                      custom?.basePrice
+                        ? `Precio de Costo: ${custom.basePrice}`
+                        : ""
+                    }
+                  `;
+                  setPrompt(promptFromCustom);
                   newProductLoad.mutate(file);
                 }
               }

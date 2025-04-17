@@ -8,6 +8,7 @@ import useStoreByTillId from "@/hooks/store/useStoreByTillId";
 import { TRANSLATE_PAYMENT_METHODS } from "@/constants/translations/payments.methods";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
 import { useClientById } from "@/hooks/clients/useClientById";
+import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 
 type PaymentMethod = keyof typeof TRANSLATE_PAYMENT_METHODS;
 const PaymentMethods: PaymentMethod[] = ["cash", "card", "transfer"];
@@ -35,7 +36,7 @@ export const Receipt = ({ data }: ReceiptProps) => {
   const componentRef = useRef<HTMLDivElement>(null);
   const { userByIdQuery } = useUserById(data.sellerId);
   const { storeByTillId } = useStoreByTillId(data.till);
-  const {clientByIdQuery} = useClientById(data.client || "")
+  const { clientByIdQuery } = useClientById(data.client || "");
   // memoized Paid by customer
   const paidByCustomer = useMemo(() => {
     return Object.entries(data.bills).reduce(
@@ -54,9 +55,12 @@ export const Receipt = ({ data }: ReceiptProps) => {
     pageStyle: "@page { size: auto; margin: 0mm; }",
   });
 
- 
-
-  if (userByIdQuery.isFetching || storeByTillId.isFetching) return null;
+  if (userByIdQuery.isFetching || storeByTillId.isFetching)
+    return (
+      <div className="h-full w-full flex justify-center items-center px-4">
+        <LoadingScreen />
+      </div>
+    );
 
   return (
     <div className="h-full w-full bg-white p-8 flex flex-col">
@@ -78,7 +82,16 @@ export const Receipt = ({ data }: ReceiptProps) => {
               })}
             </p>
             <p className="text-sm">Vendedor: {userByIdQuery.data?.name}</p>
-            <p className="text-sm">Cliente:{" "} {clientByIdQuery.data ? `${clientByIdQuery.data?.name + " " + clientByIdQuery.data?.lastName}` :"N/A" }</p>
+            <p className="text-sm">
+              Cliente:{" "}
+              {clientByIdQuery.data
+                ? `${
+                    clientByIdQuery.data?.name +
+                    " " +
+                    clientByIdQuery.data?.lastName
+                  }`
+                : "N/A"}
+            </p>
           </div>
         </div>
 

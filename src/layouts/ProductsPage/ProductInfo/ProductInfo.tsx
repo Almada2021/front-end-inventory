@@ -16,6 +16,7 @@ import { useParams } from "react-router";
 import ProviderList from "./ProvidersItem/ProviderList";
 import ProductChanges from "./ProductChanges/ProductChanges";
 import ProductSales from "./ProductSales/ProductSales";
+import { useAdmin } from "@/hooks/browser/useAdmin";
 
 export default function ProductInfo() {
   const { id } = useParams();
@@ -23,6 +24,7 @@ export default function ProductInfo() {
   const [loadProducts, setLoadProducts] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
   const [mode, setMode] = useState<"changes" | "sales">("changes");
+  const isAdmin = useAdmin();
   if (getProductsByIds.isLoading) return null;
   if (!getProductsByIds.data?.[0]) return <div>Producto no encontrado</div>;
 
@@ -71,13 +73,15 @@ export default function ProductInfo() {
           >
             <Pencil className="h-6 w-6 text-gray-600" />
           </button>
-          <button
-            onClick={() => {}}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors justify-self-end flex justify-center items-center"
-            aria-label="Editar cliente"
-          >
-            <Trash className="h-6 w-6 text-red-500" />
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => {}}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors justify-self-end flex justify-center items-center"
+              aria-label="Editar cliente"
+            >
+              <Trash className="h-6 w-6 text-red-500" />
+            </button>
+          )}
         </div>
 
         {/* Contenido principal */}
@@ -154,7 +158,9 @@ export default function ProductInfo() {
           <ProductChanges id={getProductsByIds.data[0].id} />
         </>
       )}
-      {mode == "sales" && loadProducts && <ProductSales id={getProductsByIds.data[0].id}/>}
+      {mode == "sales" && loadProducts && (
+        <ProductSales id={getProductsByIds.data[0].id} />
+      )}
     </div>
   );
 }
