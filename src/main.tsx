@@ -53,6 +53,7 @@ import {
   TillHistory,
   TransfertHistory,
   CountProduct,
+  Assistant,
 } from "@/pages";
 
 const client = new QueryClient();
@@ -82,6 +83,7 @@ createRoot(document.getElementById("root")!).render(
                             element={<StockOptimization />}
                           />
                           <Route path="count" element={<CountProduct />} />
+                          <Route path="assistant" element={<Assistant />} />
                         </Route>
                         <Route path="clients">
                           <Route index element={<ClientPage />} />

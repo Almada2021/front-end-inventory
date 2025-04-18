@@ -36,7 +36,7 @@ const AiModules: AiItem[] = [
   },
   {
     title: "Asistente Virtual",
-    url: "/inventory/assistant",
+    url: "/inventory/ai/assistant",
     description: "Consulta interactiva con IA",
     icon: <Bot className="w-8 h-8" />,
   },
