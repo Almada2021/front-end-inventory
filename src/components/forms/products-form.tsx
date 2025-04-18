@@ -66,17 +66,21 @@ export default function ProductsForm({
   const userId = useAppSelector((state) => state.auth.userInfo?.id);
 
   const id = values?.id || "";
+
+  // Store initial values for comparison
+  const initialValues = {
+    name: values?.name || "",
+    price: values?.price || 0,
+    basePrice: values?.basePrice || 0,
+    image: null as File | null,
+    uncounted: values?.uncounted || false,
+    stock: values?.stock || 0,
+    barCode: values?.barCode || (undefined as number | undefined),
+    rfef: values?.rfef || "", // New optional RFEF field
+  };
+
   const formik = useFormik({
-    initialValues: {
-      name: values?.name || "",
-      price: values?.price || 0,
-      basePrice: values?.basePrice || 0,
-      image: null as File | null,
-      uncounted: values?.uncounted || false,
-      stock: values?.stock || 0,
-      barCode: values?.barCode || (undefined as number | undefined),
-      rfef: values?.rfef || "", // New optional RFEF field
-    },
+    initialValues,
     validationSchema: Yup.object({
       name: Yup.string().required("El nombre es requerido"),
       price: Yup.number()
@@ -109,35 +113,95 @@ export default function ProductsForm({
     ) => {
       try {
         const formData = new FormData();
-        formData.append("name", values.name);
-        formData.append("price", values.price.toString());
-        formData.append("basePrice", values.basePrice.toString());
-        formData.append("uncounted", values.uncounted.toString());
-        formData.append("stock", values.stock.toString());
+
+        // For edit mode, only include fields that have changed
+        if (editMode) {
+          // Compare with initial values to determine what changed
+          if (values.name !== initialValues.name) {
+            formData.append("name", values.name);
+          }
+
+          if (values.price !== initialValues.price) {
+            formData.append("price", values.price.toString());
+          }
+
+          if (values.basePrice !== initialValues.basePrice) {
+            formData.append("basePrice", values.basePrice.toString());
+          }
+
+          if (values.uncounted !== initialValues.uncounted) {
+            formData.append("uncounted", values.uncounted.toString());
+          }
+
+          if (values.stock !== initialValues.stock) {
+            formData.append("stock", values.stock.toString());
+          }
+
+          if (values.barCode !== initialValues.barCode) {
+            if (values.barCode !== undefined) {
+              formData.append("barCode", values.barCode.toString());
+            }
+          }
+
+          if (values.rfef !== initialValues.rfef) {
+            if (values.rfef) {
+              formData.append("rfef", values.rfef);
+            }
+          }
+
+          // Handle providers - only include if they've changed
+          const initialProvidersStr = JSON.stringify(
+            [...spreadProviders].sort()
+          );
+          const currentProvidersStr = JSON.stringify([...providers].sort());
+
+          if (initialProvidersStr !== currentProvidersStr) {
+            providers.forEach((element) => {
+              formData.append("providers", element);
+            });
+          }
+
+          // Handle image - only include if a new one was uploaded
+          if (values.image) {
+            formData.append("img", values.image);
+          } else if (values?.image) {
+            // If in edit mode and no new image was selected, keep the original image
+            formData.append("keepOriginalImage", "true");
+            formData.append("photoUrl", values.image);
+          }
+        } else {
+          // For create mode, include all fields
+          formData.append("name", values.name);
+          formData.append("price", values.price.toString());
+          formData.append("basePrice", values.basePrice.toString());
+          formData.append("uncounted", values.uncounted.toString());
+          formData.append("stock", values.stock.toString());
+
+          if (values.barCode !== undefined) {
+            formData.append("barCode", values.barCode.toString());
+          }
+
+          if (values.rfef) {
+            formData.append("rfef", values.rfef);
+          }
+
+          providers.forEach((element) => {
+            formData.append("providers", element);
+          });
+
+          if (values.image) {
+            formData.append("img", values.image);
+          }
+        }
+
+        // Always include userId
         if (!userId) {
           throw new Error("User ID is required");
         }
         formData.append("userId", userId);
-        if (values.barCode !== undefined) {
-          formData.append("barCode", values.barCode.toString());
-        }
 
-        if (values.rfef) {
-          formData.append("rfef", values.rfef);
-        }
-
-        providers.forEach((element) => {
-          formData.append("providers", element);
-        });
-
-        if (values.image) {
-          formData.append("img", values.image);
-        } else if (editMode && values?.image) {
-          // If in edit mode and no new image was selected, keep the original image
-          formData.append("keepOriginalImage", "true");
-          formData.append("photoUrl", values.image);
-        }
         if (!editMode) {
+          // Create new product
           await BackendApi.post("/products", formData, {
             headers: {
               "Content-Type": "multipart/form-data",
@@ -155,7 +219,8 @@ export default function ProductsForm({
               console.error(error);
             });
         } else {
-          await BackendApi.put(`/products/${id}`, formData, {
+          // Update existing product - use PATCH for partial update
+          await BackendApi.patch(`/products/${id}`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
