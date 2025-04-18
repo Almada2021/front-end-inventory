@@ -15,6 +15,9 @@ import {
 } from "@tanstack/react-table";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
 import { TRANSLATE_PAYMENT_METHODS } from "@/constants/translations/payments.methods";
+import { Card, CardContent } from "@/components/ui/card";
+import EmployeeTextInfo from "@/components/Infos/EmployeeTextInfo";
+
 interface Props {
   transferts: TransfertHistory[];
 }
@@ -24,21 +27,32 @@ const columns: ColumnDef<TransfertHistory>[] = [
     accessorKey: "id",
     header: "ID",
     cell: ({ row }) => {
-      return <a href={`/transferts/${row.original.id}`}>{row.original.id}</a>;
+      return (
+        <a
+          href={`/transferts/${row.original.id}`}
+          className="text-blue-600 hover:underline"
+        >
+          {row.original.id}
+        </a>
+      );
     },
   },
   {
     accessorKey: "amount",
     header: "Monto Total",
     cell: ({ row }) => {
-      return <div>{formatCurrency(row.original.amount)}</div>;
+      return (
+        <div className="font-medium">{formatCurrency(row.original.amount)}</div>
+      );
     },
   },
   {
     accessorKey: "user",
     header: "Persona",
     cell: ({ row }) => {
-      return <div>{row.original.user}</div>;
+      return (
+        <EmployeeTextInfo employeeId={row.original.user} keyValue="name" />
+      );
     },
   },
   {
@@ -46,7 +60,7 @@ const columns: ColumnDef<TransfertHistory>[] = [
     header: "Metodo",
     cell: ({ row }) => {
       return (
-        <div>
+        <div className="whitespace-nowrap">
           {
             TRANSLATE_PAYMENT_METHODS[
               row.original.method as keyof typeof TRANSLATE_PAYMENT_METHODS
@@ -61,10 +75,10 @@ const columns: ColumnDef<TransfertHistory>[] = [
     header: "Billetes",
     cell: ({ row }) => {
       return (
-        <div>
+        <div className="space-y-1">
           {Object.entries(row.original.bills).map(([key, value]) => {
             return (
-              <div key={key}>
+              <div key={key} className="text-sm">
                 {formatCurrency(Number(key))} x {value}
               </div>
             );
@@ -79,7 +93,7 @@ const columns: ColumnDef<TransfertHistory>[] = [
     header: "Fecha",
     cell: ({ row }) => {
       return (
-        <div>
+        <div className="text-sm whitespace-nowrap">
           {new Date(row.original.createdAt).toLocaleString("es-ES", {
             year: "numeric",
             month: "long",
@@ -93,32 +107,98 @@ const columns: ColumnDef<TransfertHistory>[] = [
     },
   },
 ];
+
 export default function TransfertHistoryTable({ transferts }: Props) {
   const table = useReactTable({
     data: transferts,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
   if (transferts.length === 0) {
-    return <div>No Existen transferencias De esta caja</div>;
+    return (
+      <div className="text-center p-4 text-gray-500">
+        No Existen transferencias De esta caja
+      </div>
+    );
   }
-  return (
-    <Table className="overflow-x-scroll">
+
+  // Vista móvil
+  const MobileView = () => (
+    <div className="space-y-4 md:hidden">
+      {transferts.map((transfert) => (
+        <Card key={transfert.id} className="overflow-hidden">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <a
+                href={`/transferts/${transfert.id}`}
+                className="text-blue-600 hover:underline"
+              >
+                ID: {transfert.id}
+              </a>
+              <span className="font-medium">
+                {formatCurrency(transfert.amount)}
+              </span>
+            </div>
+            <div className="text-sm">
+              <div className="font-medium">Persona:</div>
+              <div className="truncate">{transfert.user}</div>
+            </div>
+            <div className="text-sm">
+              <div className="font-medium">Método:</div>
+              <div>
+                {
+                  TRANSLATE_PAYMENT_METHODS[
+                    transfert.method as keyof typeof TRANSLATE_PAYMENT_METHODS
+                  ]
+                }
+              </div>
+            </div>
+            <div className="text-sm">
+              <div className="font-medium">Billetes:</div>
+              <div className="space-y-1">
+                {Object.entries(transfert.bills).map(([key, value]) => (
+                  <div key={key}>
+                    {formatCurrency(Number(key))} x {value}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="text-sm">
+              <div className="font-medium">Fecha:</div>
+              <div>
+                {new Date(transfert.createdAt).toLocaleString("es-ES", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
+  // Vista de escritorio
+  const DesktopView = () => (
+    <Table className="hidden md:table overflow-x-auto">
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => {
-              return (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              );
-            })}
+            {headerGroup.headers.map((header) => (
+              <TableHead key={header.id} className="whitespace-nowrap">
+                {header.isPlaceholder
+                  ? null
+                  : flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+              </TableHead>
+            ))}
           </TableRow>
         ))}
       </TableHeader>
@@ -134,5 +214,12 @@ export default function TransfertHistoryTable({ transferts }: Props) {
         ))}
       </TableBody>
     </Table>
+  );
+
+  return (
+    <div className="w-full">
+      <MobileView />
+      <DesktopView />
+    </div>
   );
 }
