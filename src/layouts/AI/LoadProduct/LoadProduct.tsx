@@ -7,9 +7,26 @@ import { BackendApi } from "@/core/api/api";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 import toast from "react-hot-toast";
 import CheckboxInput from "@/components/CheckboxInput/CheckboxInput";
+import { useNavigate } from "react-router";
 
 type Mode = "new" | "receipt" | "count" | null;
-
+const CountComponent = () => {
+  const navigate = useNavigate();
+  return (
+    <div
+      className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:bg-accent/50 transition-colors"
+      onClick={() => {
+        navigate("/inventory/ai/count");
+      }}
+    >
+      <ScanBarcode className="w-12 h-12 mx-auto mb-4 text-primary" />
+      <h3 className="text-lg font-semibold">Contar e Identificar</h3>
+      <p className="text-muted-foreground text-sm mt-2">
+        Escanea múltiples productos
+      </p>
+    </div>
+  );
+};
 const ModeSelector = ({ onSelect }: { onSelect: (mode: Mode) => void }) => (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
     <div
@@ -34,16 +51,7 @@ const ModeSelector = ({ onSelect }: { onSelect: (mode: Mode) => void }) => (
       </p>
     </div>
 
-    <div
-      className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:bg-accent/50 transition-colors"
-      onClick={() => onSelect("count")}
-    >
-      <ScanBarcode className="w-12 h-12 mx-auto mb-4 text-primary" />
-      <h3 className="text-lg font-semibold">Contar e Identificar</h3>
-      <p className="text-muted-foreground text-sm mt-2">
-        Escanea múltiples productos
-      </p>
-    </div>
+    <CountComponent />
   </div>
 );
 

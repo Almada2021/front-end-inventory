@@ -14,7 +14,9 @@ export const AiScreen = lazy(() => import("@/layouts/AI/AiScreen"));
 export const LoadProduct = lazy(
   () => import("@/layouts/AI/LoadProduct/LoadProduct")
 );
-
+export const CountProduct = lazy(
+  () => import("@/layouts/AI/Count/CountProduct")
+);
 export const StockOptimization = lazy(
   () => import("@/layouts/AI/StockOptimization/StockOptimization")
 );
