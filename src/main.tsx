@@ -51,6 +51,7 @@ import {
   ReportsPage,
   StockOptimization,
   TillHistory,
+  TransfertHistory,
 } from "@/pages";
 
 const client = new QueryClient();
@@ -139,6 +140,10 @@ createRoot(document.getElementById("root")!).render(
                         <Route
                           path="till/history/:id"
                           element={<TillHistory />}
+                        />
+                        <Route
+                          path="transferts/:id"
+                          element={<TransfertHistory />}
                         />
                       </Route>
                       <Route path="/test" element={<App />} />

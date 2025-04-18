@@ -107,6 +107,12 @@ export const TillHistory = lazy(
   () => import("@/layouts/Till/[id]/history/TillHistory")
 );
 
+// * Transfert History
+
+export const TransfertHistory = lazy(
+  () => import("@/layouts/HistoryTransfert/HistoryTransfert")
+);
+
 // * Clients
 
 export const ClientPage = lazy(() => import("@/layouts/Client/ClientPage"));
