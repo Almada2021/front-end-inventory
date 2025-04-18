@@ -380,7 +380,7 @@ export default function CheckoutScreen() {
                 className={`gap-2 text-lg border-2 border-white border-solid flex items-center text-green-600`}
               >
                 <ArrowUpSquareIcon size={48} />
-                Intercambiar
+                Recuperar Venta
               </Button>
             )}
             {mode == "products" && (

@@ -91,7 +91,12 @@ const columns: ColumnDef<Sale>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="bg-green-500 rounded-md p-2 font-bold text-center shadow-md ">
+      <div
+        className={`${
+          !row.original.reverted ? "bg-green-500" : "bg-yellow-600"
+        } rounded-md p-2 font-bold text-center shadow-md `}
+      >
+        {row.original.reverted && "Revertido"}{" "}
         {`${formatCurrency(row.getValue("amount"))}`}
       </div>
     ),
@@ -474,17 +479,22 @@ export default function SalesDataTable({ date }: Props) {
             {table.getHeaderGroups()[0].headers.map((header) => {
               // Cálculo de totales como en el código original
               const totalAmount =
-                salesQuery.data?.reduce((sum, sale) => sum + sale.amount, 0) ||
-                0;
+                salesQuery.data?.reduce(
+                  (sum, sale) => (sale?.reverted ? 0 : sum + sale.amount),
+                  0
+                ) || 0;
               const totalProfits =
-                salesQuery.data?.reduce((sum, sale) => sum + sale.profits, 0) ||
-                0;
+                salesQuery.data?.reduce(
+                  (sum, sale) => (sale?.reverted ? 0 : sum + sale.profits),
+                  0
+                ) || 0;
               const totalProducts =
                 salesQuery.data?.reduce(
                   (sum, sale) =>
                     sum +
                     sale.products.reduce(
-                      (acc, product) => acc + product.quantity,
+                      (acc, product) =>
+                        sale.reverted ? 0 : acc + product.quantity,
                       0
                     ),
                   0
