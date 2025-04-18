@@ -29,7 +29,7 @@ const columns: ColumnDef<TransfertHistory>[] = [
     cell: ({ row }) => {
       return (
         <a
-          href={`/transferts/${row.original.id}`}
+          href={`/inventory/transferts/${row.original.id}`}
           className="text-blue-600 hover:underline"
         >
           {row.original.id}

@@ -20,7 +20,7 @@ const StoreSelectorScreen = memo(function StoreSelectorScreen({
   const { storesQuery } = useStores();
   if (storesQuery.isFetching) return <LoadingScreen />;
   return (
-    <div className="p-10 mt-4 md:mt-0">
+    <div className="p-10 flex flex-col md:flex-row gap-4 mt-4 md:mt-0">
       {storesQuery?.data?.map((store, index) => (
         <motion.div
           key={store.id}
@@ -29,7 +29,7 @@ const StoreSelectorScreen = memo(function StoreSelectorScreen({
           transition={{ delay: index * 0.05 }}
           className="relative group max-h-[300px] min-w-[200px]"
         >
-          <div className="h-full bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-transparent hover:border-blue-200">
+          <div className="h-full min-w-[300px] bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-transparent hover:border-blue-200">
             {/* Encabezado con efecto decorativo */}
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-t-xl" />
 
@@ -44,7 +44,10 @@ const StoreSelectorScreen = memo(function StoreSelectorScreen({
               {/* Dirección con icono */}
               <div className="flex items-center gap-2 text-gray-600">
                 <PinIcon size={24} color="#03C" />
-                <p className="text-sm">{store.address}</p>
+                <p className="text-sm text-wrap">
+                  {store.address.substring(0, 23)}
+                  {store.address.length > 23 && "..."}
+                </p>
               </div>
 
               {/* Detalles adicionales */}
