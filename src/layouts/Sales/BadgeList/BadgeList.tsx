@@ -1,36 +1,64 @@
-import useProductsByIds from "@/hooks/products/useProductsByIds";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Product } from "@/infrastructure/interfaces/sale/sale.interface";
-import { motion } from "framer-motion";
-import SaleProductBadge from "./SaleProductBadge";
-import { cn } from "@/lib/utils";
-export default function BadgeList({ products }: { products: Product[] }) {
-  const idArr = products.map((product) => product.product);
-  const { getProductsByIds } = useProductsByIds(idArr);
-  if (getProductsByIds.isFetching) {
-    return null;
-  }
+import { Edit, Trash2 } from "lucide-react";
+
+interface BadgeListProps {
+  products: Product[];
+  onRemoveProduct?: (productId: string) => void;
+  onEditProduct?: (productId: string) => void;
+  disabled?: boolean;
+}
+
+export default function BadgeList({
+  products,
+  onRemoveProduct,
+  onEditProduct,
+  disabled = false,
+}: BadgeListProps) {
   return (
-    <>
-      {products.map((product, index) => {
-        return (
-          <motion.div
-            key={product._id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className={cn(
-              "p-4 rounded-xl border-2",
-              product.cancelled
-                ? "bg-red-50 border-red-200"
-                : "bg-green-50 border-green-200"
-            )}
-          >
-            <SaleProductBadge
-              name={getProductsByIds.data?.find((p) => p.id == product.product)?.name || "Unknown Product"}
-              product={product} />
-          </motion.div>
-        );
-      })}
-    </>
+    <div className="flex flex-wrap gap-2">
+      {products.map((product) => (
+        <Badge
+          key={product._id}
+          variant={product.cancelled ? "destructive" : "outline"}
+          className="flex items-center gap-2 p-2"
+        >
+          <span>
+            {product.product} x {product.quantity}
+          </span>
+          {!disabled && !product.cancelled && (
+            <div className="flex gap-1">
+              {onEditProduct && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 p-0 hover:text-blue-500"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditProduct(product.product);
+                  }}
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
+              )}
+              {onRemoveProduct && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 p-0 hover:text-red-500"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveProduct(product.product);
+                  }}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          )}
+        </Badge>
+      ))}
+    </div>
   );
 }

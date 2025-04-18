@@ -146,7 +146,11 @@ export default function CheckoutScreen() {
     if (mode === "bills" && !back) {
       if (method === "cash") {
         // Solo permitir cashback si es efectivo
-        setMode("cashBack");
+        if (clientMoney - total > 0) {
+          setMode("cashBack");
+        } else {
+          setMode("confirm");
+        }
         return;
       } else {
         setMode("confirm"); // Saltar cashback si el método no es efectivo

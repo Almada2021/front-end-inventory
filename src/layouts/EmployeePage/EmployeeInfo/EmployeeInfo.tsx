@@ -2,8 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useParams, useNavigate } from "react-router";
 import useEmployeeById from "@/hooks/employees/useEmployeeById";
-import { ArrowLeft, Loader2, UserRound, Mail, ShieldCheck } from "lucide-react";
+import { ArrowLeft, UserRound, Mail, ShieldCheck } from "lucide-react";
 import { ROLES } from "@/lib/database.types";
+import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 
 export default function EmployeeDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -12,8 +13,8 @@ export default function EmployeeDetailsPage() {
 
   if (emplooyeByIdQuery.isFetching) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex h-screen px-10 w-full items-center justify-center">
+        <LoadingScreen />
       </div>
     );
   }

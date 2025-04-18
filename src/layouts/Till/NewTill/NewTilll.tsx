@@ -113,7 +113,7 @@ export default function NewTilll({
         type: values.bank ? "bankAcount" : "till",
       };
       newTillMutate.mutate(formData);
-      toast.success("La Caja se Creo correctamente")
+      toast.success("La Caja se Creo correctamente");
       formik.resetForm();
     },
   });

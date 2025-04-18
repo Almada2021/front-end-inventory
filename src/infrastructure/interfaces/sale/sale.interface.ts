@@ -15,6 +15,7 @@ export interface Sale {
   bills: Record<string, number>;
   billsCashBack: Record<string, number>;
   paymentMethod: PaymentMethod;
+  reverted?: boolean;
 }
 
 export interface Product {
@@ -22,4 +23,20 @@ export interface Product {
   quantity: number;
   cancelled: boolean;
   _id: string;
+}
+
+export interface CreateSaleDto {
+  amount: number;
+  profits: number;
+  sellerId: string;
+  products: {
+    product: string;
+    quantity: number;
+    cancelled?: boolean;
+  }[];
+  till: string;
+  bills: Record<string, number>;
+  billsCashBack: Record<string, number>;
+  paymentMethod: PaymentMethod;
+  client?: string;
 }
