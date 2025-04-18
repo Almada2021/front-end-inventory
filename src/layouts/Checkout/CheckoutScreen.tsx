@@ -9,7 +9,7 @@ import { useMediaQuery } from "usehooks-ts";
 import PaymentMethod from "./Screens/PaymentMethod";
 import Bills from "@/components/Bills/Bills";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftCircleIcon, ArrowUpSquareIcon } from "lucide-react";
+import { ArrowLeftCircleIcon } from "lucide-react";
 import { PaymentMethod as TPaymentMethod } from "@/lib/database.types";
 import AlertMessage from "../Alert/AlertMessage";
 import useLocalStorage from "@/hooks/browser/useLocalStorage";
@@ -371,7 +371,7 @@ export default function CheckoutScreen() {
               <ArrowLeftCircleIcon size={48} />
               {mode == "products" ? "Cerrar Caja" : "Volver"}
             </Button>
-            {mode == "products" && (
+            {/* {mode == "products" && (
               <Button
                 variant="ghost"
                 onClick={() => {
@@ -382,7 +382,7 @@ export default function CheckoutScreen() {
                 <ArrowUpSquareIcon size={48} />
                 Recuperar Venta
               </Button>
-            )}
+            )} */}
             {mode == "products" && (
               <SearchBar<Product | undefined>
                 onFocus={() => {

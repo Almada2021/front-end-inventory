@@ -37,6 +37,10 @@ import { useAdmin } from "@/hooks/browser/useAdmin";
 import MoneyInput from "@/components/MoneyInput/MoneyInput";
 import { withdrawMoney } from "@/core/actions/tills/withdrawMoney";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
+import useTillOpensCloseHistory from "@/hooks/till/useTillOpensCloseHistory";
+import TillOpensCloseTable from "@/components/DataTable/till-opens-close/TillOpensCloseTable";
+import TillOpensClosePagination from "@/components/DataTable/till-opens-close/TillOpensClosePagination";
+
 type PageModes = "retire" | "tranfert" | "active";
 export default function TillById() {
   const { id } = useParams();
@@ -44,6 +48,21 @@ export default function TillById() {
   const navigate = useNavigate();
   const [pageMode, setPageMode] = useState<PageModes>("active");
   const { tillsByIdQuery } = useTillById(id!);
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 30;
+
+  const { tillOpensCloseHistoryQuery } = useTillOpensCloseHistory(id || "", {
+    page: currentPage,
+    limit,
+  });
+
+  const { data: historyData, isFetching: isHistoryFetching } =
+    tillOpensCloseHistoryQuery;
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   const [tills, setTills] = useState<[string?, string?]>([]);
   const [bills, setBills] = useState<Record<string, number>>({});
   const [transfertMode, setTranfertMode] = useState<
@@ -794,6 +813,37 @@ export default function TillById() {
           </Card>
         </div>
       </div>
+
+      <Card className="mt-6">
+        <CardHeader className="bg-blue-50 rounded-t-2xl">
+          <CardTitle className="text-xl text-blue-800 font-semibold flex items-center gap-2">
+            <History className="h-5 w-5" />
+            Historial de Aperturas/Cierres
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4">
+          {isHistoryFetching ? (
+            <div className="text-center p-4">Cargando historial...</div>
+          ) : historyData ? (
+            <div className="space-y-4">
+              <TillOpensCloseTable
+                tillOpensClose={Array.isArray(historyData) ? historyData : []}
+              />
+              {historyData.totalPages > 0 && (
+                <TillOpensClosePagination
+                  currentPage={currentPage}
+                  totalPages={historyData.totalPages}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="text-center p-4 text-gray-500">
+              No hay registros de aperturas/cierres
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
