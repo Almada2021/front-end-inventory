@@ -20,7 +20,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
@@ -61,7 +60,10 @@ const columns: ColumnDef<Order>[] = [
     accessorKey: "id",
     header: "Enlace",
     cell: ({ row }) => (
-      <a href={`./${row.getValue("id")}`} className="text-blue-400 underline font-bold">
+      <a
+        href={`./${row.getValue("id")}`}
+        className="text-blue-400 underline font-bold"
+      >
         Ir
       </a>
     ),
@@ -85,7 +87,9 @@ const columns: ColumnDef<Order>[] = [
     cell: ({ row }) => {
       const status = row.getValue("status") as OrderStatus;
       return (
-        <Badge className={`${getStatusColor(status)} px-3 py-1 font-medium m-auto`}>
+        <Badge
+          className={`${getStatusColor(status)} px-3 py-1 font-medium m-auto`}
+        >
           {StatusTranslations[status]}
         </Badge>
       );
@@ -105,7 +109,9 @@ const columns: ColumnDef<Order>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue("name")}</div>
+    ),
   },
   {
     accessorKey: "date",
@@ -148,13 +154,23 @@ const columns: ColumnDef<Order>[] = [
   {
     id: "actions",
     cell: () => {
-      
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Abrir menú</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
                 <circle cx="12" cy="12" r="1"></circle>
                 <circle cx="12" cy="5" r="1"></circle>
                 <circle cx="12" cy="19" r="1"></circle>
@@ -166,7 +182,9 @@ const columns: ColumnDef<Order>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem>Ver detalles</DropdownMenuItem>
             <DropdownMenuItem>Actualizar estado</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">Cancelar Pedido</DropdownMenuItem>
+            <DropdownMenuItem className="text-red-600">
+              Cancelar Pedido
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -193,7 +211,6 @@ export default function OrdersDataTable({ orders, isLoading = false }: Props) {
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -208,8 +225,6 @@ export default function OrdersDataTable({ orders, isLoading = false }: Props) {
       rowSelection,
     },
   });
-
-
 
   // Filter the table based on search query
   useEffect(() => {
@@ -235,9 +250,11 @@ export default function OrdersDataTable({ orders, isLoading = false }: Props) {
           <div className="space-y-2 mb-4">
             <Skeleton className="h-10 w-full" />
           </div>
-          {Array(5).fill(0).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full my-2" />
-          ))}
+          {Array(5)
+            .fill(0)
+            .map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full my-2" />
+            ))}
         </CardContent>
       </Card>
     );
@@ -260,11 +277,14 @@ export default function OrdersDataTable({ orders, isLoading = false }: Props) {
             />
           </div>
           <div className="flex space-x-2 w-full md:w-auto justify-end">
-            <Button variant="outline" size="sm" onClick={() => table.resetColumnFilters()}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.resetColumnFilters()}
+            >
               <Filter className="mr-2 h-4 w-4" />
               Resetear filtros
             </Button>
-            
           </div>
         </div>
 
@@ -294,9 +314,14 @@ export default function OrdersDataTable({ orders, isLoading = false }: Props) {
                     data-state={row.getIsSelected() && "selected"}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={(e) => {
-                      // Don't navigate if clicking the checkbox or actions
-                      if ((e.target as HTMLElement).closest('[aria-label="Select row"]') || 
-                          (e.target as HTMLElement).closest('.dropdown-menu-trigger')) {
+                      if (
+                        (e.target as HTMLElement).closest(
+                          '[aria-label="Select row"]'
+                        ) ||
+                        (e.target as HTMLElement).closest(
+                          ".dropdown-menu-trigger"
+                        )
+                      ) {
                         return;
                       }
                       handleRowClick(row.id);
@@ -304,52 +329,33 @@ export default function OrdersDataTable({ orders, isLoading = false }: Props) {
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
                     <div className="flex flex-col items-center justify-center space-y-2">
-                      <div className="text-muted-foreground text-xl">No hay órdenes disponibles</div>
-                      <p className="text-sm text-muted-foreground">Intente cambiando los filtros o creando una nueva orden</p>
+                      <div className="text-muted-foreground text-xl">
+                        No hay órdenes disponibles
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Intente cambiando los filtros o creando una nueva orden
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </div>
-        
-        <div className="flex items-center justify-between space-x-2 py-4">
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length > 0 && (
-              <div>
-                {table.getFilteredSelectedRowModel().rows.length} de{" "}
-                {table.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
-              </div>
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Anterior
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Siguiente
-            </Button>
-          </div>
         </div>
       </CardContent>
     </Card>

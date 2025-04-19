@@ -1,11 +1,17 @@
 export interface OrdersResponse {
   orders: Order[];
+  numberOfPages: number;
 }
 
 export interface SingeOrderRes {
   order: Order;
 }
-export type OrderStatus = "open" | "closed" | "cancelled" | "partially";
+export type OrderStatus =
+  | "open"
+  | "closed"
+  | "cancelled"
+  | "partially"
+  | "returned";
 type Translations = {
   [key in OrderStatus]: string;
 };
@@ -15,6 +21,7 @@ export const StatusTranslations: Translations = {
   closed: "Cerrado",
   cancelled: "Cancelado",
   partially: "Parcialmente",
+  returned: "Devuelto",
 };
 export interface Order {
   id: string;

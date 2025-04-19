@@ -105,21 +105,85 @@ const ProductItem = ({
   const [localReceived, setLocalReceived] = useState(received);
   const [localIsReceived, setLocalIsReceived] = useState(isReceived);
   const [localNotes, setLocalNotes] = useState(notes);
+  const [error, setError] = useState<string | null>(null);
 
+  // Update local state when props change
+  useEffect(() => {
+    setLocalReceived(received);
+    setLocalIsReceived(isReceived);
+    setLocalNotes(notes);
+  }, [received, isReceived, notes]);
+
+  // Validate and update the received quantity
   const handleReceivedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 0;
+
+    // Validate the input
+    if (value > quantity) {
+      setError(
+        `La cantidad recibida no puede ser mayor que la cantidad solicitada (${quantity})`
+      );
+      setLocalReceived(quantity);
+      onUpdate({
+        received: quantity,
+        isReceived: localIsReceived,
+        notes: localNotes,
+      });
+      return;
+    }
+
+    setError(null);
     setLocalReceived(value);
-    onUpdate({
-      received: value,
-      isReceived: localIsReceived,
-      notes: localNotes,
-    });
+
+    // If quantity is 0 and product is marked as received, uncheck it
+    if (value === 0 && localIsReceived) {
+      setLocalIsReceived(false);
+      onUpdate({ received: value, isReceived: false, notes: localNotes });
+    } else {
+      onUpdate({
+        received: value,
+        isReceived: localIsReceived,
+        notes: localNotes,
+      });
+    }
   };
 
+  // Handle checkbox change for received status
   const handleIsReceivedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.checked;
+
+    // If marking as received and quantity is 0, set to full quantity
+    if (value && localReceived === 0) {
+      setLocalReceived(quantity);
+      setLocalIsReceived(true);
+      onUpdate({ received: quantity, isReceived: true, notes: localNotes });
+      return;
+    }
+
+    // If unchecking received status, keep the current received quantity
     setLocalIsReceived(value);
     onUpdate({ received: localReceived, isReceived: value, notes: localNotes });
+  };
+
+  // Handle label click for received status
+  const handleLabelClick = () => {
+    const newValue = !localIsReceived;
+
+    // If marking as received and quantity is 0, set to full quantity
+    if (newValue && localReceived === 0) {
+      setLocalReceived(quantity);
+      setLocalIsReceived(true);
+      onUpdate({ received: quantity, isReceived: true, notes: localNotes });
+      return;
+    }
+
+    // If unchecking received status, keep the current received quantity
+    setLocalIsReceived(newValue);
+    onUpdate({
+      received: localReceived,
+      isReceived: newValue,
+      notes: localNotes,
+    });
   };
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -130,6 +194,15 @@ const ProductItem = ({
       isReceived: localIsReceived,
       notes: value,
     });
+  };
+
+  // Determine the status of the product
+  const getProductStatus = () => {
+    if (localIsReceived) return "Recibido";
+    if (localReceived > 0 && localReceived < quantity)
+      return "Parcialmente recibido";
+    if (localReceived === 0) return "Pendiente";
+    return "Recibido";
   };
 
   return (
@@ -166,8 +239,25 @@ const ProductItem = ({
         </div>
         <div className="text-right">
           <div className="text-sm font-medium">Cantidad: {quantity}</div>
+          <div
+            className={`text-xs font-medium ${
+              getProductStatus() === "Recibido"
+                ? "text-green-600"
+                : getProductStatus() === "Parcialmente recibido"
+                ? "text-yellow-600"
+                : "text-gray-500"
+            }`}
+          >
+            {getProductStatus()}
+          </div>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
+          {error}
+        </div>
+      )}
 
       <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
@@ -194,7 +284,8 @@ const ProductItem = ({
           />
           <label
             htmlFor={`received-${product.id}`}
-            className="ml-2 block text-sm text-gray-700"
+            onClick={handleLabelClick}
+            className="ml-2 block text-sm text-gray-700 cursor-pointer"
           >
             Producto recibido
           </label>
@@ -349,7 +440,38 @@ export default function OrderInfo() {
   const isLoadingProducts =
     getProductsByIds.isFetching && productIdsToFetch.length > 0;
 
-  const getStatusColor = (status: OrderStatus) => {
+  // Función para determinar el estado de un producto
+  const getProductStatus = (productItem: {
+    isReceived?: boolean;
+    received?: number;
+    quantity: number;
+  }) => {
+    if (productItem.isReceived) return "Recibido";
+    if (
+      productItem.received &&
+      productItem.received > 0 &&
+      productItem.received < productItem.quantity
+    )
+      return "Parcialmente recibido";
+    if (!productItem.received || productItem.received === 0) return "Pendiente";
+    return "Recibido";
+  };
+
+  // Función para obtener el color del estado
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Recibido":
+        return "bg-green-100 text-green-800";
+      case "Parcialmente recibido":
+        return "bg-yellow-100 text-yellow-800";
+      case "Pendiente":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getOrderStatusColor = (status: OrderStatus) => {
     switch (status) {
       case "open":
         return "bg-blue-100 text-blue-800";
@@ -359,6 +481,8 @@ export default function OrderInfo() {
         return "bg-red-100 text-red-800";
       case "partially":
         return "bg-yellow-100 text-yellow-800";
+      case "returned":
+        return "bg-purple-100 text-purple-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -405,7 +529,7 @@ export default function OrderInfo() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <h2 className="text-xl font-bold">Pedido: {order.name}</h2>
             <span
-              className={`mt-2 md:mt-0 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+              className={`mt-2 md:mt-0 px-3 py-1 rounded-full text-sm font-medium ${getOrderStatusColor(
                 order.status
               )}`}
             >
@@ -497,6 +621,9 @@ export default function OrderInfo() {
                         const productDetails = products.find(
                           (p) => p.id === productItem.product.id
                         );
+                        const productStatus = getProductStatus(productItem);
+                        const statusColor = getStatusColor(productStatus);
+
                         return (
                           <tr
                             key={productItem.product.id}
@@ -516,6 +643,7 @@ export default function OrderInfo() {
                                           }/static/${productDetails?.photoUrl}`
                                     }
                                     alt={productDetails?.name || "Producto"}
+                                    className="h-full w-full object-cover"
                                   />
                                 ) : (
                                   <div className="h-full w-full flex items-center justify-center text-gray-400 text-xs">
@@ -549,15 +677,9 @@ export default function OrderInfo() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                   <span
-                                    className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                      productItem.isReceived
-                                        ? "bg-green-100 text-green-800"
-                                        : "bg-red-100 text-red-800"
-                                    }`}
+                                    className={`px-2 py-1 text-xs font-medium rounded-full ${statusColor}`}
                                   >
-                                    {productItem.isReceived
-                                      ? "Recibido"
-                                      : "No recibido"}
+                                    {productStatus}
                                   </span>
                                 </td>
                               </>
@@ -600,7 +722,8 @@ export default function OrderInfo() {
 
       {/* Botones de acción */}
       <div className="flex flex-wrap justify-end gap-3">
-        {order.status !== "closed" && (
+        {/* Botón de Completado - Solo visible para pedidos pendientes */}
+        {order.status === "open" && (
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>
               <button
@@ -640,7 +763,8 @@ export default function OrderInfo() {
           </AlertDialog.Root>
         )}
 
-        {order.status !== "partially" && order.status !== "closed" && (
+        {/* Botón de Completado Parcial - Solo visible para pedidos pendientes */}
+        {order.status === "open" && (
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>
               <button
@@ -716,7 +840,8 @@ export default function OrderInfo() {
           </AlertDialog.Root>
         )}
 
-        {order.status !== "cancelled" && order.status !== "closed" && (
+        {/* Botón de Cancelar - Solo visible para pedidos pendientes */}
+        {order.status === "open" && (
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>
               <button
@@ -748,6 +873,68 @@ export default function OrderInfo() {
                       onClick={() => updateOrderStatus("cancelled")}
                     >
                       Sí, Cancelar
+                    </button>
+                  </AlertDialog.Action>
+                </div>
+              </AlertDialog.Content>
+            </AlertDialog.Portal>
+          </AlertDialog.Root>
+        )}
+
+        {/* Botón de Devolver Pedido - Solo visible para pedidos completados o parcialmente completados */}
+        {(order.status === "closed" || order.status === "partially") && (
+          <AlertDialog.Root>
+            <AlertDialog.Trigger asChild>
+              <button
+                className="px-4 mr-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
+                disabled={updatingStatus}
+              >
+                Devolver Pedido
+              </button>
+            </AlertDialog.Trigger>
+            <AlertDialog.Portal>
+              <AlertDialog.Overlay className="fixed inset-0 bg-black bg-opacity-25" />
+              <AlertDialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+                <AlertDialog.Title className="text-lg font-medium">
+                  Devolver Pedido
+                </AlertDialog.Title>
+                <AlertDialog.Description className="mt-2 text-sm text-gray-500">
+                  ¿Estás seguro de que deseas marcar este pedido como
+                  "Devuelto"? Esta acción cambiará el estado del pedido a
+                  devolución.
+                </AlertDialog.Description>
+
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Importante:</strong> Al marcar este pedido como
+                    devuelto, se restará el stock de los productos que fueron
+                    recibidos anteriormente.
+                    {order.status === "partially" ? (
+                      <span className="block mt-1">
+                        Como este pedido está parcialmente completado, solo se
+                        restará el stock de los productos que fueron marcados
+                        como recibidos.
+                      </span>
+                    ) : (
+                      <span className="block mt-1">
+                        Se restará el stock de todos los productos del pedido.
+                      </span>
+                    )}
+                  </p>
+                </div>
+
+                <div className="mt-4 flex justify-end space-x-2">
+                  <AlertDialog.Cancel asChild>
+                    <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                      Cancelar
+                    </button>
+                  </AlertDialog.Cancel>
+                  <AlertDialog.Action asChild>
+                    <button
+                      className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700"
+                      onClick={() => updateOrderStatus("returned")}
+                    >
+                      Confirmar
                     </button>
                   </AlertDialog.Action>
                 </div>
