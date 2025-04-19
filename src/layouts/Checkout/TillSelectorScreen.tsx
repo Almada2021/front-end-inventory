@@ -22,7 +22,12 @@ const TillSelectorScreen = memo(function StoreSelectorScreen({
     },
     [changeMode]
   );
-  if (tillsByStoreQuery.isFetching) return <LoadingScreen />;
+  if (tillsByStoreQuery.isFetching)
+    return (
+      <div className="p-10 w-full flex flex-col md:flex-row gap-4 mt-4 md:mt-0">
+        <LoadingScreen />
+      </div>
+    );
   const tills = tillsByStoreQuery.data?.tills;
   return (
     <div className="p-10 mt-4 md:mt-0 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 col-span-full w-full gap-2 ">

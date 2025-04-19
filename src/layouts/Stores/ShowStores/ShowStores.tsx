@@ -11,7 +11,12 @@ export default function ShowStores() {
   const toStore = (id: string) => {
     navigate(`./${id}`);
   };
-  if (storesQuery.isFetching) return <LoadingScreen />;
+  if (storesQuery.isFetching)
+    return (
+      <div className="p-10 w-full flex flex-col md:flex-row gap-4 mt-4 md:mt-0">
+        <LoadingScreen />
+      </div>
+    );
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 mt-10 md:mt-0">
       {storesQuery?.data?.map((store, index) => (

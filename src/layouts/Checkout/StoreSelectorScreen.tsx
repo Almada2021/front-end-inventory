@@ -18,7 +18,12 @@ const StoreSelectorScreen = memo(function StoreSelectorScreen({
     [changeMode]
   );
   const { storesQuery } = useStores();
-  if (storesQuery.isFetching) return <LoadingScreen />;
+  if (storesQuery.isFetching)
+    return (
+      <div className="p-10 w-full flex flex-col md:flex-row gap-4 mt-4 md:mt-0">
+        <LoadingScreen />
+      </div>
+    );
   return (
     <div className="p-10 flex flex-col md:flex-row gap-4 mt-4 md:mt-0">
       {storesQuery?.data?.map((store, index) => (

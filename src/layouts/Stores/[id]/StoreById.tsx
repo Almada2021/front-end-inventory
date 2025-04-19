@@ -17,19 +17,23 @@ export default function StoreById() {
   const isAdmin = useAdmin();
   const { storeById } = useStoreById(id || "");
   const { data: store } = storeById;
-  const {getOrdersQuery} = useOrders({
+  const { getOrdersQuery } = useOrders({
     page: 1,
     limit: 1000,
-    status: "open"
-  })
+    status: "open",
+  });
   const navigate = useNavigate();
   const { tillsByStoreQuery } = useTills(id!);
-  if(!isAdmin){
-    navigate("/inventory")
+  if (!isAdmin) {
+    navigate("/inventory");
     return null;
   }
   if (storeById.isFetching || tillsByStoreQuery.isFetching)
-    return <LoadingScreen />;
+    return (
+      <div className="p-10 w-full flex flex-col md:flex-row gap-4 mt-4 md:mt-0">
+        <LoadingScreen />
+      </div>
+    );
   if (!store) return <div>No Encontrado</div>;
   const tills = tillsByStoreQuery.data?.tills;
   return (
@@ -91,7 +95,14 @@ export default function StoreById() {
             </div>
             <div>
               <h3 className="text-sm text-gray-500">Pedidos pendientes</h3>
-              <p className="text-2xl font-bold text-gray-800">{formatCurrency(getOrdersQuery.data?.orders.reduce((acc, order) => acc + order.amount,0) || 0)}</p>
+              <p className="text-2xl font-bold text-gray-800">
+                {formatCurrency(
+                  getOrdersQuery.data?.orders.reduce(
+                    (acc, order) => acc + order.amount,
+                    0
+                  ) || 0
+                )}
+              </p>
             </div>
           </div>
         </motion.div>

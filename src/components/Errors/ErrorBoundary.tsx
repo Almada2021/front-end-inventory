@@ -29,6 +29,13 @@ export class ErrorBoundary extends React.Component<
     //   in ComponentThatThrows (created by App)
     //   in ErrorBoundary (created by App)
     //   in div (created by App)
+    return (
+      <div>
+        <h1>Error</h1>
+        <p>{error.message}</p>
+        <p>{info.componentStack}</p>
+      </div>
+    );
     console.log(error, info.componentStack);
   }
 

@@ -33,7 +33,17 @@ export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
   const startDate = subDays(date, range);
   const endDate = addDays(date, 1);
   const { salesByDayQuery } = useSalesDashboard(startDate, endDate);
-  const salesData = salesByDayQuery.data;
+  const salesData = salesByDayQuery.data || [];
+  if (salesData.length < 1) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Ventas</CardTitle>
+          <CardDescription>No hay datos para mostrar</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
   const parseDataToGraph = Object.entries(salesData || {}).map(
     ([key, value]) => ({
       date: key,
