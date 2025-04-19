@@ -46,9 +46,9 @@ export default defineConfig({
   },
   server: {
     // host: "almada.com",
-    https: {
-      key: "./localhost-key.pem", // Ruta al archivo .key
-      cert: "./localhost.pem", // Ruta al archivo .crt
-    },
+    // https: {
+    //   key: "./localhost-key.pem", // Ruta al archivo .key
+    //   cert: "./localhost.pem", // Ruta al archivo .crt
+    // },
   },
 });
