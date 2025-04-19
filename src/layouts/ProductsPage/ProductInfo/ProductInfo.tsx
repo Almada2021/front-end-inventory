@@ -17,6 +17,7 @@ import ProviderList from "./ProvidersItem/ProviderList";
 import ProductChanges from "./ProductChanges/ProductChanges";
 import ProductSales from "./ProductSales/ProductSales";
 import { useAdmin } from "@/hooks/browser/useAdmin";
+import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 
 export default function ProductInfo() {
   const { id } = useParams();
@@ -29,7 +30,13 @@ export default function ProductInfo() {
   if (!getProductsByIds.data?.[0]) return <div>Producto no encontrado</div>;
 
   const product = getProductsByIds.data[0];
-  if (getProductsByIds.isFetching) return null;
+  if (getProductsByIds.isFetching) {
+    return (
+      <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+        <LoadingScreen />
+      </div>
+    );
+  }
   if (editMode) {
     // Convert getProductsByIds.data[0].photoUrl as File is url fetch and convert
     return (

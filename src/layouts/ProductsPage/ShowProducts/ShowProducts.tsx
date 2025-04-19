@@ -8,6 +8,7 @@ import {
   Product,
   ProductResponse,
 } from "@/infrastructure/interfaces/products.interface";
+import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 import { useState } from "react";
 
 export default function ShowProducts() {
@@ -29,6 +30,13 @@ export default function ShowProducts() {
       console.log(error);
     }
   };
+  if (productsQuery.isFetching) {
+    return (
+      <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+        <LoadingScreen />
+      </div>
+    );
+  }
   return (
     <div className="mt-20 sm:mt-0 min-h-[100dvh] w-full p-4 flex flex-col">
       <SearchBar<Product | undefined>

@@ -6,7 +6,11 @@ import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 export default function ShowClient() {
   const { queryAllClients } = useClients({ page: 1, limit: 1000 });
   if (queryAllClients.isFetching || !queryAllClients.data)
-    return <LoadingScreen />;
+    return (
+      <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+        <LoadingScreen />
+      </div>
+    );
 
   return (
     <div className="mt-20 sm:mt-0 min-h-screen w-full p-4 flex flex-col">

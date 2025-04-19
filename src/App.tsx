@@ -17,7 +17,7 @@ function App() {
   }, [userInfo, token, navigate]);
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-screen px-10">
       <LoadingScreen />
     </div>
   );

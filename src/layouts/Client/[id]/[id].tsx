@@ -32,7 +32,11 @@ export default function ClientIdPage() {
     currentPage * pageSize
   );
   if (getClientQuery.isFetching || getSalesByClientQuery.isFetching)
-    return <LoadingScreen />;
+    return (
+      <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+        <LoadingScreen />
+      </div>
+    );
   const client = getClientQuery.data?.clients[0];
 
   if (!client) return <div>Cliente no encontrado</div>;

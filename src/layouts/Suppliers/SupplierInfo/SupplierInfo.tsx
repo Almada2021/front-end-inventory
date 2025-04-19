@@ -34,7 +34,11 @@ export default function SupplierInfo() {
     getProviderById.isLoading ||
     getProductsByIds.isFetching
   ) {
-    return <LoadingScreen />;
+    return (
+      <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+        <LoadingScreen />
+      </div>
+    );
   }
   if (!getProviderById.data) {
     return (

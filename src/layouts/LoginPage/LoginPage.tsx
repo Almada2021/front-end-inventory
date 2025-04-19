@@ -21,7 +21,11 @@ export default function LoginPage({ show }: Props) {
     }
   }, [userInfo, token, navigate]);
   if (loading) {
-    return <LoadingScreen />;
+    return (
+      <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6  md:p-20">
+        <LoadingScreen />
+      </div>
+    );
   }
   if (!show) return null;
   return (
