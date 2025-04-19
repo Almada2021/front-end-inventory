@@ -28,6 +28,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "react-hot-toast";
 import { useAppSelector } from "@/config/react-redux.adapter";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 interface IValues {
   id: string;
   name: string;
@@ -39,6 +47,8 @@ interface IValues {
   providers: string[];
   barCode?: number | undefined;
   rfef?: string;
+  sellByWeight: boolean;
+  weightUnit: string;
 }
 interface IProductsForm extends React.ComponentPropsWithoutRef<"div"> {
   values?: IValues;
@@ -77,6 +87,8 @@ export default function ProductsForm({
     stock: values?.stock || 0,
     barCode: values?.barCode || (undefined as number | undefined),
     rfef: values?.rfef || "", // New optional RFEF field
+    sellByWeight: values?.sellByWeight || false,
+    weightUnit: values?.weightUnit || "",
   };
 
   const formik = useFormik({
@@ -95,6 +107,16 @@ export default function ProductsForm({
       stock: Yup.number(),
       barCode: Yup.number().optional(),
       rfef: Yup.string().optional().nullable(), // Validation for new field
+      sellByWeight: Yup.boolean(),
+      weightUnit: Yup.string().test(
+        "weightUnitRequired",
+        "La unidad de peso es requerida cuando se vende por peso",
+        function (value) {
+          return (
+            !this.parent.sellByWeight || (this.parent.sellByWeight && !!value)
+          );
+        }
+      ),
     }),
     onSubmit: async (
       values,
@@ -109,6 +131,8 @@ export default function ProductsForm({
         stock: number;
         barCode?: number;
         rfef?: string;
+        sellByWeight: boolean;
+        weightUnit: string;
       }>
     ) => {
       try {
@@ -149,6 +173,14 @@ export default function ProductsForm({
             }
           }
 
+          if (values.sellByWeight !== initialValues.sellByWeight) {
+            formData.append("sellByWeight", values.sellByWeight.toString());
+          }
+
+          if (values.weightUnit !== initialValues.weightUnit) {
+            formData.append("weightUnit", values.weightUnit);
+          }
+
           // Handle providers - only include if they've changed
           const initialProvidersStr = JSON.stringify(
             [...spreadProviders].sort()
@@ -176,6 +208,8 @@ export default function ProductsForm({
           formData.append("basePrice", values.basePrice.toString());
           formData.append("uncounted", values.uncounted.toString());
           formData.append("stock", values.stock.toString());
+          formData.append("sellByWeight", values.sellByWeight.toString());
+          formData.append("weightUnit", values.weightUnit);
 
           if (values.barCode !== undefined) {
             formData.append("barCode", values.barCode.toString());
@@ -245,6 +279,16 @@ export default function ProductsForm({
       }
     },
   });
+
+  // Predefined weight unit options
+  const weightUnitOptions = [
+    { value: "kg", label: "Kilogramo (kg)" },
+    { value: "g", label: "Gramo (g)" },
+    { value: "lb", label: "Libra (lb)" },
+    { value: "oz", label: "Onza (oz)" },
+    { value: "l", label: "Litro (l)" },
+    { value: "ml", label: "Mililitro (ml)" },
+  ];
 
   return (
     <div className={cn("flex flex-col ", className)} {...props}>
@@ -390,6 +434,55 @@ export default function ProductsForm({
                         </div>
                         <p className="text-xs text-red-600">
                           {formik.errors.stock}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sell by Weight section */}
+                  <div className="grid gap-2 mt-2">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        type="button"
+                        checked={formik.values.sellByWeight}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          formik.setFieldValue(
+                            "sellByWeight",
+                            !formik.values.sellByWeight
+                          );
+                        }}
+                        id="sellByWeight"
+                      />
+                      <Label htmlFor="sellByWeight">
+                        Vender por unidad de peso
+                      </Label>
+                    </div>
+                    {formik.values.sellByWeight && (
+                      <div>
+                        <Label htmlFor="weightUnit">Unidad de Peso</Label>
+                        <Select
+                          value={formik.values.weightUnit}
+                          onValueChange={(value) =>
+                            formik.setFieldValue("weightUnit", value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una unidad" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {weightUnitOptions.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-red-600">
+                          {formik.errors.weightUnit}
                         </p>
                       </div>
                     )}

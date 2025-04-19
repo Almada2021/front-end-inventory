@@ -481,10 +481,11 @@ export default function CheckoutScreen() {
                 automate={true}
                 mutateFunction={searchProductsAction}
                 onGetData={(data) => {
+                  console.log("data", data);
                   if (data && data?.length > 0) {
                     setProducts(data as Product[]);
                   } else if (products.length > 0 && data?.length == 0) {
-                    console.log("");
+                    setProducts([]);
                   }
                 }}
                 onNotify={(query: string) => {

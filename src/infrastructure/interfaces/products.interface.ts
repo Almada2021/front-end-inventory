@@ -15,4 +15,6 @@ export interface Product {
   orderIds: string[];
   barCode?: string;
   rfef?: string;
+  sellByWeight?: boolean;
+  weightUnit?: string;
 }

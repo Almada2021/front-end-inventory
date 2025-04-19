@@ -1,57 +1,59 @@
 export interface TopSellingResponse {
-    success: boolean;
-    data:    Datum[];
+  success: boolean;
+  data: Datum[];
 }
 
 export interface Datum {
-    salesStats:     SalesStats;
-    popularity:     Popularity;
-    _id:            string;
-    product:        Product;
-    __v:            number;
-    createdAt:      Date;
-    currentStock:   number;
-    historicalData: HistoricalDatum[];
-    isLowStock:     boolean;
-    lastUpdated:    Date;
-    updatedAt:      Date;
+  salesStats: SalesStats;
+  popularity: Popularity;
+  _id: string;
+  product: Product;
+  __v: number;
+  createdAt: Date;
+  currentStock: number;
+  historicalData: HistoricalDatum[];
+  isLowStock: boolean;
+  lastUpdated: Date;
+  updatedAt: Date;
 }
 
 export interface HistoricalDatum {
-    date:     Date;
-    stock:    number;
-    sales:    number;
-    restocks: number;
-    _id:      string;
+  date: Date;
+  stock: number;
+  sales: number;
+  restocks: number;
+  _id: string;
 }
 
 export interface Popularity {
-    percentile: number;
-    rank:       number;
+  percentile: number;
+  rank: number;
 }
 
 export interface Product {
-    _id:       string;
-    name:      string;
-    price:     number;
-    stock:     number;
-    uncounted: boolean;
-    photoUrl:  string;
-    basePrice: number;
-    providers: string[];
-    salesIds:  string[];
-    orderIds:  string[];
-    barCode:   string;
-    __v:       number;
-    method:    string[];
+  _id: string;
+  name: string;
+  price: number;
+  stock: number;
+  uncounted: boolean;
+  photoUrl: string;
+  basePrice: number;
+  providers: string[];
+  salesIds: string[];
+  orderIds: string[];
+  barCode: string;
+  __v: number;
+  method: string[];
+  sellByWeight?: boolean;
+  weightUnit?: string;
 }
 
 export interface SalesStats {
-    daily: Daily;
+  daily: Daily;
 }
 
 export interface Daily {
-    quantity: number;
-    amount:   number;
-    date:     Date;
+  quantity: number;
+  amount: number;
+  date: Date;
 }

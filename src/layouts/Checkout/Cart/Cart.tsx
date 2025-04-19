@@ -82,18 +82,19 @@ const MobileCart = ({
 
                   <Input
                     type="number"
-                    min="1"
+                    min="0.01"
+                    step={item.product.sellByWeight ? "0.01" : "1"}
                     value={item.quantity}
                     onChange={(e) => {
                       const rawValue = e.target.value;
-                      const numericValue = parseInt(rawValue);
+                      const numericValue = parseFloat(rawValue);
 
                       if (rawValue === "" || isNaN(numericValue)) {
                         onQuantityChange(item.id, 1);
                         return;
                       }
 
-                      const clampedValue = Math.max(1, numericValue);
+                      const clampedValue = Math.max(0.01, numericValue);
                       onQuantityChange(item.id, clampedValue);
                     }}
                     className="w-12 text-center hide-spinners"
@@ -223,13 +224,22 @@ export default function Cart({
 
                 <Input
                   type="number"
-                  min="1"
+                  min="0.01"
+                  step={item.product.sellByWeight ? "0.01" : "1"}
                   value={item.quantity}
-                  className="w-16 text-center hide-spinners"
                   onChange={(e) => {
-                    const value = Math.max(1, parseInt(e.target.value) || 1);
-                    onQuantityChange(item.id, value);
+                    const rawValue = e.target.value;
+                    const numericValue = parseFloat(rawValue);
+
+                    if (rawValue === "" || isNaN(numericValue)) {
+                      onQuantityChange(item.id, 1);
+                      return;
+                    }
+
+                    const clampedValue = Math.max(0.01, numericValue);
+                    onQuantityChange(item.id, clampedValue);
                   }}
+                  className="w-16 text-center hide-spinners"
                 />
 
                 <Button

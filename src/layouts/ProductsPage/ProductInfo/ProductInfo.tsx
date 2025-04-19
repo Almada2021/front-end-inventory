@@ -58,6 +58,8 @@ export default function ProductInfo() {
             uncounted: getProductsByIds.data[0].uncounted,
             barCode: Number(getProductsByIds.data[0].barCode),
             rfef: getProductsByIds.data[0].rfef,
+            sellByWeight: getProductsByIds.data[0].sellByWeight || false,
+            weightUnit: getProductsByIds.data[0].weightUnit || "",
           }}
         />
       </div>
@@ -138,6 +140,13 @@ export default function ProductInfo() {
                 value={product.uncounted ? "Sí" : "No"}
                 icon={<PackageIcon className="w-5 h-5" />}
               />
+              {product.sellByWeight && (
+                <DetailItem
+                  title="Venta por peso"
+                  value={`Sí (${product.weightUnit})`}
+                  icon={<PackageIcon className="w-5 h-5" />}
+                />
+              )}
             </div>
           </div>
         </div>
