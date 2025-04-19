@@ -35,7 +35,7 @@ export default function LoginPage({ show }: Props) {
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <ArchiveIcon className="size-4" />
           </div>
-          Inventario Alm.
+          Inventario, POS, AI
         </a>
         <LoginForm />
       </div>
