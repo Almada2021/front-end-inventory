@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Receipt, ScanBarcode, ArrowLeft } from "lucide-react";
@@ -71,7 +71,8 @@ const EnhancedUploader = ({
   ) => void;
   selectedMode: Mode;
 }) => {
-  const [preview, setPreview] = useState<string>("");
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const initialCustom: { [key: string]: string | number | undefined } = {
     price: undefined,
@@ -82,8 +83,70 @@ const EnhancedUploader = ({
   const [custom, setCustom] = useState<{
     [key: string]: string | number | undefined;
   }>(initialCustom);
+
+  // Clean up preview URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      // Revoke all object URLs to prevent memory leaks
+      previews.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, [previews]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = e.target.files;
+    if (!newFiles || newFiles.length === 0) return;
+
+    // Convert FileList to Array
+    const newFilesArray = Array.from(newFiles);
+
+    // Check if adding new files would exceed the 10 file limit
+    if (files.length + newFilesArray.length > 10) {
+      toast.error("No se pueden agregar más de 10 imágenes");
+      return;
+    }
+
+    // Check if any file is larger than 20MB
+    const oversizedFiles = newFilesArray.filter((file) => file.size > 18000000);
+    if (oversizedFiles.length > 0) {
+      toast.error("No se permiten ficheros de más de 20 MB");
+      return;
+    }
+
+    // Create preview URLs for new files
+    const newPreviews = newFilesArray.map((file) => URL.createObjectURL(file));
+
+    // Update files and previews arrays
+    setFiles((prevFiles) => [...prevFiles, ...newFilesArray]);
+    setPreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
+
+    // Reset input value to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const removeFile = (index: number) => {
+    // Remove file and preview at the specified index
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+    setPreviews((prevPreviews) => {
+      // Revoke the URL of the removed preview
+      URL.revokeObjectURL(prevPreviews[index]);
+      return prevPreviews.filter((_, i) => i !== index);
+    });
+  };
+
   const confirmFn = async () => {
     try {
+      // Create a new input element with the current files
+      const customFileList = new DataTransfer();
+      files.forEach((file) => {
+        customFileList.items.add(file);
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.files = customFileList.files;
+      }
       await onConfirm(fileInputRef, custom);
     } catch (error) {
       console.log(error);
@@ -137,15 +200,41 @@ const EnhancedUploader = ({
       )}
       <div className="space-y-4 px-4 md:px-0">
         <div
-          className="border-2 border-dashed rounded-xl aspect-square max-h-[60vh] w-full flex flex-col items-center justify-center gap-4 p-6 text-center hover:bg-accent/30 transition-colors cursor-pointer"
+          className="border-2 border-dashed rounded-xl min-h-[400px] w-full flex flex-col items-center justify-center gap-4 p-6 text-center hover:bg-accent/30 transition-colors cursor-pointer relative"
           onClick={() => fileInputRef.current?.click()}
         >
-          {preview ? (
-            <img
-              src={preview}
-              alt="Preview"
-              className="w-full h-full object-contain rounded-lg"
-            />
+          {previews.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
+              {previews.map((preview, index) => (
+                <div key={index} className="relative aspect-square group">
+                  <img
+                    src={preview}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                  <div className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                    {index + 1}
+                  </div>
+                  <button
+                    className="absolute top-2 left-2 bg-red-500/80 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFile(index);
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              {previews.length < 10 && (
+                <div className="aspect-square border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
+                  <PlusCircle className="w-8 h-8 text-primary" />
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Agregar más
+                  </p>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <PlusCircle className="w-12 h-12 text-primary" />
@@ -153,6 +242,9 @@ const EnhancedUploader = ({
                 <p className="font-medium">Haz clic para subir</p>
                 <p className="text-sm text-muted-foreground">
                   PNG, JPG (máx. 20MB)
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Puedes seleccionar hasta 10 imágenes
                 </p>
               </div>
             </>
@@ -164,24 +256,18 @@ const EnhancedUploader = ({
           type="file"
           max={20000}
           accept="image/*"
+          multiple
           className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file?.size && file?.size <= 18000000) {
-              if (file) setPreview(URL.createObjectURL(file));
-            } else {
-              toast.error("No se permite ficheros de mas de 20 MB");
-            }
-          }}
+          onChange={handleFileChange}
         />
 
         <Button
           className="w-full"
           size="lg"
           onClick={confirmFn}
-          disabled={!preview}
+          disabled={files.length === 0}
         >
-          Confirmar
+          Confirmar {files.length > 0 ? `(${files.length} imágenes)` : ""}
         </Button>
       </div>
     </div>
@@ -194,32 +280,50 @@ export default function LoadProductScreen() {
   const [prompt, setPrompt] = useState<string>("");
   const newProductLoad = useMutation({
     mutationFn: async (ref: React.RefObject<HTMLInputElement>) => {
-      // Your mutation logic here
       if (!ref.current?.files || ref.current.files.length === 0) {
-        throw new Error("No file selected. Please choose a file to proceed.");
+        throw new Error("No se ha seleccionado ningún archivo.");
       }
-      const formData = new FormData();
 
-      // Create and send FormData
-      formData.append("img", ref.current.files[0]);
-      if (prompt) formData.append("custom", prompt);
-      setLoading(true);
-      const response = await BackendApi.post("/ai/from-file", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      const formData = new FormData();
+      const files = Array.from(ref.current.files);
+
+      // Validar tamaño de archivos
+      const oversizedFiles = files.filter((file) => file.size > 18000000);
+      if (oversizedFiles.length > 0) {
+        throw new Error("Algunos archivos exceden el límite de 20MB.");
+      }
+
+      // Limitar a 10 archivos
+      const selectedFiles = files.slice(0, 10);
+
+      // Agregar cada archivo al FormData
+      selectedFiles.forEach((file) => {
+        formData.append("img", file);
       });
-      setLoading(false);
-      return response.data;
-      // const data = await BackendApi.post("/ai/from-file",)
+
+      if (prompt) {
+        formData.append("custom", prompt);
+      }
+
+      setLoading(true);
+      try {
+        const response = await BackendApi.post("/ai/from-file", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        setLoading(false);
+        return response.data;
+      } catch (error) {
+        setLoading(false);
+        throw error;
+      }
     },
     onSuccess: () => {
-      // Handle success
-      toast.success("El Producto fue creado con exito");
+      toast.success("El Producto fue creado con éxito");
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(error.message);
-      // Handle error
     },
   });
   if (loading) {
