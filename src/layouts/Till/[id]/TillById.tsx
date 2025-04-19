@@ -23,6 +23,7 @@ import {
   CreditCard,
   History,
   LogOut,
+  Plus,
   Trash,
 } from "lucide-react";
 import { useState } from "react";
@@ -36,12 +37,13 @@ import toast from "react-hot-toast";
 import { useAdmin } from "@/hooks/browser/useAdmin";
 import MoneyInput from "@/components/MoneyInput/MoneyInput";
 import { withdrawMoney } from "@/core/actions/tills/withdrawMoney";
+import { addMoney } from "@/core/actions/tills/addMoney";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
 import useTillOpensCloseHistory from "@/hooks/till/useTillOpensCloseHistory";
 import TillOpensCloseTable from "@/components/DataTable/till-opens-close/TillOpensCloseTable";
 import TillOpensClosePagination from "@/components/DataTable/till-opens-close/TillOpensClosePagination";
 
-type PageModes = "retire" | "tranfert" | "active";
+type PageModes = "retire" | "tranfert" | "active" | "add";
 export default function TillById() {
   const { id } = useParams();
   const isAdmin = useAdmin();
@@ -79,6 +81,7 @@ export default function TillById() {
   );
   const [withdrawMoneyCard, setWithdrawMoneyCard] = useState<number>(0);
   const [withdrawMoneyTransfer, setWithdrawMoneyTransfer] = useState<number>(0);
+  const [addBills, setAddBills] = useState<Record<string, number>>({});
   const [deleteMode, setDeleteMode] = useState<boolean>(false);
   const queryClient = useQueryClient();
   const user = useAppSelector((state) => state.auth.userInfo);
@@ -175,6 +178,36 @@ export default function TillById() {
     },
     onError: (error) => {
       toast.error("Error al realizar el retiro");
+      console.error(error);
+    },
+  });
+
+  const mutateAdd = useMutation({
+    mutationFn: () => {
+      if (!id || !user)
+        return Promise.reject("No se pudo realizar la operación");
+
+      const data = {
+        billsToAdd: addBills,
+        amount: Object.entries(addBills).reduce(
+          (acc, [denomination, quantity]) =>
+            acc + Number(denomination) * quantity,
+          0
+        ),
+        tillId: id,
+        method: "cash" as const,
+        user: user.id,
+      };
+
+      return addMoney(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["till", "show", id] });
+      toast.success("Dinero agregado con éxito");
+      setPageMode("active");
+    },
+    onError: (error) => {
+      toast.error("Error al agregar dinero");
       console.error(error);
     },
   });
@@ -645,6 +678,107 @@ export default function TillById() {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={pageMode == "add"}>
+        <AlertDialogContent className="w-full min-w-[80svw] ">
+          <AlertDialogTitle>
+            Agregar Dinero a {tillsByIdQuery.data.name}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            Agregar dinero a la caja
+          </AlertDialogDescription>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div>
+              <div className="mt-4 p-4 bg-green-50 rounded-lg shadow-sm flex items-center justify-between">
+                <span className="text-gray-800 font-medium">Vas a agregar</span>
+                <span className="text-green-600 font-bold text-xl">
+                  {formatCurrency(
+                    Object.entries(addBills).reduce(
+                      (acc, [denomination, quantity]) =>
+                        acc + Number(denomination) * quantity,
+                      0
+                    )
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-center gap-2 mt-4">
+                <Button
+                  variant={operationMode === "add" ? "default" : "outline"}
+                  onClick={() => setOperationMode("add")}
+                  className="flex items-center gap-1"
+                >
+                  <span className="text-xl">+</span> Agregar
+                </Button>
+                <Button
+                  variant={operationMode === "subtract" ? "default" : "outline"}
+                  onClick={() => setOperationMode("subtract")}
+                  className="flex items-center gap-1"
+                >
+                  <span className="text-xl">-</span> Restar
+                </Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3  gap-2 max-h-[200px] md:max-h-full overflow-y-auto overflow-x-hidden ">
+              {DEFAULT_DENOMINATIONS.map((amount: string) => {
+                return (
+                  <div className="relative" key={amount + "alertdialogadd"}>
+                    <Money
+                      onClick={() => {
+                        setAddBills((b) => {
+                          if (operationMode === "add") {
+                            return {
+                              ...b,
+                              [amount]: (b[amount] || 0) + 1,
+                            };
+                          } else {
+                            // Subtract mode
+                            if (!b[amount] || b[amount] <= 0) {
+                              return b;
+                            }
+                            return {
+                              ...b,
+                              [amount]: b[amount] - 1,
+                            };
+                          }
+                        });
+                      }}
+                      type={Number(amount) > 1000 ? "bill" : "coin"}
+                      alt={`${amount}Gs`}
+                      src={`/money/${amount}.${
+                        Number(amount) > 1000 ? "jpg" : "png"
+                      }`}
+                      className={`${
+                        Number(amount) > 1000 ? "p-4" : ""
+                      } bg-muted rounded-xl hover:scale-105 transition-transform`}
+                    />
+                    {addBills[amount] > 0 && (
+                      <span className="absolute bottom-2 right-8 bg-primary font-bold text-white text-sm md:text-xl px-2 py-1 rounded">
+                        Sel: {addBills[amount]}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setPageMode("active");
+              }}
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                await mutateAdd.mutate();
+              }}
+            >
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex flex-col md:flex-row gap-6">
         <div className="flex-1">
           <h1 className="text-2xl md:text-3xl font-bold mb-4 flex items-center gap-2">
@@ -780,6 +914,15 @@ export default function TillById() {
                 {type == "till"
                   ? "Transferir Dinero a otra Caja"
                   : "Transferir Dinero a otra cuenta"}
+              </Button>
+              <Button
+                onClick={() => {
+                  setPageMode("add");
+                }}
+                className="flex justify-start"
+              >
+                <Plus size={24} />
+                Agregar Dinero a la Caja
               </Button>
               <Button
                 onClick={() => {
