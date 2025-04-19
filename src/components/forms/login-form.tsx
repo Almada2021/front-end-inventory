@@ -7,6 +7,7 @@ import { useFormik } from "formik";
 import { useDispatch } from "react-redux";
 import { userLogin } from "@/app/features/user/authActions";
 import { AppDispatch } from "@/app/store";
+import toast from "react-hot-toast";
 interface FormValues {
   email: string;
   password: string;
@@ -42,11 +43,13 @@ export function LoginForm({
       // formikHelpers: FormikHelpers<{ email: string; password: string }>
     ) => {
       try {
-        const provider: unknown = await dispatch(
+        const provider = await dispatch(
           userLogin({ email: values.email, password: values.password })
         );
+        toast.success("Inicio de sesión exitoso");
         return provider;
       } catch (error) {
+        toast.error("Error al iniciar sesión Contraseña o correo incorrecto");
         if (error instanceof Error) {
           console.log(error.message);
         }

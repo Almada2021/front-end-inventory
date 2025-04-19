@@ -22,7 +22,7 @@ import { BackendApi } from "@/core/api/api";
 // Info
 const StoreInfo = ({ storeId }: { storeId: string }) => {
   const { storeById } = useStoreById(storeId);
-  
+
   if (storeById.isLoading) {
     return (
       <div>
@@ -31,7 +31,7 @@ const StoreInfo = ({ storeId }: { storeId: string }) => {
       </div>
     );
   }
-  
+
   if (storeById.isError) {
     return (
       <div>
@@ -40,17 +40,17 @@ const StoreInfo = ({ storeId }: { storeId: string }) => {
       </div>
     );
   }
-  
+
   return (
     <div>
       <p className="text-sm text-gray-500">Tienda</p>
-      <p className="font-medium">{storeById.data?.name || 'N/A'}</p>
+      <p className="font-medium">{storeById.data?.name || "N/A"}</p>
     </div>
   );
 };
 const SupplierInfo = ({ supplierId }: { supplierId: string }) => {
   const { getProviderById } = useProvider(supplierId);
-  
+
   if (getProviderById.isLoading) {
     return (
       <div>
@@ -59,7 +59,7 @@ const SupplierInfo = ({ supplierId }: { supplierId: string }) => {
       </div>
     );
   }
-  
+
   if (getProviderById.isError) {
     return (
       <div>
@@ -68,11 +68,151 @@ const SupplierInfo = ({ supplierId }: { supplierId: string }) => {
       </div>
     );
   }
-  
+
   return (
     <div>
       <p className="text-sm text-gray-500">Proveedor</p>
-      <p className="font-medium">{getProviderById.data?.name || 'N/A'}</p>
+      <p className="font-medium">{getProviderById.data?.name || "N/A"}</p>
+    </div>
+  );
+};
+
+// Product item component for partial order
+const ProductItem = ({
+  product,
+  quantity,
+  received = 0,
+  isReceived = false,
+  notes = "",
+  onUpdate,
+}: {
+  product: {
+    id: string;
+    name?: string;
+    photoUrl?: string;
+    barCode?: string;
+  };
+  quantity: number;
+  received?: number;
+  isReceived?: boolean;
+  notes?: string;
+  onUpdate: (data: {
+    received: number;
+    isReceived: boolean;
+    notes: string;
+  }) => void;
+}) => {
+  const [localReceived, setLocalReceived] = useState(received);
+  const [localIsReceived, setLocalIsReceived] = useState(isReceived);
+  const [localNotes, setLocalNotes] = useState(notes);
+
+  const handleReceivedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value) || 0;
+    setLocalReceived(value);
+    onUpdate({
+      received: value,
+      isReceived: localIsReceived,
+      notes: localNotes,
+    });
+  };
+
+  const handleIsReceivedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.checked;
+    setLocalIsReceived(value);
+    onUpdate({ received: localReceived, isReceived: value, notes: localNotes });
+  };
+
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setLocalNotes(value);
+    onUpdate({
+      received: localReceived,
+      isReceived: localIsReceived,
+      notes: value,
+    });
+  };
+
+  return (
+    <div className="border rounded-md p-4 mb-3 bg-white">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center">
+          <div className="h-12 w-12 rounded-md bg-gray-100 overflow-hidden mr-3">
+            {product.photoUrl ? (
+              <img
+                src={
+                  product.photoUrl.startsWith("http")
+                    ? product.photoUrl
+                    : `${import.meta.env.VITE_BACKEND_URL}/static/${
+                        product.photoUrl
+                      }`
+                }
+                alt={product.name || "Producto"}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-gray-400 text-xs">
+                Sin imagen
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-900">
+              {product.name || "Producto sin nombre"}
+            </div>
+            <div className="text-xs text-gray-500">
+              {product.barCode || "N/A"}
+            </div>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-sm font-medium">Cantidad: {quantity}</div>
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Recibido
+          </label>
+          <input
+            type="number"
+            min="0"
+            max={quantity}
+            value={localReceived}
+            onChange={handleReceivedChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id={`received-${product.id}`}
+            checked={localIsReceived}
+            onChange={handleIsReceivedChange}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label
+            htmlFor={`received-${product.id}`}
+            className="ml-2 block text-sm text-gray-700"
+          >
+            Producto recibido
+          </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Notas
+          </label>
+          <textarea
+            value={localNotes}
+            onChange={handleNotesChange}
+            placeholder="Agregar notas..."
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            rows={1}
+          />
+        </div>
+      </div>
     </div>
   );
 };
@@ -83,14 +223,40 @@ export default function OrderInfo() {
   const [productIdsToFetch, setProductIdsToFetch] = useState<string[]>([]);
   const { getProductsByIds } = useProductsByIds(productIdsToFetch);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [partialData, setPartialData] = useState<{
+    products: Array<{
+      productId: string;
+      received: number;
+      isReceived: boolean;
+      notes: string;
+    }>;
+    description: string;
+  }>({
+    products: [],
+    description: "",
+  });
+  const [partialDescription, setPartialDescription] = useState("");
+
   const mutateStatus = useMutation({
     mutationFn: async (status: OrderStatus) => {
-      if(orderByIdQuery.data?.order.id){
-        await BackendApi.patch(`/order/status/${orderByIdQuery.data.order.id}`,{
-          status: status,
-        })
-
-      }else{
+      if (orderByIdQuery.data?.order.id) {
+        if (status === "partially") {
+          await BackendApi.patch(
+            `/order/status/${orderByIdQuery.data.order.id}`,
+            {
+              status: status,
+              partialData: partialData,
+            }
+          );
+        } else {
+          await BackendApi.patch(
+            `/order/status/${orderByIdQuery.data.order.id}`,
+            {
+              status: status,
+            }
+          );
+        }
+      } else {
         throw new Error("Order ID is missing");
       }
     },
@@ -99,9 +265,10 @@ export default function OrderInfo() {
     },
     mutationKey: ["order", orderByIdQuery.data?.order.id],
     onError: (error: Error) => {
-        console.error("Error updating order:", error);
-    }
-  })
+      console.error("Error updating order:", error);
+    },
+  });
+
   // Actualizar IDs de productos cuando los datos de la orden estén disponibles
   useEffect(() => {
     console.log("exec");
@@ -123,6 +290,24 @@ export default function OrderInfo() {
       }
     }
   }, [orderByIdQuery.isSuccess, orderByIdQuery.data]);
+
+  // Initialize partial data when order data is loaded
+  useEffect(() => {
+    if (orderByIdQuery.data?.order) {
+      const order = orderByIdQuery.data.order;
+      const initialPartialData = {
+        products: order.products.map((item) => ({
+          productId: item.product.id,
+          received: item.received || 0,
+          isReceived: item.isReceived || false,
+          notes: item.notes || "",
+        })),
+        description: order.partialDescription || "",
+      };
+      setPartialData(initialPartialData);
+      setPartialDescription(order.partialDescription || "");
+    }
+  }, [orderByIdQuery.data]);
 
   if (orderByIdQuery.isFetching) return <LoadingScreen />;
 
@@ -182,9 +367,15 @@ export default function OrderInfo() {
   const updateOrderStatus = async (newStatus: OrderStatus) => {
     setUpdatingStatus(true);
     try {
-      // Aquí iría la llamada a la API para actualizar el estado
-      // await BackendApi.put(`/orders/${id}/status`, { status: newStatus });
-      await mutateStatus.mutate(newStatus)
+      if (newStatus === "partially") {
+        // Update partial data with description
+        setPartialData((prev) => ({
+          ...prev,
+          description: partialDescription,
+        }));
+      }
+
+      await mutateStatus.mutate(newStatus);
       toast.success(`Estado actualizado a: ${StatusTranslations[newStatus]}`);
     } catch (error) {
       toast.error("Error al actualizar el estado del pedido");
@@ -192,6 +383,18 @@ export default function OrderInfo() {
     } finally {
       setUpdatingStatus(false);
     }
+  };
+
+  const handleProductUpdate = (
+    productId: string,
+    data: { received: number; isReceived: boolean; notes: string }
+  ) => {
+    setPartialData((prev) => {
+      const updatedProducts = prev.products.map((p) =>
+        p.productId === productId ? { ...p, ...data } : p
+      );
+      return { ...prev, products: updatedProducts };
+    });
   };
 
   return (
@@ -270,6 +473,22 @@ export default function OrderInfo() {
                       >
                         Cantidad
                       </th>
+                      {order.status === "partially" && (
+                        <>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Recibido
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          >
+                            Estado
+                          </th>
+                        </>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -287,9 +506,16 @@ export default function OrderInfo() {
                               <div className="h-12 w-12 rounded-md bg-gray-100 overflow-hidden">
                                 {productDetails?.photoUrl ? (
                                   <img
-                                    src={productDetails?.photoUrl}
+                                    src={
+                                      productDetails?.photoUrl.startsWith(
+                                        "http"
+                                      )
+                                        ? productDetails?.photoUrl
+                                        : `${
+                                            import.meta.env.VITE_BACKEND_URL
+                                          }/static/${productDetails?.photoUrl}`
+                                    }
                                     alt={productDetails?.name || "Producto"}
-                                    className="h-full w-full object-cover"
                                   />
                                 ) : (
                                   <div className="h-full w-full flex items-center justify-center text-gray-400 text-xs">
@@ -316,13 +542,33 @@ export default function OrderInfo() {
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               {productItem.quantity}
                             </td>
+                            {order.status === "partially" && (
+                              <>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                  {productItem.received || 0}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                  <span
+                                    className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                      productItem.isReceived
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {productItem.isReceived
+                                      ? "Recibido"
+                                      : "No recibido"}
+                                  </span>
+                                </td>
+                              </>
+                            )}
                           </tr>
                         );
                       })
                     ) : (
                       <tr>
                         <td
-                          colSpan={4}
+                          colSpan={order.status === "partially" ? 6 : 4}
                           className="px-6 py-8 text-center text-gray-500"
                         >
                           No hay productos en este pedido
@@ -334,6 +580,21 @@ export default function OrderInfo() {
               </div>
             )}
           </div>
+
+          {/* Partial order description */}
+          {order.status === "partially" && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">
+                Descripción del pedido parcial
+              </h3>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                <p className="text-sm text-gray-700">
+                  {order.partialDescription ||
+                    "No hay descripción disponible para este pedido parcial."}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -343,7 +604,6 @@ export default function OrderInfo() {
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>
               <button
-                
                 className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
                 disabled={updatingStatus}
               >
@@ -392,14 +652,50 @@ export default function OrderInfo() {
             </AlertDialog.Trigger>
             <AlertDialog.Portal>
               <AlertDialog.Overlay className="fixed inset-0 bg-black bg-opacity-25" />
-              <AlertDialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
+              <AlertDialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-full max-w-4xl shadow-xl">
                 <AlertDialog.Title className="text-lg font-medium">
                   Completar Parcialmente
                 </AlertDialog.Title>
                 <AlertDialog.Description className="mt-2 text-sm text-gray-500">
-                  ¿Estás seguro de que deseas marcar este pedido como
-                  "Parcialmente completado"? Esta acción no se puede deshacer.
+                  Indica qué productos han sido recibidos y cuántos. Puedes
+                  agregar notas para cada producto.
                 </AlertDialog.Description>
+
+                <div className="mt-4 max-h-96 overflow-y-auto">
+                  {order.products.map((productItem) => {
+                    const productDetails = products.find(
+                      (p) => p.id === productItem.product.id
+                    );
+
+                    return (
+                      <ProductItem
+                        key={productItem.product.id}
+                        product={productDetails || productItem.product}
+                        quantity={productItem.quantity}
+                        received={productItem.received || 0}
+                        isReceived={productItem.isReceived || false}
+                        notes={productItem.notes || ""}
+                        onUpdate={(data) =>
+                          handleProductUpdate(productItem.product.id, data)
+                        }
+                      />
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Descripción del pedido parcial
+                  </label>
+                  <textarea
+                    value={partialDescription}
+                    onChange={(e) => setPartialDescription(e.target.value)}
+                    placeholder="Describe el estado del pedido parcial..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    rows={3}
+                  />
+                </div>
+
                 <div className="mt-4 flex justify-end space-x-2">
                   <AlertDialog.Cancel asChild>
                     <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
