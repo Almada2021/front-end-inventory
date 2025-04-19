@@ -1,21 +1,14 @@
+import { Product } from "@/infrastructure/interfaces/products.interface";
 import { BackendApi } from "@/core/api/api";
-import { ProductResponse } from "@/infrastructure/interfaces/products.interface";
 
- export const searchProductsAction = async (query: string) => {
-    try {
-      if(query.length <= 0) {
-        return;
-      }
-      const products = await BackendApi.get<ProductResponse>(
-        "/products/search",
-        {
-          params: {
-            query,
-          },
-        }
-      );
-      return products.data.products;
-    } catch (error) {
-      console.log(error);
-    }
-  };
+export const searchProductsAction = async (
+  query: string
+): Promise<Product[]> => {
+  try {
+    const response = await BackendApi.get(`/products/search?q=${query}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error searching products:", error);
+    throw error;
+  }
+};

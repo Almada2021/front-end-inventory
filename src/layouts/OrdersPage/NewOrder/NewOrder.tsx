@@ -7,20 +7,24 @@ import { useNavigate } from "react-router";
 import { toast } from "react-hot-toast";
 import { useProviders } from "@/hooks/providers/useProviders";
 import useProvider from "@/hooks/providers/useProvider";
-import useProductsByIds from "@/hooks/products/useProductsByIds";
 import { useStores } from "@/hooks/store/useStores";
 import { Product } from "@/infrastructure/interfaces/products.interface";
 import { ProviderModel } from "@/infrastructure/interfaces/provider.interface";
 import { Store } from "@/infrastructure/interfaces/store/store.interface";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 import ComboBox from "@/components/ComboBox/ComboBox";
-import useSearchProviders from "@/hooks/providers/useSearchProviders";
-import useSearchProducts from "@/hooks/products/useSearchProducts";
 
 // Componentes UI
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -30,9 +34,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Plus, Trash2, Search } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
-import { useAdmin } from "@/hooks/browser/useAdmin";
+import useProductsByProviderId from "@/hooks/products/useProductsByProviderId";
 
 // Interfaces para el formulario
 interface OrderProduct {
@@ -56,20 +60,12 @@ interface ProviderSelectProps {
   formik: FormikProps<OrderFormValues>;
   providers: ProviderModel[];
   onProviderChange: (value: string) => void;
-  onSearch: (value: string) => void;
-  isLoading: boolean;
 }
 
 interface StoreSelectProps {
   formik: FormikProps<OrderFormValues>;
   stores: Store[];
   onStoreChange: (value: string) => void;
-}
-
-interface ProductSearchProps {
-  searchTerm: string;
-  setSearchTerm: (value: string) => void;
-  isLoading: boolean;
 }
 
 interface ProductRowProps {
@@ -79,8 +75,8 @@ interface ProductRowProps {
   onProductChange: (value: string, index: number) => void;
   onRemoveProduct: (index: number) => void;
   disableRemove: boolean;
-  onSearch: (value: string) => void;
-  isLoading: boolean;
+  isProductsLoading: boolean;
+  selectedProductIds: Set<string>;
 }
 
 interface OrderTotalProps {
@@ -89,9 +85,9 @@ interface OrderTotalProps {
 
 // Componentes de UI
 const FormHeader: React.FC = () => (
-  <CardHeader className="space-y-1">
-    <CardTitle className="text-2xl font-bold">Crear Nuevo Pedido</CardTitle>
-    <CardDescription className="text-sm text-muted-foreground">
+  <CardHeader>
+    <CardTitle className="text-2xl">Crear Nuevo Pedido</CardTitle>
+    <CardDescription>
       Complete los detalles para crear un nuevo pedido para su tienda.
     </CardDescription>
   </CardHeader>
@@ -110,14 +106,12 @@ const OrderNameField: React.FC<OrderNameFieldProps> = ({ formik }) => (
       onBlur={formik.handleBlur}
       value={formik.values.name}
       placeholder="Ingrese nombre del pedido"
-      className={`h-10 px-3 py-2 text-sm ${
-        formik.touched.name && formik.errors.name
-          ? "border-destructive focus:ring-destructive"
-          : ""
-      }`}
+      className={
+        formik.touched.name && formik.errors.name ? "border-destructive" : ""
+      }
     />
     {formik.touched.name && formik.errors.name && (
-      <p className="text-sm text-destructive mt-1">{formik.errors.name}</p>
+      <p className="text-sm text-destructive">{formik.errors.name}</p>
     )}
   </div>
 );
@@ -126,84 +120,86 @@ const ProviderSelect: React.FC<ProviderSelectProps> = ({
   formik,
   providers,
   onProviderChange,
-  onSearch,
-  isLoading,
-}) => {
-  const providerOptions = providers.map((provider) => ({
-    value: provider.id,
-    label: provider.name,
-  }));
-
-  return (
-    <div className="space-y-2">
-      <Label htmlFor="providerId" className="text-sm font-medium">
-        Seleccionar Proveedor
-      </Label>
-      <ComboBox
-        options={providerOptions}
-        placeholder="Buscar proveedor..."
-        onChange={onProviderChange}
-        searchFn={onSearch}
-        isLoading={isLoading}
-        error={formik.touched.providerId ? formik.errors.providerId : undefined}
-        className="w-full"
-      />
-      {formik.touched.providerId && formik.errors.providerId && (
-        <p className="text-sm text-destructive mt-1">
-          {formik.errors.providerId}
-        </p>
-      )}
-    </div>
-  );
-};
+}) => (
+  <div className="space-y-2">
+    <Label htmlFor="providerId" className="text-sm font-medium">
+      Seleccionar Proveedor
+    </Label>
+    <Select onValueChange={onProviderChange} value={formik.values.providerId}>
+      <SelectTrigger
+        id="providerId"
+        className={
+          formik.touched.providerId && formik.errors.providerId
+            ? "border-destructive"
+            : ""
+        }
+      >
+        <SelectValue placeholder="Seleccione un proveedor" />
+      </SelectTrigger>
+      <SelectContent>
+        {providers.map((provider) => (
+          <SelectItem key={provider.id} value={provider.id}>
+            {provider.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    {formik.touched.providerId && formik.errors.providerId && (
+      <p className="text-sm text-destructive">{formik.errors.providerId}</p>
+    )}
+  </div>
+);
 
 const StoreSelect: React.FC<StoreSelectProps> = ({
   formik,
   stores,
   onStoreChange,
-}) => {
-  const storeOptions = stores.map((store) => ({
-    value: store.id,
-    label: store.name,
-  }));
-
-  return (
-    <div className="space-y-2">
-      <Label htmlFor="storeId" className="text-sm font-medium">
-        Seleccionar Tienda
-      </Label>
-      <ComboBox
-        options={storeOptions}
-        placeholder="Seleccione una tienda"
-        onChange={onStoreChange}
-        error={formik.touched.storeId ? formik.errors.storeId : undefined}
-        className="w-full"
-      />
-      {formik.touched.storeId && formik.errors.storeId && (
-        <p className="text-sm text-destructive mt-1">{formik.errors.storeId}</p>
-      )}
-    </div>
-  );
-};
-
-const ProductSearch: React.FC<ProductSearchProps> = ({
-  searchTerm,
-  setSearchTerm,
-  isLoading,
 }) => (
-  <div className="relative">
-    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-    <Input
-      placeholder="Buscar productos..."
-      className="pl-9 h-10"
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-    />
-    {isLoading && (
-      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />
+  <div className="space-y-2">
+    <Label htmlFor="storeId" className="text-sm font-medium">
+      Seleccionar Tienda
+    </Label>
+    <Select onValueChange={onStoreChange} value={formik.values.storeId}>
+      <SelectTrigger
+        id="storeId"
+        className={
+          formik.touched.storeId && formik.errors.storeId
+            ? "border-destructive"
+            : ""
+        }
+      >
+        <SelectValue placeholder="Seleccione una tienda" />
+      </SelectTrigger>
+      <SelectContent>
+        {stores.map((store) => (
+          <SelectItem key={store.id} value={store.id}>
+            {store.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    {formik.touched.storeId && formik.errors.storeId && (
+      <p className="text-sm text-destructive">{formik.errors.storeId}</p>
     )}
   </div>
 );
+
+const OrderTotal: React.FC<OrderTotalProps> = ({ total }) => {
+  // Calcular el total del pedido
+
+  return (
+    <div className="mt-6 p-4 bg-muted rounded-lg">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Total del Pedido</h3>
+        <span className="text-xl font-bold">{formatCurrency(total)}</span>
+      </div>
+      <p className="text-sm text-muted-foreground mt-1">
+        Este es el costo total basado en el precio base de los productos y sus
+        cantidades.
+      </p>
+    </div>
+  );
+};
 
 const ProductRow: React.FC<ProductRowProps> = ({
   index,
@@ -212,17 +208,30 @@ const ProductRow: React.FC<ProductRowProps> = ({
   onProductChange,
   onRemoveProduct,
   disableRemove,
-  onSearch,
-  isLoading,
+  isProductsLoading,
+  selectedProductIds,
 }) => {
-  const productOptions = availableProducts.map((product) => ({
-    value: product.id,
-    label: product.name,
-    img: product.photoUrl || undefined,
-  }));
+  // Convertir productos a formato para ComboBox
+  const productOptions = useMemo(() => {
+    // Filter out products that are already selected in other rows
+    const filteredProducts = availableProducts.filter(
+      (product) =>
+        !selectedProductIds.has(product.id) ||
+        product.id === formik.values.products[index].product
+    );
+
+    return filteredProducts.map((product) => ({
+      value: product.id,
+      label:
+        product.name.length > 40
+          ? product.name.substring(0, 40) + "..."
+          : product.name,
+      img: product.photoUrl,
+    }));
+  }, [availableProducts, selectedProductIds, formik.values.products, index]);
 
   return (
-    <Card className="overflow-hidden border rounded-lg shadow-sm">
+    <Card className="overflow-hidden">
       <CardContent className="p-4 grid grid-cols-1 md:grid-cols-[3fr_1fr_auto] gap-4 items-end">
         <div className="space-y-2">
           <Label
@@ -233,26 +242,23 @@ const ProductRow: React.FC<ProductRowProps> = ({
           </Label>
           <ComboBox
             options={productOptions}
-            placeholder="Buscar producto..."
+            placeholder="Seleccione un producto"
             onChange={(value) => onProductChange(value, index)}
-            searchFn={onSearch}
-            isLoading={isLoading}
+            isLoading={isProductsLoading}
             error={
-              formik.getFieldMeta(`products.${index}.product`).touched
-                ? formik.getFieldMeta(`products.${index}.product`).error
-                : undefined
+              formik.getFieldMeta(`products.${index}.product`).touched &&
+              formik.getFieldMeta(`products.${index}.product`).error
             }
-            className="w-full"
           />
           {formik.getFieldMeta(`products.${index}.product`).touched &&
             formik.getFieldMeta(`products.${index}.product`).error && (
-              <p className="text-sm text-destructive mt-1">
+              <p className="text-sm text-destructive">
                 {formik.getFieldMeta(`products.${index}.product`).error}
               </p>
             )}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 ">
           <Label
             htmlFor={`products.${index}.quantity`}
             className="text-sm font-medium"
@@ -267,16 +273,16 @@ const ProductRow: React.FC<ProductRowProps> = ({
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.products[index].quantity}
-            className={`h-10 ${
+            className={
               formik.getFieldMeta(`products.${index}.quantity`).touched &&
               formik.getFieldMeta(`products.${index}.quantity`).error
-                ? "border-destructive focus:ring-destructive"
+                ? "border-destructive"
                 : ""
-            }`}
+            }
           />
           {formik.getFieldMeta(`products.${index}.quantity`).touched &&
             formik.getFieldMeta(`products.${index}.quantity`).error && (
-              <p className="text-sm text-destructive mt-1">
+              <p className="text-sm text-destructive">
                 {formik.getFieldMeta(`products.${index}.quantity`).error}
               </p>
             )}
@@ -287,7 +293,7 @@ const ProductRow: React.FC<ProductRowProps> = ({
           onClick={() => onRemoveProduct(index)}
           variant="destructive"
           size="icon"
-          className="flex justify-center items-center h-10 w-10"
+          className="flex justify-center items-center"
           disabled={disableRemove}
         >
           <Trash2 className="h-4 w-4" />
@@ -297,19 +303,6 @@ const ProductRow: React.FC<ProductRowProps> = ({
   );
 };
 
-const OrderTotal: React.FC<OrderTotalProps> = ({ total }) => (
-  <div className="mt-6 p-6 bg-muted/50 rounded-lg border shadow-sm">
-    <div className="flex justify-between items-center">
-      <h3 className="text-lg font-medium">Total del Pedido</h3>
-      <span className="text-2xl font-bold">{formatCurrency(total)}</span>
-    </div>
-    <p className="text-sm text-muted-foreground mt-2">
-      Este es el costo total basado en el precio base de los productos y sus
-      cantidades.
-    </p>
-  </div>
-);
-
 /**
  * Componente NuevoPedido
  *
@@ -318,20 +311,13 @@ const OrderTotal: React.FC<OrderTotalProps> = ({ total }) => (
  */
 export default function NewOrder(): JSX.Element {
   const navigate = useNavigate();
-  const isAdmin = useAdmin();
   const queryClient = useQueryClient();
   const [selectedProvider, setSelectedProvider] = useState<string>("");
   const [selectedStore, setSelectedStore] = useState<string>("");
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [providerSearchTerm, setProviderSearchTerm] = useState<string>("");
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(
     new Set()
   );
   let amount = 0;
-
-  // Hooks para búsqueda
-  const { searchProvidersQuery } = useSearchProviders(providerSearchTerm);
-  const { searchProductsQuery } = useSearchProducts(searchTerm);
 
   // Esquema de validación usando Yup
   const validationSchema = Yup.object({
@@ -361,6 +347,7 @@ export default function NewOrder(): JSX.Element {
     },
     validationSchema,
     onSubmit: (values) => {
+      // Limpiar productos vacíos antes de enviar
       const cleanedProducts = values.products.filter((p) => p.product !== "");
       const dataToSubmit = { ...values, products: cleanedProducts, amount };
       createOrderMutation.mutate(dataToSubmit);
@@ -372,31 +359,19 @@ export default function NewOrder(): JSX.Element {
   const { storesQuery } = useStores({ page: 1, limit: 200 });
   const { getProviderById } = useProvider(selectedProvider);
 
-  // Obtener productos para el proveedor seleccionado
-  const productIds = useMemo(
-    () => getProviderById.data?.productsIds || [],
-    [getProviderById.data]
-  );
-
-  const { getProductsByIds } = useProductsByIds(productIds);
-
+  const { queryProductsByProviderId } =
+    useProductsByProviderId(selectedProvider);
+  const getProductsByIds = queryProductsByProviderId;
   // Estados de carga
-  const providersLoading =
-    providersQuery.isLoading || searchProvidersQuery.isLoading;
+  const providersLoading = providersQuery.isLoading;
   const storesLoading = storesQuery.isLoading;
   const selectedProviderLoading = getProviderById.isLoading;
-  const productsLoading =
-    getProductsByIds.isLoading ||
-    selectedProviderLoading ||
-    searchProductsQuery.isLoading;
+  const productsLoading = getProductsByIds.isLoading || selectedProviderLoading;
 
   // Memorizar datos para evitar renderizados innecesarios
   const providers = useMemo<ProviderModel[]>(
-    () => [
-      ...(searchProvidersQuery.data || []),
-      ...(providersQuery.data || []),
-    ],
-    [searchProvidersQuery.data, providersQuery.data]
+    () => providersQuery.data || [],
+    [providersQuery.data]
   );
 
   const stores = useMemo<Store[]>(
@@ -405,23 +380,9 @@ export default function NewOrder(): JSX.Element {
   );
 
   const products = useMemo<Product[]>(
-    () => [
-      ...(searchProductsQuery.data || []),
-      ...(getProductsByIds.data || []),
-    ],
-    [searchProductsQuery.data, getProductsByIds.data]
+    () => getProductsByIds.data || [],
+    [getProductsByIds.data]
   );
-
-  // Filtrar productos por término de búsqueda y disponibilidad
-  const availableProducts = useMemo(() => {
-    if (!products.length) return [];
-
-    return products.filter(
-      (product) =>
-        !selectedProductIds.has(product.id) ||
-        formik.values.products.some((p) => p.product === product.id)
-    );
-  }, [products, selectedProductIds, formik.values.products]);
 
   // Actualizar nombre del pedido cuando cambia proveedor o tienda
   const updateOrderName = useCallback(
@@ -459,7 +420,7 @@ export default function NewOrder(): JSX.Element {
     onSuccess: () => {
       toast.success("¡Pedido creado exitosamente!");
       queryClient.invalidateQueries({ queryKey: ["orders"] });
-      navigate("/orders");
+      navigate(`/inventory/orders/show`);
     },
     onError: (error: Error) => {
       toast.error(
@@ -499,6 +460,7 @@ export default function NewOrder(): JSX.Element {
   // Gestión de selección de producto
   const handleProductChange = useCallback(
     (value: string, index: number) => {
+      // Verificar si el producto ya está seleccionado
       if (value && selectedProductIds.has(value)) {
         toast.error(
           "Este producto ya está seleccionado. Por favor, elija otro."
@@ -506,6 +468,7 @@ export default function NewOrder(): JSX.Element {
         return;
       }
 
+      // Eliminar producto anterior del conjunto
       const oldProduct = formik.values.products[index].product;
       if (oldProduct) {
         const newSet = new Set(selectedProductIds);
@@ -513,6 +476,7 @@ export default function NewOrder(): JSX.Element {
         setSelectedProductIds(newSet);
       }
 
+      // Agregar nuevo producto al conjunto
       if (value) {
         setSelectedProductIds(new Set([...selectedProductIds, value]));
       }
@@ -534,6 +498,7 @@ export default function NewOrder(): JSX.Element {
   const removeProductRow = useCallback(
     (index: number) => {
       if (formik.values.products.length > 1) {
+        // Eliminar producto del conjunto
         const productToRemove = formik.values.products[index].product;
         if (productToRemove) {
           const newSet = new Set(selectedProductIds);
@@ -551,25 +516,31 @@ export default function NewOrder(): JSX.Element {
     [formik, selectedProductIds]
   );
 
-  // Calcular total del pedido
+  // Obtener productos disponibles para el dropdown
+  const getAvailableProductsForDropdown = useCallback(
+    (currentIndex: number) => {
+      const currentProduct = formik.values.products[currentIndex].product;
+      return products.filter(
+        (product) =>
+          !selectedProductIds.has(product.id) || product.id === currentProduct
+      );
+    },
+    [products, selectedProductIds, formik.values.products]
+  );
+
+  // All Products used to calculate total
+  const allProducts = products;
   const total = useMemo(() => {
     return formik.values.products.reduce((sum, item) => {
       if (!item.product) return sum;
 
-      const productDetails = products.find((p) => p.id === item.product);
+      const productDetails = allProducts.find((p) => p.id === item.product);
       if (!productDetails) return sum;
 
       return sum + productDetails.basePrice * item.quantity;
     }, 0);
-  }, [formik.values.products, products]);
-
+  }, [formik.values.products, allProducts]);
   amount = total;
-
-  if (!isAdmin) {
-    navigate("/inventory");
-    return <></>;
-  }
-
   // Mostrar pantalla de carga si es necesario
   if (
     providersLoading ||
@@ -581,7 +552,7 @@ export default function NewOrder(): JSX.Element {
 
   return (
     <div className="container mx-auto p-4 max-w-4xl mt-10 md:mt-4">
-      <Card className="shadow-lg border-0">
+      <Card>
         <FormHeader />
 
         <form onSubmit={formik.handleSubmit}>
@@ -594,8 +565,6 @@ export default function NewOrder(): JSX.Element {
               formik={formik}
               providers={providers}
               onProviderChange={handleProviderChange}
-              onSearch={setProviderSearchTerm}
-              isLoading={providersLoading}
             />
 
             {/* Selección de Tienda */}
@@ -614,7 +583,7 @@ export default function NewOrder(): JSX.Element {
                   onClick={addProductRow}
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-1"
                   disabled={!selectedProvider || productsLoading}
                 >
                   <Plus className="h-4 w-4" />
@@ -622,18 +591,7 @@ export default function NewOrder(): JSX.Element {
                 </Button>
               </div>
 
-              <Separator className="my-4" />
-
-              {/* Búsqueda de Productos */}
-              {selectedProvider &&
-                !productsLoading &&
-                availableProducts.length > 0 && (
-                  <ProductSearch
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    isLoading={searchProductsQuery.isLoading}
-                  />
-                )}
+              <Separator />
 
               {/* Estado de carga para productos */}
               {selectedProvider && productsLoading && (
@@ -646,8 +604,8 @@ export default function NewOrder(): JSX.Element {
               {/* Mensaje de no hay productos disponibles */}
               {selectedProvider &&
                 !productsLoading &&
-                availableProducts.length === 0 && (
-                  <div className="text-center py-8 text-amber-600 bg-amber-50 rounded-lg border border-amber-200 px-4">
+                products.length === 0 && (
+                  <div className="text-center py-8 text-amber-600 bg-amber-50 rounded-md border border-amber-200 px-4">
                     No hay productos disponibles para este proveedor. Por favor,
                     seleccione otro proveedor.
                   </div>
@@ -660,12 +618,12 @@ export default function NewOrder(): JSX.Element {
                     key={index}
                     index={index}
                     formik={formik}
-                    availableProducts={availableProducts}
+                    availableProducts={getAvailableProductsForDropdown(index)}
                     onProductChange={handleProductChange}
                     onRemoveProduct={removeProductRow}
                     disableRemove={formik.values.products.length <= 1}
-                    onSearch={setSearchTerm}
-                    isLoading={searchProductsQuery.isLoading}
+                    isProductsLoading={!selectedProvider || productsLoading}
+                    selectedProductIds={selectedProductIds}
                   />
                 ))}
               </div>

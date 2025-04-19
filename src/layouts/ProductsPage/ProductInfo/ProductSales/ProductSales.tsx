@@ -27,7 +27,11 @@ export default function ProductSales({ id }: Props) {
   const { salesByProductQuery } = useSalesByProductId(id!);
   const navigate = useNavigate();
   if (salesByProductQuery.isFetching) {
-    return <LoadingScreen />;
+    return (
+      <div className="flex justify-center items-center min-h-[200px] ">
+        <LoadingScreen />
+      </div>
+    );
   }
 
   const sales = salesByProductQuery.data?.sales || [];

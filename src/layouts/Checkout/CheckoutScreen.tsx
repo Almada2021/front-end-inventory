@@ -3,13 +3,13 @@ import { useSidebar } from "@/components/ui/sidebar";
 import useProducts from "@/hooks/products/useProducts";
 import { CartInterface } from "@/infrastructure/interfaces/cart/cart.interface";
 import { Product } from "@/infrastructure/interfaces/products.interface";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Cart from "./Cart/Cart";
 import { useMediaQuery } from "usehooks-ts";
 import PaymentMethod from "./Screens/PaymentMethod";
 import Bills from "@/components/Bills/Bills";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftCircleIcon } from "lucide-react";
+import { ArrowLeftCircleIcon, ScanIcon, Loader2Icon } from "lucide-react";
 import { PaymentMethod as TPaymentMethod } from "@/lib/database.types";
 import AlertMessage from "../Alert/AlertMessage";
 import useLocalStorage from "@/hooks/browser/useLocalStorage";
@@ -38,8 +38,8 @@ import CashBackBills from "./CashBackBills/CashBackBills";
 import { useToast } from "@/hooks/use-toast";
 import { Sale } from "@/infrastructure/interfaces/sale/sale.interface";
 import PaginatedProductGrid from "@/components/PaginatedProducts/PaginatedProducts";
-import { searchProductsAction } from "@/core/actions/products/searchProducts.action";
 import useBarcodeScan from "@/hooks/barCode/useBarCodeScan";
+import { searchProductsAction } from "@/core/actions/products/searchProducts.action";
 const modes: CheckoutModes[] = [
   "products",
   "paymentMethod",
@@ -92,20 +92,91 @@ export default function CheckoutScreen() {
 
   const [lastSale, setLastSale] = useState<Sale | null>(null);
   const [disabledScan, setDisabledScan] = useState<boolean>(false);
+
+  // Referencia para almacenar los productos encontrados por código de barras
+  const barcodeCache = useRef<{ [key: string]: Product[] }>({});
+
+  // Función para buscar productos por código de barras
+  const searchProductsByBarcode = useCallback(async (scannedCode: string) => {
+    console.log("Buscando productos por código de barras:", scannedCode);
+
+    // Verificar si el código está en la caché
+    if (barcodeCache.current[scannedCode]) {
+      console.log(
+        "Productos encontrados en caché:",
+        barcodeCache.current[scannedCode].length
+      );
+      return barcodeCache.current[scannedCode];
+    }
+
+    try {
+      // Buscar el producto por código de barras
+      const searchResults = await searchProductsAction(scannedCode);
+
+      // Guardar en caché
+      if (searchResults && searchResults.length > 0) {
+        barcodeCache.current[scannedCode] = searchResults;
+      }
+
+      return searchResults;
+    } catch (error) {
+      console.error("Error al buscar productos por código de barras:", error);
+      throw error;
+    }
+  }, []);
+
   // Hook para detectar escaneos de códigos de barras
-  const { barcode, isScanning } = useBarcodeScan({
+  const { barcode, isScanning, forceFinalize } = useBarcodeScan({
     onScan: async (scannedCode) => {
       console.log("Código de barras escaneado:", scannedCode);
+
+      // Verificar que el código no esté vacío
+      if (!scannedCode || scannedCode.trim() === "") {
+        console.log("Código de barras vacío, ignorando");
+        return;
+      }
+
       try {
+        console.log("Iniciando búsqueda de productos con código:", scannedCode);
+
         // Buscar el producto por código de barras
-        const searchResults = await searchProductsAction(scannedCode);
+        const searchResults = await searchProductsByBarcode(scannedCode);
+        console.log("Resultados de búsqueda:", searchResults);
+
         if (searchResults && searchResults.length > 0) {
-          // setProducts(searchResults);
+          console.log("Productos encontrados:", searchResults.length);
+
           // Si hay un único resultado, añadirlo al carrito automáticamente
           if (searchResults.length === 1) {
+            console.log(
+              "Añadiendo producto al carrito:",
+              searchResults[0].name
+            );
             pushCart(searchResults[0], 1);
+
+            // Mostrar notificación de éxito
+            toast({
+              title: "Producto añadido",
+              description: `${searchResults[0].name} ha sido añadido al carrito`,
+              variant: "default",
+            });
+          } else {
+            // Si hay múltiples resultados, mostrar en la lista de productos
+            console.log("Múltiples productos encontrados, mostrando lista");
+            setProducts(searchResults);
+
+            toast({
+              title: "Múltiples productos encontrados",
+              description: `Se encontraron ${searchResults.length} productos con el código ${scannedCode}`,
+              variant: "default",
+            });
           }
         } else {
+          console.log(
+            "No se encontraron productos con el código:",
+            scannedCode
+          );
+
           toast({
             title: "Producto no encontrado",
             description: `No se encontró ningún producto con el código ${scannedCode}`,
@@ -114,6 +185,7 @@ export default function CheckoutScreen() {
         }
       } catch (error) {
         console.error("Error al buscar producto por código de barras:", error);
+
         toast({
           title: "Error de búsqueda",
           description: "No se pudo buscar el producto escaneado",
@@ -122,7 +194,29 @@ export default function CheckoutScreen() {
       }
     },
     enabled: mode === "products" && !disabledScan, // Solo activar en modo productos
+    minBarcodeLength: 3, // Reducir la longitud mínima para permitir códigos más cortos
+    maxBarcodeLength: 30, // Aumentar la longitud máxima para permitir códigos más largos
+    duplicateScanDelay: 1500, // Evitar escaneos duplicados en 1.5 segundos
+    // Patrón para validar códigos de barras (ajustar según tus necesidades)
+    barcodePattern: /^[A-Za-z0-9\-_]+$/,
+    // Permitir entrada manual del teclado como códigos de barras
+    processManualInput: true,
   });
+
+  // Efecto para mostrar el estado de escaneo
+  useEffect(() => {
+    if (isScanning) {
+      console.log("Escaneando...");
+    } else if (barcode) {
+      console.log("Código escaneado:", barcode);
+    }
+  }, [isScanning, barcode]);
+
+  // Función para forzar la finalización del escaneo (útil para botones o atajos)
+  const handleForceScan = useCallback(() => {
+    console.log("Forzando finalización de escaneo");
+    forceFinalize();
+  }, [forceFinalize]);
 
   const changeMode = (back?: "back") => {
     const index = modes.indexOf(mode);
@@ -296,13 +390,6 @@ export default function CheckoutScreen() {
     },
   });
   useEffect(() => {
-    if (isScanning) {
-      console.log("Escaneando...");
-    } else {
-      console.log(barcode);
-    }
-  }, [isScanning, barcode]);
-  useEffect(() => {
     if (open) {
       setOpen(false);
     }
@@ -408,6 +495,21 @@ export default function CheckoutScreen() {
                 mode="min"
                 placeholder="Buscar Productos por nombre o codigo o REF"
               />
+            )}
+            {mode == "products" && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleForceScan}
+                className="ml-2"
+                title="Forzar finalización de escaneo"
+              >
+                {isScanning ? (
+                  <Loader2Icon className="h-5 w-5 animate-spin" />
+                ) : (
+                  <ScanIcon className="h-5 w-5" />
+                )}
+              </Button>
             )}
           </div>
           {mode == "products" && (

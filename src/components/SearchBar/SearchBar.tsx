@@ -53,8 +53,8 @@ export default function SearchBar<T>({
     return () => {
       clearTimeout(handler);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[query, automate])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, automate]);
   return (
     <section
       aria-description="Search bar"
