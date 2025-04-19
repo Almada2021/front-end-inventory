@@ -60,7 +60,11 @@ const columns: ColumnDef<TransfertHistory>[] = [
     header: "Metodo",
     cell: ({ row }) => {
       return (
-        <div className="whitespace-nowrap">
+        <div
+          className={`whitespace-nowrap font-bold ${
+            row.original.method === "draw" ? "text-red-500" : "text-green-500"
+          }`}
+        >
           {
             TRANSLATE_PAYMENT_METHODS[
               row.original.method as keyof typeof TRANSLATE_PAYMENT_METHODS
