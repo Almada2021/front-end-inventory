@@ -52,6 +52,19 @@ export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
       ventas: value,
     })
   );
+
+  // Add validation to ensure parseDataToGraph has elements
+  if (parseDataToGraph.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Ventas</CardTitle>
+          <CardDescription>No hay datos para mostrar</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   const maxSales = Math.max(...parseDataToGraph.map((item) => item.ventas), 0);
   const yAxisMax = Math.ceil(maxSales / 100000) * 100000;
   const yAxisTicks = Array.from(
@@ -138,9 +151,10 @@ export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
           Tendencia {trendDirection == "alza" ? "al" : "a la"} {trendDirection}{" "}
           del {formattedTrendPercentage}% entre los últimos días hoy:{" "}
           <div className="bg-green-500 rounded-md px-2">
-            {formatCurrency(
-              parseDataToGraph[parseDataToGraph.length - 1].ventas
-            )}
+            {parseDataToGraph.length > 0 &&
+              formatCurrency(
+                parseDataToGraph[parseDataToGraph.length - 1].ventas
+              )}
           </div>
           <TrendingUp
             className={`h-4 w-4 ${
