@@ -37,6 +37,7 @@ import {
   Users,
   ShoppingCart,
   Contact,
+  LogOut,
 } from "lucide-react";
 import { Home, Settings } from "lucide-react";
 import { useEffect } from "react";
@@ -175,22 +176,23 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
               </SidebarGroupContent>
             </SidebarGroup>
             {isAdmin && (
-
-            <SidebarGroup>
-              <SidebarMenu draggable={false}>
-                <SidebarGroupLabel>Modulos de Administrador</SidebarGroupLabel>
-                {AdminItems.map((item) => (
-                  <SidebarMenuItem className="select-none" key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <a draggable={false} href={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroup>
+              <SidebarGroup>
+                <SidebarMenu draggable={false}>
+                  <SidebarGroupLabel>
+                    Modulos de Administrador
+                  </SidebarGroupLabel>
+                  {AdminItems.map((item) => (
+                    <SidebarMenuItem className="select-none" key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <a draggable={false} href={item.url}>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroup>
             )}
           </SidebarContent>
           <SidebarFooter>
@@ -202,7 +204,7 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                       {" "}
                       {/* Changed from button to div */}
                       <SidebarMenuButton>
-                        <User2 /> Username
+                        <User2 /> {userInfo.name}
                         <ChevronUp className="ml-auto" />
                       </SidebarMenuButton>
                     </div>
@@ -211,14 +213,9 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                     side="top"
                     className="w-[--radix-popper-anchor-width] shadow shadow-black "
                   >
-                    <DropdownMenuItem>
-                      <span>Account</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <span>Billing</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={out}>
-                      <span>Sign out</span>
+                    <DropdownMenuItem className="flex p-2 gap-2" onClick={out}>
+                      <LogOut size={24} />
+                      <span>Cerrar sesión</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
