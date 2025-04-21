@@ -211,7 +211,7 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     side="top"
-                    className="w-[--radix-popper-anchor-width] shadow shadow-black "
+                    className="w-[--radix-popper-anchor-width] shadow shadow-slate-400 "
                   >
                     <DropdownMenuItem className="flex p-2 gap-2" onClick={out}>
                       <LogOut size={24} />

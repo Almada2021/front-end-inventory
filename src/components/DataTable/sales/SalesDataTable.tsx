@@ -199,7 +199,6 @@ export default function SalesDataTable({ date }: Props) {
 
   // Nuevos estados para filtros avanzados
   // Modificar el estado inicial
-  console.log(sorting, "sorting");
   const maxPossibleAmount = useMemo(() => {
     if (!salesQuery.data || salesQuery.data.length === 0) return 10000;
 

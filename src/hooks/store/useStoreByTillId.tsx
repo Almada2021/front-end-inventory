@@ -8,6 +8,7 @@ export default function useStoreByTillId(id: string) {
     queryFn: () => getStoreByTillIdAction(id),
     enabled: id.length > 0,
     staleTime: STALE_24,
+    gcTime: 1000 * 60 * 5,
   });
   return {
     storeByTillId,

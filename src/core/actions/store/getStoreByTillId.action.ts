@@ -14,7 +14,6 @@ export const getStoreByTillIdAction = async (
     const store = await BackendApi.get<SingleStoreResponse>(
       `/stores/till/${id}`
     );
-    if (!store) throw "Store Not Found";
     return store.data;
   } catch (error) {
     console.log(error);

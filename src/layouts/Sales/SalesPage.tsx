@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Sheet } from "lucide-react";
 import { BackendApi } from "@/core/api/api";
 import { useAdmin } from "@/hooks/browser/useAdmin";
+import { useParams } from "react-router";
 export default function SalesPage() {
   const isAdmin = useAdmin();
+  const params = useParams();
+  console.log(params);
   const [date, setDate] = useState<DateRange>({
     from: new Date(),
     to: addDays(new Date(), 0),
@@ -17,19 +20,21 @@ export default function SalesPage() {
     try {
       const startDate = format(date.from!, "yyyy-MM-dd");
       const endDate = format(date.to!, "yyyy-MM-dd");
-      const csv = await BackendApi.get("/sale/csv", { params: { startDate, endDate: endDate ? endDate :startDate } });
-      const blob = new Blob([csv.data], { type: 'text/csv' });
+      const csv = await BackendApi.get("/sale/csv", {
+        params: { startDate, endDate: endDate ? endDate : startDate },
+      });
+      const blob = new Blob([csv.data], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `Ventas-${startDate}-${endDate}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
-  if(!isAdmin){
+  };
+  if (!isAdmin) {
     return null;
   }
   return (
@@ -39,18 +44,16 @@ export default function SalesPage() {
           className="w-full "
           date={date}
           setDate={(date: DateRange | undefined) => {
-            if(date != undefined){
-              setDate(date!)
+            if (date != undefined) {
+              setDate(date!);
               return;
-            }else {
+            } else {
               return;
             }
           }}
         />
 
-        <Button
-          onClick={DownloadCsv}
-        >
+        <Button onClick={DownloadCsv}>
           <Sheet />
           Descargar Csv
         </Button>

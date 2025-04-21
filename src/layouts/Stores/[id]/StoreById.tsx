@@ -9,19 +9,16 @@ import { Till } from "@/infrastructure/interfaces/till.interface";
 import { TillCard } from "@/components/Cards/Till/TillCard";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
-import useOrders from "@/hooks/order/useOrders";
 import { useAdmin } from "@/hooks/browser/useAdmin";
+import useOrderPendingAmount from "@/hooks/order/useOrderPendingAmount";
 
 export default function StoreById() {
   const { id } = useParams();
   const isAdmin = useAdmin();
   const { storeById } = useStoreById(id || "");
+  const { orderPendingQuery } = useOrderPendingAmount(id || "");
   const { data: store } = storeById;
-  const { getOrdersQuery } = useOrders({
-    page: 1,
-    limit: 1000,
-    status: "open",
-  });
+
   const navigate = useNavigate();
   const { tillsByStoreQuery } = useTills(id!);
   if (!isAdmin) {
@@ -59,19 +56,19 @@ export default function StoreById() {
       </motion.div>
 
       {/* Tarjetas de métricas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 ">
         <motion.div
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
           className="bg-white p-6 rounded-xl shadow-md border-2 border-green-100"
         >
           <div className="flex items-center gap-4">
-            <div className="p-2 bg-green-100 rounded-lg">
+            <div className="p-2 bg-green-100 rounded-lg shrink-0">
               <Wallet className="h-6 w-6 text-green-600" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <h3 className="text-sm text-gray-500">Total en cajas</h3>
-              <p className="text-2xl font-bold text-gray-800">
+              <p className="text-2xl font-bold text-gray-800 break-all">
                 {formatCurrency(
                   tillsByStoreQuery.data?.tills.reduce(
                     (acc, till) => acc + till.totalCash,
@@ -87,21 +84,16 @@ export default function StoreById() {
         <motion.div
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
-          className="bg-white p-6 rounded-xl shadow-md border-2 border-purple-100"
+          className="bg-white p-6 rounded-xl shadow-md border-2   border-purple-100"
         >
           <div className="flex items-center gap-4">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-purple-100 rounded-lg shrink-0">
               <Package className="h-6 w-6 text-purple-600" />
             </div>
             <div>
               <h3 className="text-sm text-gray-500">Pedidos pendientes</h3>
-              <p className="text-2xl font-bold text-gray-800">
-                {formatCurrency(
-                  getOrdersQuery.data?.orders.reduce(
-                    (acc, order) => acc + order.amount,
-                    0
-                  ) || 0
-                )}
+              <p className="text-2xl font-bold text-gray-800 break-all">
+                {formatCurrency(orderPendingQuery.data?.total || 0)}
               </p>
             </div>
           </div>
@@ -148,8 +140,7 @@ export default function StoreById() {
                 <h3 className="text-xl font-bold text-gray-800 truncate">+</h3>
 
                 <div className="flex flex-col items-center">
-                  <span className="text-xs text-gray-500">Fondo actual</span>
-                  <p className="text-2xl font-bold text-green-700">
+                  <p className="text-2xl font-bold text-green-700  break-words">
                     Agregar Caja Registradora
                   </p>
                 </div>
@@ -166,7 +157,7 @@ export default function StoreById() {
           {tills?.map((till: Till, index: number) => (
             <motion.div
               onClick={() => {
-                navigate(`../../till/${till.id}`);
+                navigate(`/inventory/till/${till.id}`);
               }}
               key={till.id}
               initial={{ opacity: 0, y: 20 }}

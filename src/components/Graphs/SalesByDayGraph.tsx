@@ -18,6 +18,7 @@ import {
 import useSalesDashboard from "@/hooks/graphs/useSalesDashboard";
 import { Skeleton } from "../ui/skeleton";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
+import { useNavigate } from "react-router";
 
 const chartConfig = {
   desktop: {
@@ -32,6 +33,7 @@ interface Props {
 export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
   const startDate = subDays(date, range);
   const endDate = addDays(date, 1);
+  const navigate = useNavigate();
   const { salesByDayQuery } = useSalesDashboard(startDate, endDate);
   const salesData = salesByDayQuery.data || [];
   if (salesData.length < 1) {
@@ -118,7 +120,16 @@ export function SalesByDayGraph({ date = new Date(), range = 7 }: Props) {
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
-            <Bar dataKey="ventas" fill="var(--color-desktop)" radius={8} />
+            <Bar
+              onClick={(e: { date: string }) => {
+                navigate(
+                  `/inventory/sales?startDate=${e.date}&endDate=${e.date}`
+                );
+              }}
+              dataKey="ventas"
+              fill="var(--color-desktop)"
+              radius={8}
+            />
           </BarChart>
         </ChartContainer>
       </CardContent>
