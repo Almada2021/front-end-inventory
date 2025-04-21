@@ -30,7 +30,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { CreateSaleDto } from "@/infrastructure/interfaces/sale/sale.interface";
+import {
+  CreateSaleDto,
+  ProductExtended,
+} from "@/infrastructure/interfaces/sale/sale.interface";
 import useProductsByIds from "@/hooks/products/useProductsByIds";
 import {
   Dialog,
@@ -66,7 +69,6 @@ export default function SalesById() {
   // Obtener los IDs de los productos de la venta
   const productIds = salesByIdQuery.data?.products.map((p) => p.product) || [];
   const { getProductsByIds } = useProductsByIds(productIds);
-
   if (!id) return null;
   if (salesByIdQuery.isFetching)
     return (
@@ -76,6 +78,16 @@ export default function SalesById() {
     );
 
   const saleData = salesByIdQuery.data;
+  const mappedProducts: ProductExtended[] =
+    saleData?.products.map((current) => {
+      const productName =
+        getProductsByIds.data?.find((p) => p.id == current.product)?.name ||
+        undefined;
+      return {
+        ...current,
+        name: productName,
+      };
+    }) || [];
   if (!saleData) return <div>Venta no encontrada</div>;
 
   const formatter = new Intl.NumberFormat("es-PY", {
@@ -97,12 +109,6 @@ export default function SalesById() {
       setProductToEdit(productId);
       setEditProductQuantity(product.quantity);
     }
-  };
-
-  const handleEditBills = () => {
-    setEditBills(saleData.bills || {});
-    setEditBillsCashBack(saleData.billsCashBack || {});
-    setActiveTab("bills");
   };
 
   const confirmRemoveProduct = () => {
@@ -364,7 +370,7 @@ export default function SalesById() {
             <Package className="h-6 w-6 text-orange-600" />
             Productos vendidos ({saleData.products.length})
           </h2>
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={handleEditBills}
@@ -373,12 +379,12 @@ export default function SalesById() {
               <Wallet className="h-4 w-4 mr-2" />
               Editar Billetes
             </Button>
-          </div>
+          </div> */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <BadgeList
-            products={saleData.products}
+            products={mappedProducts}
             onRemoveProduct={handleRemoveProduct}
             onEditProduct={handleEditProduct}
             disabled={saleData.reverted}

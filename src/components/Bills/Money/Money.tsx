@@ -27,13 +27,13 @@ export default function Money({
       onMouseUp={() => setIsPressed(false)}
       onTouchStart={() => setIsPressed(true)}
       onTouchEnd={() => setIsPressed(false)}
-      className={`active:scale-95 transition-transform ${className} ${
+      className={`active:scale-95  transition-transform ${className} ${
         isPressed ? "opacity-75" : "opacity-100"
       } select-none`}
       aria-label={`Seleccionar ${alt}`}
     >
       <img
-        className={`w-full h-auto object-contain ${
+        className={`w-full  h-auto object-contain ${
           type === "bill"
             ? "max-h-[120px] md:max-h-[150px]"
             : "max-h-[80px] md:max-h-[100px]"

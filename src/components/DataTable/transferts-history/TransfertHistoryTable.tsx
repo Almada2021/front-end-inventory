@@ -17,6 +17,7 @@ import { formatCurrency } from "@/lib/formatCurrency.utils";
 import { TRANSLATE_PAYMENT_METHODS } from "@/constants/translations/payments.methods";
 import { Card, CardContent } from "@/components/ui/card";
 import EmployeeTextInfo from "@/components/Infos/EmployeeTextInfo";
+import TillTextInfo from "@/components/Infos/TillTextInfo";
 
 interface Props {
   transferts: TransfertHistory[];
@@ -110,6 +111,27 @@ const columns: ColumnDef<TransfertHistory>[] = [
       );
     },
   },
+  {
+    accessorKey: "receipt",
+    header: "Envia",
+    cell: ({ row }) => {
+      return (
+        <TillTextInfo keyValue="name" tillId={row.original.receipt || ""} />
+      );
+    },
+  },
+  {
+    accessorKey: "receptor",
+    header: "Recibe",
+    cell: ({ row }) => {
+      return (
+        <TillTextInfo
+          keyValue="name"
+          tillId={row.original.receptor || ""}
+        ></TillTextInfo>
+      );
+    },
+  },
 ];
 
 export default function TransfertHistoryTable({ transferts }: Props) {
@@ -140,17 +162,25 @@ export default function TransfertHistoryTable({ transferts }: Props) {
               >
                 ID: {transfert.id}
               </a>
-              <span className="font-medium">
+              <span className="font-bold">
                 {formatCurrency(transfert.amount)}
               </span>
             </div>
             <div className="text-sm">
               <div className="font-medium">Persona:</div>
-              <div className="truncate">{transfert.user}</div>
+              <div className="truncate">
+                <EmployeeTextInfo employeeId={transfert.user} keyValue="name" />
+              </div>
             </div>
             <div className="text-sm">
               <div className="font-medium">Método:</div>
-              <div>
+              <div
+                className={`${
+                  transfert.method === "draw"
+                    ? "text-red-500"
+                    : "text-green-500"
+                } font-bold`}
+              >
                 {
                   TRANSLATE_PAYMENT_METHODS[
                     transfert.method as keyof typeof TRANSLATE_PAYMENT_METHODS
@@ -180,6 +210,17 @@ export default function TransfertHistoryTable({ transferts }: Props) {
                   second: "2-digit",
                 })}
               </div>
+            </div>
+            <div className="flex flex-row">
+              <TillTextInfo
+                keyValue="name"
+                tillId={transfert.receipt || ""}
+              ></TillTextInfo>
+              <p className="font-bold"> Para </p>
+              <TillTextInfo
+                keyValue="name"
+                tillId={transfert.receptor || ""}
+              ></TillTextInfo>
             </div>
           </CardContent>
         </Card>

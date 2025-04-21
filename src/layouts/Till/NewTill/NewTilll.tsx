@@ -40,8 +40,8 @@ function MoneyCounter({
   onQuantityChange,
 }: MoneyProps) {
   return (
-    <div className="flex items-center gap-4 p-2 border rounded-lg">
-      <div className="w-32">
+    <div className="flex flex-wrap items-center gap-4 p-1 md:p-2 border rounded-lg">
+      <div className="md:w-32">
         <Label>Gs. {parseInt(denomination).toLocaleString()}</Label>
       </div>
 
@@ -125,7 +125,7 @@ export default function NewTilll({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 w-full mt-20 md:mt-4 px-10 md:px-4 ",
+        "flex flex-col gap-4 w-full mt-10 md:mt-4 px-10 md:px-4 ",
         className
       )}
       {...props}
@@ -193,6 +193,10 @@ export default function NewTilll({
                     />
                   ))}
                 </div>
+
+                <Button type="submit" className="w-full">
+                  Crear Caja Registradora
+                </Button>
                 <div>
                   {DENOMINATIONS.reduce((a, b) => {
                     const quantity = Number(bills.get(b));
@@ -202,10 +206,6 @@ export default function NewTilll({
                   Gs
                 </div>
               </div>
-
-              <Button type="submit" className="w-full">
-                Crear Caja Registradora
-              </Button>
             </div>
           </form>
         </CardContent>

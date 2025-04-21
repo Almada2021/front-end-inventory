@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Product } from "@/infrastructure/interfaces/sale/sale.interface";
-import { Edit, Trash2 } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+import { ProductExtended } from "@/infrastructure/interfaces/sale/sale.interface";
+// import { Edit, Trash2 } from "lucide-react";
 
 interface BadgeListProps {
-  products: Product[];
+  products: ProductExtended[];
   onRemoveProduct?: (productId: string) => void;
   onEditProduct?: (productId: string) => void;
   disabled?: boolean;
@@ -12,10 +12,10 @@ interface BadgeListProps {
 
 export default function BadgeList({
   products,
-  onRemoveProduct,
-  onEditProduct,
-  disabled = false,
-}: BadgeListProps) {
+}: // onRemoveProduct,
+// onEditProduct,
+// disabled = false,
+BadgeListProps) {
   return (
     <div className="flex flex-wrap gap-2">
       {products.map((product) => (
@@ -25,9 +25,9 @@ export default function BadgeList({
           className="flex items-center gap-2 p-2"
         >
           <span>
-            {product.product} x {product.quantity}
+            {product.name || product.product} x {product.quantity}
           </span>
-          {!disabled && !product.cancelled && (
+          {/* {!disabled && !product.cancelled && (
             <div className="flex gap-1">
               {onEditProduct && (
                 <Button
@@ -54,9 +54,9 @@ export default function BadgeList({
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
-              )}
-            </div>
-          )}
+              )} */}
+          {/* </div> */}
+          {/* )} */}
         </Badge>
       ))}
     </div>

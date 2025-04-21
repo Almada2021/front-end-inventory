@@ -7,11 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Sheet } from "lucide-react";
 import { BackendApi } from "@/core/api/api";
 import { useAdmin } from "@/hooks/browser/useAdmin";
-import { useParams } from "react-router";
 export default function SalesPage() {
   const isAdmin = useAdmin();
-  const params = useParams();
-  console.log(params);
+
   const [date, setDate] = useState<DateRange>({
     from: new Date(),
     to: addDays(new Date(), 0),
@@ -44,6 +42,7 @@ export default function SalesPage() {
           className="w-full "
           date={date}
           setDate={(date: DateRange | undefined) => {
+            if (!isAdmin) return;
             if (date != undefined) {
               setDate(date!);
               return;

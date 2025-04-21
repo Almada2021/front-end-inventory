@@ -24,7 +24,9 @@ export interface Product {
   cancelled: boolean;
   _id: string;
 }
-
+export interface ProductExtended extends Product {
+  name?: string | undefined;
+}
 export interface CreateSaleDto {
   amount: number;
   profits: number;

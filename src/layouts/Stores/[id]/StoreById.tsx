@@ -9,22 +9,18 @@ import { Till } from "@/infrastructure/interfaces/till.interface";
 import { TillCard } from "@/components/Cards/Till/TillCard";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
-import { useAdmin } from "@/hooks/browser/useAdmin";
 import useOrderPendingAmount from "@/hooks/order/useOrderPendingAmount";
 
 export default function StoreById() {
   const { id } = useParams();
-  const isAdmin = useAdmin();
+
   const { storeById } = useStoreById(id || "");
   const { orderPendingQuery } = useOrderPendingAmount(id || "");
   const { data: store } = storeById;
 
   const navigate = useNavigate();
   const { tillsByStoreQuery } = useTills(id!);
-  if (!isAdmin) {
-    navigate("/inventory");
-    return null;
-  }
+
   if (storeById.isFetching || tillsByStoreQuery.isFetching)
     return (
       <div className="p-10 w-full flex flex-col md:flex-row gap-4 mt-4 md:mt-0">

@@ -34,7 +34,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BackendApi } from "@/core/api/api";
 import { useAppSelector } from "@/config/react-redux.adapter";
 import toast from "react-hot-toast";
-import { useAdmin } from "@/hooks/browser/useAdmin";
 import MoneyInput from "@/components/MoneyInput/MoneyInput";
 import { withdrawMoney } from "@/core/actions/tills/withdrawMoney";
 import { addMoney } from "@/core/actions/tills/addMoney";
@@ -46,7 +45,7 @@ import TillOpensClosePagination from "@/components/DataTable/till-opens-close/Ti
 type PageModes = "retire" | "tranfert" | "active" | "add";
 export default function TillById() {
   const { id } = useParams();
-  const isAdmin = useAdmin();
+
   const navigate = useNavigate();
   const [pageMode, setPageMode] = useState<PageModes>("active");
   const { tillsByIdQuery } = useTillById(id!);
@@ -92,7 +91,6 @@ export default function TillById() {
     },
     0
   );
-
   // Mutate Transfert
   const mutateTransfert = useMutation({
     mutationFn: async () => {
@@ -221,10 +219,7 @@ export default function TillById() {
 
   const till = tillsByIdQuery.data;
   const type = till?.type;
-  if (!isAdmin) {
-    navigate("/inventory");
-    return null;
-  }
+
   if (!id || !till) return <div>404 No Encontrado</div>;
 
   return (
@@ -282,7 +277,9 @@ export default function TillById() {
                     currentTill={tillsByIdQuery.data.id}
                     storeId={tillsByIdQuery.data.storeId}
                     selectTill={(value: string) => {
+                      console.log(tills);
                       setTills((val) => [val[0], value]);
+                      console.log(tills);
                     }}
                   />
                 )}
@@ -363,7 +360,7 @@ export default function TillById() {
                           }`}
                           className={`${
                             Number(amount) > 1000 ? "p-4" : ""
-                          } bg-muted rounded-xl hover:scale-105 transition-transform`}
+                          } bg-muted rounded-xl hover:scale-105 transition-transform `}
                         />
                         <span className="absolute top-2 right-8 bg-white font-bold text-black px-2 py-1 rounded text-sm md:text-xl">
                           Disp:{tillsByIdQuery.data.bills[amount]}

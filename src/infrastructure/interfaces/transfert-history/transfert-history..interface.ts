@@ -10,4 +10,6 @@ export interface TransfertHistory {
   method: string;
   bills: Record<string, number>;
   createdAt: string;
+  receipt?: string;
+  receptor?: string;
 }

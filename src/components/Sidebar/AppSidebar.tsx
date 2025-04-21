@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useAppSelector } from "@/config/react-redux.adapter";
-import { useAdmin } from "@/hooks/browser/useAdmin";
+// import { useAdmin } from "@/hooks/browser/useAdmin";
 import { validateTime } from "@/lib/jwt.utils";
 import {
   DropdownMenu,
@@ -27,7 +27,6 @@ import {
   BadgeDollarSign,
   Brain,
   ChevronUp,
-  FileSpreadsheet,
   LucideProps,
   Milk,
   Store,
@@ -39,7 +38,7 @@ import {
   Contact,
   LogOut,
 } from "lucide-react";
-import { Home, Settings } from "lucide-react";
+import { Home } from "lucide-react";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
@@ -50,23 +49,13 @@ interface MenuItem {
     Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
   >;
 }
-const AdminItems: MenuItem[] = [
-  {
-    title: "Sucursales y Cajas",
-    url: "/inventory/stores",
-    icon: Store,
-  },
-  {
-    title: "Reportes",
-    url: "#",
-    icon: FileSpreadsheet,
-  },
-  {
-    title: "Ventas",
-    url: "/inventory/sales",
-    icon: ShoppingCart,
-  },
-];
+// const AdminItems: MenuItem[] = [
+// {
+//   title: "Reportes",
+//   url: "#",
+//   icon: FileSpreadsheet,
+// },
+// ];
 const items: MenuItem[] = [
   {
     title: "Inicio",
@@ -110,22 +99,32 @@ const items: MenuItem[] = [
     icon: ListOrdered,
   },
   {
-    title: "Reportes",
-    url: "/inventory/reports",
-    icon: FileSpreadsheet,
+    title: "Sucursales y Cajas",
+    url: "/inventory/stores",
+    icon: Store,
   },
   {
-    title: "Configuracion",
-    url: "#",
-    icon: Settings,
+    title: "Ventas",
+    url: "/inventory/sales",
+    icon: ShoppingCart,
   },
+  // {
+  //   title: "Reportes",
+  //   url: "/inventory/reports",
+  //   icon: FileSpreadsheet,
+  // },
+  // {
+  //   title: "Configuracion",
+  //   url: "#",
+  //   icon: Settings,
+  // },
 ];
 
 export default function AppSidebar({ children }: { children: JSX.Element }) {
   const { userInfo, token } = useAppSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const isAdmin = useAdmin();
+  // const isAdmin = useAdmin();
   const out = () => {
     dispatch(signOut());
     navigate("/");
@@ -175,7 +174,7 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-            {isAdmin && (
+            {/* {isAdmin && (
               <SidebarGroup>
                 <SidebarMenu draggable={false}>
                   <SidebarGroupLabel>
@@ -193,7 +192,7 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                   ))}
                 </SidebarMenu>
               </SidebarGroup>
-            )}
+            )} */}
           </SidebarContent>
           <SidebarFooter>
             <SidebarMenu>
