@@ -6,13 +6,17 @@ export interface TillByStoreResponse {
 
 export const getTillByStoreId = async (
   id: string,
-  filters?: TillFilters
+  filters?: TillFilters,
+  isAdmin?: boolean
 ): Promise<{ tills: Till[] }> => {
   try {
     const tills = await BackendApi.get<TillByStoreResponse>(
       `/till/store/${id}`,
       {
-        params: filters,
+        params: {
+          ...filters,
+          admin: isAdmin,
+        },
       }
     );
     return tills.data;

@@ -6,6 +6,7 @@ export default function useUserById(id: string) {
     queryKey: ["user", "show", id],
     queryFn: () => getUserByIdAction(id),
     staleTime: 1000 * 60 * 5,
+    enabled: id.length > 0,
   });
   return {
     userByIdQuery,

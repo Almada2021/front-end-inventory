@@ -14,22 +14,26 @@ interface ClientFormValues {
   lastName: string;
   ruc: string;
   address?: string;
-  phoneNumber?: string
+  phoneNumber?: string;
 }
 interface Props {
   edit?: boolean;
   valuesEdited?: ClientFormValues;
   onEdit?: () => void;
 }
-export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Props) {
+export default function ClientsForm({
+  edit = false,
+  valuesEdited,
+  onEdit,
+}: Props) {
   const queryClient = useQueryClient();
   const formik = useFormik<ClientFormValues>({
     initialValues: {
       name: valuesEdited?.name || "",
       lastName: valuesEdited?.lastName || "",
       ruc: valuesEdited?.ruc || "",
-      address: valuesEdited?.address ||"",
-      phoneNumber: valuesEdited?.phoneNumber ||"",
+      address: valuesEdited?.address || "",
+      phoneNumber: valuesEdited?.phoneNumber || "",
     },
     validationSchema: Yup.object({
       name: Yup.string().required("El nombre es requerido"),
@@ -44,8 +48,7 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
     ) => {
       try {
         // Enviamos los datos en formato JSON
-        if(!edit){
-
+        if (!edit) {
           await BackendApi.post("/client/create", values);
           // Actualizamos la caché de clientes (si es necesario)
           queryClient.invalidateQueries({ queryKey: ["clients"] });
@@ -53,19 +56,34 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
           toast.success("Cliente creado exitosamente", {
             className: "w-full h-32 p-4",
           });
-        }else {
-          await BackendApi.patch(`/client/update/${valuesEdited?.id}`,values);
+        } else {
+          await BackendApi.patch(`/client/update/${valuesEdited?.id}`, values);
           queryClient.invalidateQueries({ queryKey: ["clients"] });
-          if(onEdit) onEdit();
-          toast.success("Cliente Editado correctamente",{
+          if (onEdit) onEdit();
+          toast.success("Cliente Editado correctamente", {
             className: "w-full h-32 p-4",
           });
         }
       } catch (error) {
-        toast.error(`Error al crear cliente ${error}`, {
-          className: "w-full h-32 p-4",
-        } )
-        console.error("Error al crear el cliente:", error);
+        const operation = edit ? "editar" : "crear";
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : typeof error === "string"
+            ? error
+            : "Error desconocido";
+
+        toast.error(
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold">Error al {operation} cliente</p>
+            <p className="text-sm">{errorMessage}</p>
+          </div>,
+          {
+            className: "w-full p-4",
+            duration: 5000,
+          }
+        );
+        console.error(`Error al ${operation} el cliente:`, error);
       }
     },
   });
@@ -123,8 +141,8 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
                 <p className="text-xs text-red-600">{formik.errors.ruc}</p>
               )}
             </div>
-             {/* Direccion */}
-             <div className="grid gap-2">
+            {/* Direccion */}
+            <div className="grid gap-2">
               <Label htmlFor="ruc">Direccion</Label>
               <Input
                 id="address"
@@ -150,7 +168,9 @@ export default function ClientsForm({ edit = false, valuesEdited, onEdit }: Prop
                 onChange={formik.handleChange}
               />
               {formik.errors.phoneNumber && formik.touched.phoneNumber && (
-                <p className="text-xs text-red-600">{formik.errors.phoneNumber}</p>
+                <p className="text-xs text-red-600">
+                  {formik.errors.phoneNumber}
+                </p>
               )}
             </div>
             <Button type="submit">

@@ -8,9 +8,10 @@ export interface Till {
   transferPayments: number;
   status: boolean;
   type: "till" | "bankAcount";
+  admin?: boolean;
 }
 
 export interface TillFilters {
-  exclude?: string,
-  type?: string,
+  exclude?: string;
+  type?: string;
 }

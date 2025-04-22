@@ -93,11 +93,13 @@ export default function NewTilll({
       name: "",
       contabilizada: true,
       bank: false,
+      admin: false,
     },
     validationSchema: Yup.object({
       name: Yup.string().required("El nombre de la caja es requerido"),
       contabilizada: Yup.boolean().optional(),
       bank: Yup.boolean().optional(),
+      admin: Yup.boolean().optional(),
     }),
     onSubmit: async (values) => {
       const formData = {
@@ -111,6 +113,7 @@ export default function NewTilll({
         ),
         // uncounted: for
         type: values.bank ? "bankAcount" : "till",
+        admin: values.admin,
       };
       newTillMutate.mutate(formData);
       toast.success("La Caja se Creo correctamente");
@@ -173,7 +176,18 @@ export default function NewTilll({
                       formik.setFieldValue("bank", checked)
                     }
                   />
-                  <Label htmlFor="contabilizada">Es un Banco</Label>
+                  <Label htmlFor="bank">Es un Banco</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="admin"
+                    name="admin"
+                    checked={formik.values.admin}
+                    onCheckedChange={(checked) =>
+                      formik.setFieldValue("admin", checked)
+                    }
+                  />
+                  <Label htmlFor="admin">Es solo para administradores</Label>
                 </div>
               </div>
 

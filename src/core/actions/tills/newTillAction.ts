@@ -6,15 +6,16 @@ export interface TillActionRequirements {
   name: string;
   storeId: string;
   bills: { [key: string]: number };
-  type: string,
-  
+  type: string;
+  admin: boolean;
 }
 
 export const NewTillAction = async ({
   name,
   storeId,
   bills,
-  type
+  type,
+  admin,
 }: TillActionRequirements) => {
   try {
     const { data } = await BackendApi.post<BackendProviderAPIResponse>(
@@ -23,7 +24,8 @@ export const NewTillAction = async ({
         name,
         storeId,
         bills,
-        type
+        type,
+        admin,
       }
     );
     return data.providers.map(ProviderMapper.fromBackToFront);
