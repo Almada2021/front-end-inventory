@@ -1,5 +1,6 @@
 export interface ProductResponse {
   products: Product[];
+  totalPages: number;
 }
 
 export interface Product {

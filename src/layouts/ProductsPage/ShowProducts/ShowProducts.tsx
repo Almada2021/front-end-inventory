@@ -9,15 +9,17 @@ import {
   ProductResponse,
 } from "@/infrastructure/interfaces/products.interface";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ShowProducts() {
   const [page, setPage] = useState(1);
   const { productsQuery } = useProducts({ page, limit: 40 });
   const [products, setProducts] = useState<Product[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+
   const searchProductsAction = async (query: string) => {
     try {
-      const products = await BackendApi.get<ProductResponse>(
+      const response = await BackendApi.get<ProductResponse>(
         "/products/search",
         {
           params: {
@@ -25,11 +27,36 @@ export default function ShowProducts() {
           },
         }
       );
-      return products.data.products;
+      return response.data.products;
     } catch (error) {
       console.log(error);
     }
   };
+
+  // Update totalPages when productsQuery data changes
+  useEffect(() => {
+    const fetchTotalPages = async () => {
+      try {
+        const response = await BackendApi.get<ProductResponse>(
+          "/products/all",
+          {
+            params: {
+              page: 1,
+              limit: 40,
+            },
+          }
+        );
+        if (response.data && "totalPages" in response.data) {
+          setTotalPages(response.data.totalPages);
+        }
+      } catch (error) {
+        console.error("Error fetching total pages:", error);
+      }
+    };
+
+    fetchTotalPages();
+  }, []);
+
   if (productsQuery.isFetching) {
     return (
       <div className="flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
@@ -37,6 +64,7 @@ export default function ShowProducts() {
       </div>
     );
   }
+
   return (
     <div className="mt-20 sm:mt-0 min-h-[100dvh] w-full p-4 flex flex-col">
       <SearchBar<Product | undefined>
@@ -76,7 +104,7 @@ export default function ShowProducts() {
         <PaginationButtons
           handlePageChange={(number) => setPage(number)}
           currentPage={page}
-          totalPages={1}
+          totalPages={totalPages}
         />
       </div>
     </div>
