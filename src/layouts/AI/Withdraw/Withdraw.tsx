@@ -6,6 +6,8 @@ import FileUploader from "@/components/FileUploader/FileUploader";
 import StoreSelector from "@/components/StoreSelector";
 import TillSelector from "@/layouts/Till/[id]/TillSelector/TillSelector";
 import toast from "react-hot-toast";
+import { useAppSelector } from "@/config/react-redux.adapter";
+import { RootState } from "@/app/store";
 
 export default function Withdraw() {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ export default function Withdraw() {
   const [response, setResponse] = useState<
     { response: string; verified: boolean } | undefined
   >(undefined);
+  const { userInfo } = useAppSelector((state: RootState) => state.auth);
 
   const handleSuccess = (data: unknown) => {
     setResponse((data as { response: string; verified: boolean }) || undefined);
@@ -116,6 +119,7 @@ export default function Withdraw() {
               bills: JSON.stringify(tillBills),
               tillId: till,
               storeId: storeId,
+              userId: userInfo?.id || "",
             }}
             onSuccess={handleSuccess}
             onError={handleError}
