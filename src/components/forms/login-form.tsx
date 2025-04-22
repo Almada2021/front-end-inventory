@@ -74,6 +74,7 @@ export function LoginForm({
                     onChange={formik.handleChange}
                     placeholder="micorreo@gmail.com"
                     required
+                    autoComplete="email"
                     value={formik.values.email}
                   />
                 </div>
@@ -85,6 +86,7 @@ export function LoginForm({
                     onChange={formik.handleChange}
                     id="password"
                     value={formik.values.password}
+                    autoComplete="password"
                     type="password"
                     required
                   />

@@ -8,8 +8,23 @@ import LoadingScreen from "@/layouts/Loading/LoadingScreen";
 import toast from "react-hot-toast";
 import CheckboxInput from "@/components/CheckboxInput/CheckboxInput";
 import { useNavigate } from "react-router";
+import FileUploader from "@/components/FileUploader/FileUploader";
 
 type Mode = "new" | "receipt" | "count" | null;
+
+interface ProcessedProduct {
+  name: string;
+  basePrice: number;
+  price?: number;
+  barCode?: string;
+  photoUrl?: string;
+  id: string;
+}
+
+interface ProcessReceiptResponse {
+  products: ProcessedProduct[];
+}
+
 const CountComponent = () => {
   const navigate = useNavigate();
   return (
@@ -274,6 +289,240 @@ const EnhancedUploader = ({
   );
 };
 
+const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
+  const [profitPercentage, setProfitPercentage] = useState<
+    number | undefined
+  >();
+  const [products, setProducts] = useState<ProcessedProduct[]>([]);
+  const [editingPrices, setEditingPrices] = useState<{ [key: string]: number }>(
+    {}
+  );
+  const [suggestedPhotos, setSuggestedPhotos] = useState<{
+    [key: string]: string;
+  }>({});
+
+  const createProductsMutation = useMutation({
+    mutationFn: async (products: ProcessedProduct[]) => {
+      const createdProducts = await Promise.all(
+        products.map(async (product) => {
+          const formData = new FormData();
+          formData.append("name", product.name);
+          formData.append("price", String(product.price || 0));
+          formData.append("basePrice", String(product.basePrice));
+          formData.append("stock", "0");
+          formData.append("uncounted", "false");
+
+          if (product.barCode) {
+            formData.append("barCode", product.barCode);
+          }
+
+          // Asegurarnos de que la photoUrl se envíe si existe
+          if (product.photoUrl) {
+            formData.append("photoUrl", product.photoUrl);
+          } else if (suggestedPhotos[product.name]) {
+            formData.append("photoUrl", suggestedPhotos[product.name]);
+          }
+
+          const response = await BackendApi.post("/products", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+          return response.data;
+        })
+      );
+      return createdProducts;
+    },
+    onSuccess: () => {
+      toast.success("Productos creados exitosamente");
+      setProducts([]);
+      setSuggestedPhotos({});
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const suggestPhotoUrl = async (productName: string) => {
+    try {
+      const response = await BackendApi.post("/ai/suggest-photo", {
+        productName,
+      });
+
+      const photoUrl = response.data.photoUrl.startsWith("http")
+        ? response.data.photoUrl
+        : `${import.meta.env.VITE_BACKEND_URL}${response.data.photoUrl}`;
+
+      setSuggestedPhotos((prev) => ({
+        ...prev,
+        [productName]: photoUrl,
+      }));
+
+      // Actualizar también el producto con la URL sugerida
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product.name === productName
+            ? { ...product, photoUrl: photoUrl }
+            : product
+        )
+      );
+    } catch {
+      toast.error("Error al sugerir foto");
+    }
+  };
+
+  const handleUsePhoto = (productId: string, photoUrl: string) => {
+    setProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product.id === productId ? { ...product, photoUrl: photoUrl } : product
+      )
+    );
+  };
+
+  const handleImageError = (
+    event: React.SyntheticEvent<HTMLImageElement, Event>
+  ) => {
+    const img = event.target as HTMLImageElement;
+    img.src = "/placeholder-image.jpg"; // Usar una imagen de placeholder por defecto
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={onBack}>
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div>
+          <h2 className="text-2xl font-bold">Carga por Boleta</h2>
+          <p className="text-muted-foreground">
+            Importa productos desde una factura
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 px-4 md:px-0">
+        <CheckboxInput
+          label="Porcentaje de Ganancia"
+          inputPlaceholder="Porcentaje"
+          inputProps={{ step: 1 }}
+          uncheck={() => setProfitPercentage(undefined)}
+          notify={(val) =>
+            setProfitPercentage(typeof val === "string" ? parseFloat(val) : val)
+          }
+        />
+      </div>
+
+      <FileUploader
+        title="Subir Boleta"
+        description="Sube una imagen de la boleta para procesar"
+        endpoint="/ai/process-receipt"
+        maxFiles={1}
+        additionalFormData={{
+          profitPercentage: profitPercentage || 0,
+        }}
+        onSuccess={(data) => {
+          const response = data as ProcessReceiptResponse;
+          setProducts(response.products || []);
+          toast.success("Boleta procesada con éxito");
+        }}
+        onError={(error) => {
+          toast.error(error.message);
+        }}
+      />
+
+      {products.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Productos Detectados</h3>
+            <Button
+              onClick={() => createProductsMutation.mutate(products)}
+              disabled={createProductsMutation.isPending}
+            >
+              {createProductsMutation.isPending
+                ? "Creando..."
+                : "Crear Productos"}
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
+            {products.map((product, index) => (
+              <div key={index} className="border rounded-lg p-4 space-y-2">
+                <h4 className="font-medium">{product.name}</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Precio Base: </span>
+                    <span>₲{product.basePrice}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">
+                      Precio Venta:{" "}
+                    </span>
+                    <Input
+                      type="number"
+                      value={editingPrices[product.name] || product.price || ""}
+                      onChange={(e) => {
+                        setEditingPrices((prev) => ({
+                          ...prev,
+                          [product.name]: Number(e.target.value),
+                        }));
+                        setProducts((prev) =>
+                          prev.map((p) =>
+                            p.name === product.name
+                              ? { ...p, price: Number(e.target.value) }
+                              : p
+                          )
+                        );
+                      }}
+                      className="w-32"
+                    />
+                  </div>
+                  {product.barCode && (
+                    <div className="col-span-2">
+                      <span className="text-muted-foreground">Código: </span>
+                      <span>{product.barCode}</span>
+                    </div>
+                  )}
+                  <div className="col-span-2 flex items-center gap-2">
+                    <span className="text-muted-foreground">Foto: </span>
+                    {suggestedPhotos[product.name] ? (
+                      <div className="flex items-center gap-2">
+                        <img
+                          src={`${
+                            suggestedPhotos[product.name]
+                          }?t=${Date.now()}`}
+                          alt={product.name}
+                          className="w-10 h-10 object-cover rounded"
+                          onError={handleImageError}
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleUsePhoto(product.id, product.photoUrl || "")
+                          }
+                        >
+                          Usar esta foto
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => suggestPhotoUrl(product.name)}
+                      >
+                        Sugerir Foto
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function LoadProductScreen() {
   const [selectedMode, setSelectedMode] = useState<Mode>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -341,21 +590,17 @@ export default function LoadProductScreen() {
             <h1 className="text-3xl font-bold">Cargar Productos</h1>
             <ModeSelector onSelect={setSelectedMode} />
           </div>
+        ) : selectedMode === "receipt" ? (
+          <ReceiptComponent onBack={() => setSelectedMode(null)} />
         ) : (
           <EnhancedUploader
             selectedMode={selectedMode}
             title={
-              selectedMode === "new"
-                ? "Nuevo Producto"
-                : selectedMode === "receipt"
-                ? "Carga por Boleta"
-                : "Contar Productos"
+              selectedMode === "new" ? "Nuevo Producto" : "Contar Productos"
             }
             description={
               selectedMode === "new"
                 ? "Carga individual de productos"
-                : selectedMode === "receipt"
-                ? "Sube una factura para importar múltiples productos"
                 : "Escanea múltiples productos para inventario"
             }
             onBack={() => setSelectedMode(null)}
@@ -363,7 +608,6 @@ export default function LoadProductScreen() {
               file: React.RefObject<HTMLInputElement>,
               custom: { [key: string]: string | number | undefined }
             ) => {
-              // Lógica de confirmación
               switch (selectedMode) {
                 case "new": {
                   const promptFromCustom: string = `
