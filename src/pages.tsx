@@ -21,6 +21,14 @@ export const CountProduct = lazy(
 export const StockOptimization = lazy(
   () => import("@/layouts/AI/StockOptimization/StockOptimization")
 );
+export const Operations = lazy(
+  () => import("@/layouts/AI/Operations/Operations")
+);
+export const CountBills = lazy(
+  () => import("@/layouts/AI/CountBills/CountBills")
+);
+export const Withdraw = lazy(() => import("@/layouts/AI/Withdraw/Withdraw"));
+export const Add = lazy(() => import("@/layouts/AI/Add/Add"));
 //* POS
 export const POSPage = lazy(() => import("@/layouts/Checkout/POSPage"));
 

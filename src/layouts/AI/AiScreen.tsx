@@ -29,9 +29,9 @@ const AiModules: AiItem[] = [
     icon: <BarChart className="w-8 h-8" />,
   },
   {
-    title: "Análisis Predictivo",
-    url: "/inventory/sales-forecast",
-    description: "Predicción de demanda futura",
+    title: "operaciones",
+    url: "/inventory/ai/operations",
+    description: "Contar billetes sumar extraer etc",
     icon: <Lightbulb className="w-8 h-8" />,
   },
   {

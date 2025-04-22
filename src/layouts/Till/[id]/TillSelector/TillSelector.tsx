@@ -10,7 +10,7 @@ import { Till } from "@/infrastructure/interfaces/till.interface";
 
 interface Props {
   storeId: string;
-  selectTill: (id: string) => void;
+  selectTill: (id: string, till?: Till) => void;
   currentTill?: string;
 }
 export default function TillSelector({
@@ -25,7 +25,14 @@ export default function TillSelector({
   return (
     <div className="min-w-[200px] flex flex-col">
       <h3 className="m-2">Seleccionar una caja</h3>
-      <Select onValueChange={selectTill}>
+      <Select
+        onValueChange={(value) => {
+          const selectedTill = tillsByStoreQuery.data?.tills.find(
+            (till) => till.id === value
+          );
+          selectTill(value, selectedTill);
+        }}
+      >
         <SelectTrigger>
           <SelectValue placeholder="Seleccionar el valor de la caja" />
         </SelectTrigger>

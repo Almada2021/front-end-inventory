@@ -54,6 +54,10 @@ import {
   TransfertHistory,
   CountProduct,
   Assistant,
+  Operations,
+  Withdraw,
+  CountBills,
+  Add,
 } from "@/pages";
 
 const client = new QueryClient();
@@ -82,8 +86,12 @@ createRoot(document.getElementById("root")!).render(
                             path="stock-optimization"
                             element={<StockOptimization />}
                           />
+                          <Route path="operations" element={<Operations />} />
                           <Route path="count" element={<CountProduct />} />
                           <Route path="assistant" element={<Assistant />} />
+                          <Route path="count-bills" element={<CountBills />} />
+                          <Route path="withdraw" element={<Withdraw />} />
+                          <Route path="add" element={<Add />} />
                         </Route>
                         <Route path="clients">
                           <Route index element={<ClientPage />} />
