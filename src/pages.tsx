@@ -164,3 +164,7 @@ export const OrderInfo = lazy(
 export const ReportsPage = lazy(
   () => import("@/layouts/ReportsPage/ReportsPage")
 );
+
+export const StockReport = lazy(
+  () => import("@/layouts/ReportsPage/StockReport")
+);

@@ -6,18 +6,7 @@ import { Label } from "@/components/ui/label";
 import { FormikHelpers, useFormik } from "formik";
 import * as Yup from "yup";
 import "./forms.css";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import DataTableView from "../DataTable/DataTable";
+import { AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ChangeEvent, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
@@ -35,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ProvidersTableForm from "../ProvidersTableForm/ProvidersTableForm";
 
 interface IValues {
   id: string;
@@ -292,39 +282,13 @@ export default function ProductsForm({
 
   return (
     <div className={cn("flex flex-col ", className)} {...props}>
-      <AlertDialog
-        open={isProviderDialogOpen}
-        onOpenChange={setIsProviderDialogOpen}
+      <ProvidersTableForm
+        providers={providers}
+        setProviders={setProviders}
+        setProviderNames={setProviderNames}
+        isProviderDialogOpen={isProviderDialogOpen}
+        setIsProviderDialogOpen={setIsProviderDialogOpen}
       >
-        <AlertDialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Busca los Proveedores</AlertDialogTitle>
-            <AlertDialogDescription>
-              Marcalos y confirma para agregar
-            </AlertDialogDescription>
-            <DataTableView
-              initial={providers}
-              notifyProvidersSelected={(value: string[], names?: string) => {
-                setProviders(value);
-                if (names) {
-                  const nameArray = names.split(", ");
-                  const namesMap: Record<string, string> = {};
-
-                  value.forEach((id, index) => {
-                    namesMap[id] = nameArray[index] || `Proveedor ${id}`;
-                  });
-
-                  setProviderNames(namesMap);
-                }
-              }}
-            />
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction>Seleccionar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-
         <Card className="max-w-3xl mx-auto shadow-lg">
           <CardHeader className="bg-primary/10 text-center">
             <CardTitle className="text-xl">
@@ -558,7 +522,7 @@ export default function ProductsForm({
             </form>
           </CardContent>
         </Card>
-      </AlertDialog>
+      </ProvidersTableForm>
     </div>
   );
 }

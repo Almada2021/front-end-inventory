@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useAppSelector } from "@/config/react-redux.adapter";
-// import { useAdmin } from "@/hooks/browser/useAdmin";
+import { useAdmin } from "@/hooks/browser/useAdmin";
 import { validateTime } from "@/lib/jwt.utils";
 import {
   DropdownMenu,
@@ -37,6 +37,7 @@ import {
   ShoppingCart,
   Contact,
   LogOut,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Home } from "lucide-react";
 import { useEffect } from "react";
@@ -49,13 +50,13 @@ interface MenuItem {
     Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
   >;
 }
-// const AdminItems: MenuItem[] = [
-// {
-//   title: "Reportes",
-//   url: "#",
-//   icon: FileSpreadsheet,
-// },
-// ];
+const AdminItems: MenuItem[] = [
+  {
+    title: "Reportes",
+    url: "/inventory/reports",
+    icon: FileSpreadsheet,
+  },
+];
 const items: MenuItem[] = [
   {
     title: "Inicio",
@@ -124,7 +125,7 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
   const { userInfo, token } = useAppSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // const isAdmin = useAdmin();
+  const isAdmin = useAdmin();
   const out = () => {
     dispatch(signOut());
     navigate("/");
@@ -174,7 +175,7 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-            {/* {isAdmin && (
+            {isAdmin && (
               <SidebarGroup>
                 <SidebarMenu draggable={false}>
                   <SidebarGroupLabel>
@@ -192,7 +193,7 @@ export default function AppSidebar({ children }: { children: JSX.Element }) {
                   ))}
                 </SidebarMenu>
               </SidebarGroup>
-            )} */}
+            )}
           </SidebarContent>
           <SidebarFooter>
             <SidebarMenu>

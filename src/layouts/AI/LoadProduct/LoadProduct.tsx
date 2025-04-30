@@ -1,7 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Receipt, ScanBarcode, ArrowLeft } from "lucide-react";
+import {
+  PlusCircle,
+  Receipt,
+  ScanBarcode,
+  ArrowLeft,
+  AlertCircle,
+} from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { BackendApi } from "@/core/api/api";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
@@ -17,6 +23,7 @@ interface ProcessedProduct {
   basePrice: number;
   price?: number;
   barCode?: string;
+  stock?: number;
   photoUrl?: string;
   id: string;
 }
@@ -309,7 +316,7 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
           formData.append("name", product.name);
           formData.append("price", String(product.price || 0));
           formData.append("basePrice", String(product.basePrice));
-          formData.append("stock", "0");
+          formData.append("stock", String(product?.stock) || "0");
           formData.append("uncounted", "false");
 
           if (product.barCode) {
@@ -322,13 +329,31 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
           } else if (suggestedPhotos[product.name]) {
             formData.append("photoUrl", suggestedPhotos[product.name]);
           }
-
-          const response = await BackendApi.post("/products", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
-          return response.data;
+          if (
+            !product.id ||
+            product.id.length <= 0 ||
+            product.id == undefined
+          ) {
+            const response = await BackendApi.post("/products", formData, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            });
+            toast.success("Producto actualizado correctamente");
+            return response.data;
+          } else {
+            const response = await BackendApi.patch(
+              `/products/increment-stock/${product.id}`,
+              {
+                amount: product.stock,
+              }
+            );
+            if (response.data) {
+              toast.success("El stock se actualizó correctamente");
+            } else {
+              toast.error("Error al actualizar el stock");
+            }
+          }
         })
       );
       return createdProducts;
@@ -337,6 +362,58 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
       toast.success("Productos creados exitosamente");
       setProducts([]);
       setSuggestedPhotos({});
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+  const createProductsOnlyOneMutation = useMutation({
+    mutationFn: async (product: ProcessedProduct) => {
+      try {
+        const formData = new FormData();
+        formData.append("name", product.name);
+        formData.append("price", String(product.price || 0));
+        formData.append("basePrice", String(product.basePrice));
+        formData.append("stock", String(product?.stock) || "0");
+        formData.append("uncounted", "false");
+
+        if (product.barCode) {
+          formData.append("barCode", product.barCode);
+        }
+
+        // Asegurarnos de que la photoUrl se envíe si existe
+        if (product.photoUrl) {
+          formData.append("photoUrl", product.photoUrl);
+        } else if (suggestedPhotos[product.name]) {
+          formData.append("photoUrl", suggestedPhotos[product.name]);
+        }
+        if (!product.id || product.id.length <= 0 || product.id == undefined) {
+          const response = await BackendApi.post("/products", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+          toast.success("Producto actualizado correctamente");
+          return response.data;
+        } else {
+          const response = await BackendApi.patch(
+            `/products/increment-stock/${product.id}`,
+            {
+              amount: product.stock,
+            }
+          );
+          if (response.data) {
+            toast.success("El stock se actualizó correctamente");
+          } else {
+            toast.error("Error al actualizar el stock");
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    onSuccess: () => {
+      toast.success("El Producto fue creado con éxito");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -379,12 +456,11 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
     );
   };
 
-  const handleImageError = (
-    event: React.SyntheticEvent<HTMLImageElement, Event>
-  ) => {
-    const img = event.target as HTMLImageElement;
-    img.src = "/placeholder-image.jpg"; // Usar una imagen de placeholder por defecto
-  };
+  const handleImageError = () =>
+    // event: React.SyntheticEvent<HTMLImageElement, Event>
+    {
+      console.log("Error"); // Usar una imagen de placeholder por defecto
+    };
 
   return (
     <div className="space-y-6">
@@ -435,8 +511,14 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Productos Detectados</h3>
             <Button
+              size={"lg"}
+              variant={"outline"}
               onClick={() => createProductsMutation.mutate(products)}
-              disabled={createProductsMutation.isPending}
+              disabled={
+                createProductsMutation.isPending ||
+                // verify if all products have a price
+                products.some((product) => !product.price || product.price <= 0)
+              }
             >
               {createProductsMutation.isPending
                 ? "Creando..."
@@ -444,78 +526,195 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
             </Button>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            {products.map((product, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-2">
-                <h4 className="font-medium">{product.name}</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Precio Base: </span>
-                    <span>₲{product.basePrice}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">
-                      Precio Venta:{" "}
-                    </span>
-                    <Input
-                      type="number"
-                      value={editingPrices[product.name] || product.price || ""}
-                      onChange={(e) => {
-                        setEditingPrices((prev) => ({
-                          ...prev,
-                          [product.name]: Number(e.target.value),
-                        }));
-                        setProducts((prev) =>
-                          prev.map((p) =>
-                            p.name === product.name
-                              ? { ...p, price: Number(e.target.value) }
-                              : p
-                          )
-                        );
-                      }}
-                      className="w-32"
-                    />
-                  </div>
-                  {product.barCode && (
-                    <div className="col-span-2">
-                      <span className="text-muted-foreground">Código: </span>
-                      <span>{product.barCode}</span>
-                    </div>
-                  )}
-                  <div className="col-span-2 flex items-center gap-2">
-                    <span className="text-muted-foreground">Foto: </span>
-                    {suggestedPhotos[product.name] ? (
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={`${
-                            suggestedPhotos[product.name]
-                          }?t=${Date.now()}`}
-                          alt={product.name}
-                          className="w-10 h-10 object-cover rounded"
-                          onError={handleImageError}
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            handleUsePhoto(product.id, product.photoUrl || "")
-                          }
-                        >
-                          Usar esta foto
-                        </Button>
+            {products.map((product, index) => {
+              if (product.id) {
+                return (
+                  <div key={index} className="border rounded-lg p-4 space-y-2">
+                    <h4 className="font-medium">{product.name}</h4>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">
+                          Precio Base:{" "}
+                        </span>
+                        <span>₲{product.basePrice}</span>
                       </div>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => suggestPhotoUrl(product.name)}
-                      >
-                        Sugerir Foto
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">
+                          Precio Venta:
+                        </span>
+                        <Input
+                          type="number"
+                          value={
+                            editingPrices[product.name] || product.price || ""
+                          }
+                          onChange={(e) => {
+                            setEditingPrices((prev) => ({
+                              ...prev,
+                              [product.name]: Number(e.target.value),
+                            }));
+                            setProducts((prev) =>
+                              prev.map((p) =>
+                                p.name === product.name
+                                  ? { ...p, price: Number(e.target.value) }
+                                  : p
+                              )
+                            );
+                          }}
+                          className="w-32"
+                        />
+                      </div>
+                      {product.barCode && (
+                        <div className="col-span-2">
+                          <span className="text-muted-foreground">
+                            Código:{" "}
+                          </span>
+                          <span>{product.barCode}</span>
+                        </div>
+                      )}
+                      {product.stock && (
+                        <div className="col-span-2">
+                          <label htmlFor="stock">
+                            Stock (click abajo para editar)
+                          </label>
+                          <br />
+                          <input
+                            id="stock"
+                            type="number"
+                            value={product.stock}
+                            onChange={(e) =>
+                              setProducts((prev) =>
+                                prev.map((p) =>
+                                  p.name === product.name
+                                    ? { ...p, stock: Number(e.target.value) }
+                                    : p
+                                )
+                              )
+                            }
+                            className="w-32 border-1 border-black"
+                          ></input>
+                        </div>
+                      )}
+                      <div className="col-span-2 flex items-center gap-2">
+                        <span className="text-muted-foreground">Foto: </span>
+                      </div>
+                      {product.id && (
+                        <div className="flex items-center ">
+                          <AlertCircle size={24} className="text-red-500 " />
+                          <span className="text-red-500 ml-2 mr-10">
+                            Este producto ya existe, solo se sumara al stock
+                          </span>
+                          <Button
+                            type="button"
+                            onClick={async () => {
+                              createProductsOnlyOneMutation.mutate(product);
+                              // remove from products
+                              setProducts((prev) =>
+                                prev.filter((p) => p.id !== product.id)
+                              );
+                            }}
+                            disabled={Boolean(
+                              !(product.price && product.price > 0)
+                            )}
+                          >
+                            Actualizar Stock
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div key={index} className="border rounded-lg p-4 space-y-2">
+                  <h4 className="font-medium">{product.name}</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">
+                        Precio Base:{" "}
+                      </span>
+                      <span>₲{product.basePrice}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">
+                        Precio Venta:{" "}
+                      </span>
+                      <Input
+                        type="number"
+                        value={
+                          editingPrices[product.name] || product.price || ""
+                        }
+                        onChange={(e) => {
+                          setEditingPrices((prev) => ({
+                            ...prev,
+                            [product.name]: Number(e.target.value),
+                          }));
+                          setProducts((prev) =>
+                            prev.map((p) =>
+                              p.name === product.name
+                                ? { ...p, price: Number(e.target.value) }
+                                : p
+                            )
+                          );
+                        }}
+                        className="w-32"
+                      />
+                    </div>
+                    {product.barCode && (
+                      <div className="col-span-2">
+                        <span className="text-muted-foreground">Código: </span>
+                        <span>{product.barCode}</span>
+                      </div>
                     )}
+                    <div className="col-span-2 flex items-center gap-2">
+                      <span className="text-muted-foreground">Foto: </span>
+                      {suggestedPhotos[product.name] ? (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={`${
+                              suggestedPhotos[product.name]
+                            }?t=${Date.now()}`}
+                            alt={product.name}
+                            className="w-10 h-10 object-cover rounded"
+                            onError={handleImageError}
+                          />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              handleUsePhoto(product.id, product.photoUrl || "")
+                            }
+                          >
+                            Usar esta foto
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => suggestPhotoUrl(product.name)}
+                        >
+                          Sugerir Foto
+                        </Button>
+                      )}
+                      <Button
+                        onClick={async () => {
+                          createProductsOnlyOneMutation.mutate(product);
+                          // remove from products using name
+                          setProducts((prev) =>
+                            prev.filter((p) => p.name !== product.name)
+                          );
+                        }}
+                        disabled={Boolean(
+                          !(product.price && product.price > 0)
+                        )}
+                      >
+                        Crear Producto
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

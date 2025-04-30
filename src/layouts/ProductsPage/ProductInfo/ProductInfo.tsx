@@ -12,12 +12,24 @@ import {
   Trash,
 } from "lucide-react";
 import { useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import ProviderList from "./ProvidersItem/ProviderList";
 import ProductChanges from "./ProductChanges/ProductChanges";
 import ProductSales from "./ProductSales/ProductSales";
 import { useAdmin } from "@/hooks/browser/useAdmin";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
+import toast from "react-hot-toast";
+import { BackendApi } from "@/core/api/api";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
+import { AlertDialogCancel } from "@radix-ui/react-alert-dialog";
 
 export default function ProductInfo() {
   const { id } = useParams();
@@ -26,6 +38,7 @@ export default function ProductInfo() {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [mode, setMode] = useState<"changes" | "sales">("changes");
   const isAdmin = useAdmin();
+  const navigate = useNavigate();
   if (getProductsByIds.isLoading) return null;
   if (!getProductsByIds.data?.[0]) return <div>Producto no encontrado</div>;
 
@@ -83,13 +96,51 @@ export default function ProductInfo() {
             <Pencil className="h-6 w-6 text-gray-600" />
           </button>
           {isAdmin && (
-            <button
-              onClick={() => {}}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors justify-self-end flex justify-center items-center"
-              aria-label="Editar cliente"
-            >
-              <Trash className="h-6 w-6 text-red-500" />
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors justify-self-end flex justify-center items-center"
+                  aria-label="Eliminar producto"
+                >
+                  <Trash className="h-6 w-6 text-red-500" />
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    ¿Estás seguro de que deseas eliminar este producto? Esta
+                    acción no se puede deshacer.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>
+                    <Button variant={"default"}>Cancelar</Button>
+                  </AlertDialogCancel>
+                  <Button
+                    variant="destructive"
+                    onClick={async () => {
+                      try {
+                        const response = await BackendApi.delete(
+                          `/products/delete/${product.id}`
+                        );
+                        if (response.data) {
+                          toast.success("Producto eliminado correctamente");
+                          navigate(-1);
+                          setTimeout(() => {
+                            window.location.reload();
+                          }, 2000);
+                        }
+                      } catch (error) {
+                        toast.error(`Error al eliminar el producto ${error}`);
+                      }
+                    }}
+                  >
+                    Eliminar
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
 

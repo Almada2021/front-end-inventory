@@ -14,6 +14,7 @@ import {
 import useProductsHistory from "@/hooks/products/history/useProductsHistory";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
 import useProvider from "@/hooks/providers/useProvider";
+import EmployeeTextInfo from "@/components/Infos/EmployeeTextInfo";
 
 interface Props {
   id: string;
@@ -194,13 +195,13 @@ export default function ProductChanges({ id }: Props) {
                   to={`${formatCurrency(Number(entry.changes.basePrice.to))}`}
                 />
               )}
-              {entry.changes.photoUrl &&(
+              {entry.changes.photoUrl && (
                 <ChangeItem
                   icon={PictureInPicture}
                   title="Foto"
                   from={entry.changes.photoUrl.from}
                   to={entry.changes.photoUrl.to}
-                  />
+                />
               )}
               {entry.changes.providers && (
                 <div className="p-3 bg-muted/30 rounded-lg space-y-3">
@@ -216,6 +217,7 @@ export default function ProductChanges({ id }: Props) {
                   />
                 </div>
               )}
+              <EmployeeTextInfo employeeId={entry.userId} keyValue="name" />
             </div>
           </div>
         </div>

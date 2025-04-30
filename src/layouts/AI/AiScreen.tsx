@@ -29,7 +29,7 @@ const AiModules: AiItem[] = [
     icon: <BarChart className="w-8 h-8" />,
   },
   {
-    title: "operaciones",
+    title: "Operaciones De Efectivo",
     url: "/inventory/ai/operations",
     description: "Contar billetes sumar extraer etc",
     icon: <Lightbulb className="w-8 h-8" />,

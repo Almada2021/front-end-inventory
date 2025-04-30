@@ -172,21 +172,6 @@ export default function StoreById() {
       </div>
 
       {/* Espacio para futuras secciones */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
-          Próximas integraciones
-        </h2>
-        <div className="grid grid-cols-2 gap-4 text-gray-600">
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-medium mb-2">Estadísticas de ventas</h3>
-            <p className="text-sm">Disponible próximamente</p>
-          </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-medium mb-2">Reportes diarios</h3>
-            <p className="text-sm">En desarrollo</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

@@ -58,6 +58,7 @@ import {
   Withdraw,
   CountBills,
   Add,
+  StockReport,
 } from "@/pages";
 
 const client = new QueryClient();
@@ -75,7 +76,13 @@ createRoot(document.getElementById("root")!).render(
                       <Route path="/" element={<App />} />
                       <Route path="inventory">
                         <Route index element={<HomeScreen show />} />
-                        <Route path="reports" element={<ReportsPage />} />
+                        <Route path="reports">
+                          <Route index element={<ReportsPage />} />
+                          <Route
+                            path="stock-report"
+                            element={<StockReport />}
+                          />
+                        </Route>
                         <Route path="ai">
                           <Route index element={<AiScreen />} />
                           <Route

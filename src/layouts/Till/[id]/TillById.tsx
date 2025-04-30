@@ -621,8 +621,8 @@ export default function TillById() {
             <div className="flex flex-col md:flex-row gap-4">
               <div>
                 <div className="text-green-300 font-bold text-xl mt-2">
-                  <div className="text-black inline-block">
-                    Vas a retirar <p></p> {formatCurrency(withdrawMoneyCard)}
+                  <div className="text-black inline-block ">
+                    Vas a retirar {formatCurrency(withdrawMoneyCard)}
                   </div>
                 </div>
               </div>
