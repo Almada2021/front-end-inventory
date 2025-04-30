@@ -1,6 +1,6 @@
 import useStoreById from "@/hooks/store/useStoreById";
 import LoadingScreen from "@/layouts/Loading/LoadingScreen";
-import { Building, MapPin, Wallet, Package } from "lucide-react";
+import { Building, MapPin, Wallet, Package, StoreIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { useNavigate, useParams } from "react-router";
@@ -10,10 +10,14 @@ import { TillCard } from "@/components/Cards/Till/TillCard";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/formatCurrency.utils";
 import useOrderPendingAmount from "@/hooks/order/useOrderPendingAmount";
+import { Button } from "@/components/ui/button";
+import { useAdmin } from "@/hooks/browser/useAdmin";
+import toast from "react-hot-toast";
+import { BackendApi } from "@/core/api/api";
 
 export default function StoreById() {
   const { id } = useParams();
-
+  const isAdmin = useAdmin();
   const { storeById } = useStoreById(id || "");
   const { orderPendingQuery } = useOrderPendingAmount(id || "");
   const { data: store } = storeById;
@@ -94,7 +98,31 @@ export default function StoreById() {
             </div>
           </div>
         </motion.div>
-
+        {isAdmin && (
+          <motion.div
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            className="bg-white p-6 rounded-xl shadow-md border-2   border-red-100 m-auto"
+          >
+            <div className="flex justify-center items-center gap-4">
+              <Button
+                onClick={async () => {
+                  await BackendApi.delete(`/stores/delete/${id}`);
+                  navigate(`/inventory/stores`);
+                  toast.success("Tienda eliminada exitosamente");
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1000);
+                }}
+                size="lg"
+                variant="destructive"
+              >
+                <StoreIcon size={24} />
+                Eliminar Tienda
+              </Button>
+            </div>
+          </motion.div>
+        )}
         {/* Agregar más tarjetas de métricas según sea necesario */}
       </div>
 
