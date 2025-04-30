@@ -7,6 +7,7 @@ import {
   ScanBarcode,
   ArrowLeft,
   AlertCircle,
+  Search,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { BackendApi } from "@/core/api/api";
@@ -15,6 +16,9 @@ import toast from "react-hot-toast";
 import CheckboxInput from "@/components/CheckboxInput/CheckboxInput";
 import { useNavigate } from "react-router";
 import FileUploader from "@/components/FileUploader/FileUploader";
+import ProvidersTableForm from "@/components/ProvidersTableForm/ProvidersTableForm";
+import { Badge } from "@/components/ui/badge";
+import { AlertDialogTrigger } from "@radix-ui/react-alert-dialog";
 
 type Mode = "new" | "receipt" | "count" | null;
 
@@ -307,7 +311,12 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
   const [suggestedPhotos, setSuggestedPhotos] = useState<{
     [key: string]: string;
   }>({});
-
+  const spreadProviders: string[] = [];
+  const [providers, setProviders] = useState<string[]>([...spreadProviders]);
+  const [providerNames, setProviderNames] = useState<Record<string, string>>(
+    {}
+  );
+  const [isProviderDialogOpen, setIsProviderDialogOpen] = useState(false);
   const createProductsMutation = useMutation({
     mutationFn: async (products: ProcessedProduct[]) => {
       const createdProducts = await Promise.all(
@@ -334,6 +343,9 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
             product.id.length <= 0 ||
             product.id == undefined
           ) {
+            providers.forEach((element) => {
+              formData.append("providers", element);
+            });
             const response = await BackendApi.post("/products", formData, {
               headers: {
                 "Content-Type": "multipart/form-data",
@@ -367,6 +379,7 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
       toast.error(error.message);
     },
   });
+
   const createProductsOnlyOneMutation = useMutation({
     mutationFn: async (product: ProcessedProduct) => {
       try {
@@ -388,6 +401,9 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
           formData.append("photoUrl", suggestedPhotos[product.name]);
         }
         if (!product.id || product.id.length <= 0 || product.id == undefined) {
+          providers.forEach((element) => {
+            formData.append("providers", element);
+          });
           const response = await BackendApi.post("/products", formData, {
             headers: {
               "Content-Type": "multipart/form-data",
@@ -464,70 +480,205 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onBack}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h2 className="text-2xl font-bold">Carga por Boleta</h2>
-          <p className="text-muted-foreground">
-            Importa productos desde una factura
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 px-4 md:px-0">
-        <CheckboxInput
-          label="Porcentaje de Ganancia"
-          inputPlaceholder="Porcentaje"
-          inputProps={{ step: 1 }}
-          uncheck={() => setProfitPercentage(undefined)}
-          notify={(val) =>
-            setProfitPercentage(typeof val === "string" ? parseFloat(val) : val)
-          }
-        />
-      </div>
-
-      <FileUploader
-        title="Subir Boleta"
-        description="Sube una imagen de la boleta para procesar"
-        endpoint="/ai/process-receipt"
-        maxFiles={1}
-        additionalFormData={{
-          profitPercentage: profitPercentage || 0,
-        }}
-        onSuccess={(data) => {
-          const response = data as ProcessReceiptResponse;
-          setProducts(response.products || []);
-          toast.success("Boleta procesada con éxito");
-        }}
-        onError={(error) => {
-          toast.error(error.message);
-        }}
-      />
-
-      {products.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Productos Detectados</h3>
-            <Button
-              size={"lg"}
-              variant={"outline"}
-              onClick={() => createProductsMutation.mutate(products)}
-              disabled={
-                createProductsMutation.isPending ||
-                // verify if all products have a price
-                products.some((product) => !product.price || product.price <= 0)
-              }
-            >
-              {createProductsMutation.isPending
-                ? "Creando..."
-                : "Crear Productos"}
-            </Button>
+      <ProvidersTableForm
+        providers={providers}
+        setProviders={setProviders}
+        setProviderNames={setProviderNames}
+        isProviderDialogOpen={isProviderDialogOpen}
+        setIsProviderDialogOpen={setIsProviderDialogOpen}
+      >
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onBack}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold">Carga por Boleta</h2>
+            <p className="text-muted-foreground">
+              Importa productos desde una factura
+            </p>
           </div>
-          <div className="grid grid-cols-1 gap-4">
-            {products.map((product, index) => {
-              if (product.id) {
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 px-4 md:px-0">
+          <CheckboxInput
+            label="Porcentaje de Ganancia"
+            inputPlaceholder="Porcentaje"
+            inputProps={{ step: 1 }}
+            uncheck={() => setProfitPercentage(undefined)}
+            notify={(val) =>
+              setProfitPercentage(
+                typeof val === "string" ? parseFloat(val) : val
+              )
+            }
+          />
+        </div>
+
+        <FileUploader
+          title="Subir Boleta"
+          description="Sube una imagen de la boleta para procesar"
+          endpoint="/ai/process-receipt"
+          maxFiles={1}
+          additionalFormData={{
+            profitPercentage: profitPercentage || 0,
+          }}
+          onSuccess={(data) => {
+            const response = data as ProcessReceiptResponse;
+            setProducts(response.products || []);
+            toast.success("Boleta procesada con éxito");
+          }}
+          onError={(error) => {
+            toast.error(error.message);
+          }}
+        />
+        <AlertDialogTrigger
+          className="rounded-md border border-primary p-2 hover:bg-primary/10 transition-colors"
+          onClick={() => setIsProviderDialogOpen(true)}
+        >
+          <div className="w-full flex items-center justify-center gap-2">
+            <Search size={20} />
+            Buscar Proveedores
+          </div>
+        </AlertDialogTrigger>
+        <div>
+          <h2 className="text-2xl font-bold">Proveedores seleccionados</h2>
+          {providers.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {providers.map((id) => (
+                <Badge key={id} variant="secondary">
+                  {providerNames[id] || `Proveedor ${id}`}
+                </Badge>
+              ))}
+              {providers.length == 0 && (
+                <div className="text-center">
+                  <p>No hay proveedores seleccionados</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        {products.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Productos Detectados</h3>
+              <Button
+                size={"lg"}
+                variant={"outline"}
+                onClick={() => createProductsMutation.mutate(products)}
+                disabled={
+                  createProductsMutation.isPending ||
+                  // verify if all products have a price
+                  products.some(
+                    (product) => !product.price || product.price <= 0
+                  )
+                }
+              >
+                {createProductsMutation.isPending
+                  ? "Creando..."
+                  : "Crear Productos"}
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              {products.map((product, index) => {
+                if (product.id) {
+                  return (
+                    <div
+                      key={index}
+                      className="border rounded-lg p-4 space-y-2"
+                    >
+                      <h4 className="font-medium">{product.name}</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">
+                            Precio Base:{" "}
+                          </span>
+                          <span>₲{product.basePrice}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">
+                            Precio Venta:
+                          </span>
+                          <Input
+                            type="number"
+                            value={
+                              editingPrices[product.name] || product.price || ""
+                            }
+                            onChange={(e) => {
+                              setEditingPrices((prev) => ({
+                                ...prev,
+                                [product.name]: Number(e.target.value),
+                              }));
+                              setProducts((prev) =>
+                                prev.map((p) =>
+                                  p.name === product.name
+                                    ? { ...p, price: Number(e.target.value) }
+                                    : p
+                                )
+                              );
+                            }}
+                            className="w-32"
+                          />
+                        </div>
+                        {product.barCode && (
+                          <div className="col-span-2">
+                            <span className="text-muted-foreground">
+                              Código:{" "}
+                            </span>
+                            <span>{product.barCode}</span>
+                          </div>
+                        )}
+                        {product.stock && (
+                          <div className="col-span-2">
+                            <label htmlFor="stock">
+                              Stock (click abajo para editar)
+                            </label>
+                            <br />
+                            <input
+                              id="stock"
+                              type="number"
+                              value={product.stock}
+                              onChange={(e) =>
+                                setProducts((prev) =>
+                                  prev.map((p) =>
+                                    p.name === product.name
+                                      ? { ...p, stock: Number(e.target.value) }
+                                      : p
+                                  )
+                                )
+                              }
+                              className="w-32 border-1 border-black"
+                            ></input>
+                          </div>
+                        )}
+                        <div className="col-span-2 flex items-center gap-2">
+                          <span className="text-muted-foreground">Foto: </span>
+                        </div>
+                        {product.id && (
+                          <div className="flex items-center ">
+                            <AlertCircle size={24} className="text-red-500 " />
+                            <span className="text-red-500 ml-2 mr-10">
+                              Este producto ya existe, solo se sumara al stock
+                            </span>
+                            <Button
+                              type="button"
+                              onClick={async () => {
+                                createProductsOnlyOneMutation.mutate(product);
+                                // remove from products
+                                setProducts((prev) =>
+                                  prev.filter((p) => p.id !== product.id)
+                                );
+                              }}
+                              disabled={Boolean(
+                                !(product.price && product.price > 0)
+                              )}
+                            >
+                              Actualizar Stock
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
                 return (
                   <div key={index} className="border rounded-lg p-4 space-y-2">
                     <h4 className="font-medium">{product.name}</h4>
@@ -540,7 +691,7 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-muted-foreground">
-                          Precio Venta:
+                          Precio Venta:{" "}
                         </span>
                         <Input
                           type="number"
@@ -571,153 +722,63 @@ const ReceiptComponent = ({ onBack }: { onBack: () => void }) => {
                           <span>{product.barCode}</span>
                         </div>
                       )}
-                      {product.stock && (
-                        <div className="col-span-2">
-                          <label htmlFor="stock">
-                            Stock (click abajo para editar)
-                          </label>
-                          <br />
-                          <input
-                            id="stock"
-                            type="number"
-                            value={product.stock}
-                            onChange={(e) =>
-                              setProducts((prev) =>
-                                prev.map((p) =>
-                                  p.name === product.name
-                                    ? { ...p, stock: Number(e.target.value) }
-                                    : p
-                                )
-                              )
-                            }
-                            className="w-32 border-1 border-black"
-                          ></input>
-                        </div>
-                      )}
                       <div className="col-span-2 flex items-center gap-2">
                         <span className="text-muted-foreground">Foto: </span>
-                      </div>
-                      {product.id && (
-                        <div className="flex items-center ">
-                          <AlertCircle size={24} className="text-red-500 " />
-                          <span className="text-red-500 ml-2 mr-10">
-                            Este producto ya existe, solo se sumara al stock
-                          </span>
+                        {suggestedPhotos[product.name] ? (
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={`${
+                                suggestedPhotos[product.name]
+                              }?t=${Date.now()}`}
+                              alt={product.name}
+                              className="w-10 h-10 object-cover rounded"
+                              onError={handleImageError}
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                handleUsePhoto(
+                                  product.id,
+                                  product.photoUrl || ""
+                                )
+                              }
+                            >
+                              Usar esta foto
+                            </Button>
+                          </div>
+                        ) : (
                           <Button
-                            type="button"
-                            onClick={async () => {
-                              createProductsOnlyOneMutation.mutate(product);
-                              // remove from products
-                              setProducts((prev) =>
-                                prev.filter((p) => p.id !== product.id)
-                              );
-                            }}
-                            disabled={Boolean(
-                              !(product.price && product.price > 0)
-                            )}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => suggestPhotoUrl(product.name)}
                           >
-                            Actualizar Stock
+                            Sugerir Foto
                           </Button>
-                        </div>
-                      )}
+                        )}
+                        <Button
+                          onClick={async () => {
+                            createProductsOnlyOneMutation.mutate(product);
+                            // remove from products using name
+                            setProducts((prev) =>
+                              prev.filter((p) => p.name !== product.name)
+                            );
+                          }}
+                          disabled={Boolean(
+                            !(product.price && product.price > 0)
+                          )}
+                        >
+                          Crear Producto
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
-              }
-              return (
-                <div key={index} className="border rounded-lg p-4 space-y-2">
-                  <h4 className="font-medium">{product.name}</h4>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">
-                        Precio Base:{" "}
-                      </span>
-                      <span>₲{product.basePrice}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">
-                        Precio Venta:{" "}
-                      </span>
-                      <Input
-                        type="number"
-                        value={
-                          editingPrices[product.name] || product.price || ""
-                        }
-                        onChange={(e) => {
-                          setEditingPrices((prev) => ({
-                            ...prev,
-                            [product.name]: Number(e.target.value),
-                          }));
-                          setProducts((prev) =>
-                            prev.map((p) =>
-                              p.name === product.name
-                                ? { ...p, price: Number(e.target.value) }
-                                : p
-                            )
-                          );
-                        }}
-                        className="w-32"
-                      />
-                    </div>
-                    {product.barCode && (
-                      <div className="col-span-2">
-                        <span className="text-muted-foreground">Código: </span>
-                        <span>{product.barCode}</span>
-                      </div>
-                    )}
-                    <div className="col-span-2 flex items-center gap-2">
-                      <span className="text-muted-foreground">Foto: </span>
-                      {suggestedPhotos[product.name] ? (
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={`${
-                              suggestedPhotos[product.name]
-                            }?t=${Date.now()}`}
-                            alt={product.name}
-                            className="w-10 h-10 object-cover rounded"
-                            onError={handleImageError}
-                          />
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              handleUsePhoto(product.id, product.photoUrl || "")
-                            }
-                          >
-                            Usar esta foto
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => suggestPhotoUrl(product.name)}
-                        >
-                          Sugerir Foto
-                        </Button>
-                      )}
-                      <Button
-                        onClick={async () => {
-                          createProductsOnlyOneMutation.mutate(product);
-                          // remove from products using name
-                          setProducts((prev) =>
-                            prev.filter((p) => p.name !== product.name)
-                          );
-                        }}
-                        disabled={Boolean(
-                          !(product.price && product.price > 0)
-                        )}
-                      >
-                        Crear Producto
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </ProvidersTableForm>
     </div>
   );
 };
