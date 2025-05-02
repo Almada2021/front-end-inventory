@@ -547,7 +547,11 @@ export default function NewOrder(): JSX.Element {
     storesLoading ||
     (selectedProvider && selectedProviderLoading)
   ) {
-    return <LoadingScreen />;
+    return (
+      <div className="w-full h-screen flex justify-center items-center px-4">
+        <LoadingScreen />
+      </div>
+    );
   }
 
   return (

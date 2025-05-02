@@ -43,7 +43,11 @@ export default function StockReport({ startDate, endDate }: Props) {
   const { useAiReportQuery } = useAiReport({ startDate, endDate });
 
   if (useAiReportQuery.isFetching) {
-    return <LoadingScreen />;
+    return (
+      <div className="w-full h-screen flex justify-center items-center px-4">
+        <LoadingScreen />
+      </div>
+    );
   }
 
   const data = useAiReportQuery.data;

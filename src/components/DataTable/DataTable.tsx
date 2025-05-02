@@ -39,23 +39,23 @@ const columns: ColumnDef<ProviderModel>[] = [
   {
     id: "select",
     header: ({ table }) => (
-    <Checkbox
-    checked={
-    table.getIsAllPageRowsSelected() ||
-    (table.getIsSomePageRowsSelected() && "indeterminate")
-    }
-    onCheckedChange={(value: unknown) =>
-    table.toggleAllPageRowsSelected(!!value)
-    }
-    aria-label="Select all"
-    />
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value: unknown) =>
+          table.toggleAllPageRowsSelected(!!value)
+        }
+        aria-label="Select all"
+      />
     ),
     cell: ({ row }) => (
-    <Checkbox
-    checked={row.getIsSelected()}
-    onCheckedChange={(value: unknown) => row.toggleSelected(!!value)}
-    aria-label="Select row"
-    />
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value: unknown) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
     ),
     enableSorting: false,
     enableHiding: false,
@@ -63,15 +63,15 @@ const columns: ColumnDef<ProviderModel>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => {
-    return (
-    <Button
-    variant="ghost"
-    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    >
-    Nombre
-    <ArrowUpDown className="ml-2 h-4 w-4" />
-    </Button>
-    );
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Nombre
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
     },
     cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
   },
@@ -82,8 +82,10 @@ interface Props {
   notifyProvidersSelected: (prov: string[], name?: string) => void;
 }
 
-export default function DataTableView({ initial, notifyProvidersSelected }: Props) {
-
+export default function DataTableView({
+  initial,
+  notifyProvidersSelected,
+}: Props) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -92,10 +94,10 @@ export default function DataTableView({ initial, notifyProvidersSelected }: Prop
   const memoizedNotifyProvidersSelected = useCallback(
     (selectedRows: string[]) => {
       const selectedProviders = providersQuery?.data
-        ?.filter(provider => selectedRows.includes(provider.id))
-        .map(provider => provider.name)
-        .join(', ');
-      
+        ?.filter((provider) => selectedRows.includes(provider.id))
+        .map((provider) => provider.name)
+        .join(", ");
+
       notifyProvidersSelected(selectedRows, selectedProviders);
     },
     [notifyProvidersSelected, providersQuery?.data]
@@ -104,7 +106,7 @@ export default function DataTableView({ initial, notifyProvidersSelected }: Prop
   useEffect(() => {
     if (initial && initial.length > 0) {
       const initialSelection: Record<string, boolean> = {};
-      initial.forEach(id => {
+      initial.forEach((id) => {
         initialSelection[id] = true;
       });
       setRowSelection(initialSelection);
@@ -140,10 +142,14 @@ export default function DataTableView({ initial, notifyProvidersSelected }: Prop
       memoizedNotifyProvidersSelected(selectedKeys);
     }
     // Solo ejecutamos cuando cambia rowSelection, no incluir memoizedNotifyProvidersSelected en las dependencias
-  }, [rowSelection, initial,memoizedNotifyProvidersSelected]);
-  
+  }, [rowSelection, initial, memoizedNotifyProvidersSelected]);
+
   if (providersQuery.isFetching) {
-    return <LoadingScreen />;
+    return (
+      <div className="w-full h-screen flex justify-center items-center px-4">
+        <LoadingScreen />
+      </div>
+    );
   }
 
   return (

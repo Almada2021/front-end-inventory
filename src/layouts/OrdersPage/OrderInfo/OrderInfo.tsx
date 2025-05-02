@@ -265,6 +265,7 @@ const ProductItem = ({
             Recibido
           </label>
           <input
+            aria-label="Recibido"
             type="number"
             min="0"
             max={quantity}

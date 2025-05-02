@@ -164,7 +164,11 @@ export default function DataTableViewClient({
     return notify();
   }, [rowSelection, memoizedNotifyProvidersSelected]);
   if (queryAllClients.isFetching) {
-    return <LoadingScreen />;
+    return (
+      <div className="w-full h-screen flex justify-center items-center px-4">
+        <LoadingScreen />
+      </div>
+    );
   }
 
   return (

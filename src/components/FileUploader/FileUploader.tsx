@@ -200,7 +200,7 @@ export default function FileUploader({
 
   if (loading) {
     return (
-      <div className="w-full px-4">
+      <div className="w-full h-screen flex justify-center items-center px-4">
         <LoadingScreen />
       </div>
     );
