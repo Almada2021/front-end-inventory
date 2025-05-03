@@ -25,6 +25,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ProvidersTableForm from "../ProvidersTableForm/ProvidersTableForm";
+import { useNavigate } from "react-router";
+import { Product } from "@/infrastructure/interfaces/products.interface";
 
 interface IValues {
   id: string;
@@ -63,6 +65,7 @@ export default function ProductsForm({
   const [providerNames, setProviderNames] = useState<Record<string, string>>(
     {}
   );
+  const navigate = useNavigate();
   const userId = useAppSelector((state) => state.auth.userInfo?.id);
 
   const id = values?.id || "";
@@ -226,12 +229,14 @@ export default function ProductsForm({
 
         if (!editMode) {
           // Create new product
-          await BackendApi.post("/products", formData, {
+          await BackendApi.post<Product>("/products", formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
           })
-            .then(() => {
+            .then((response) => response.data)
+            .then((product: Product) => {
+              navigate(`/inventory/products/${product.id}`);
               toast.success("Producto Agregado correctamente", {
                 className: "w-full h-32 p-4",
               });

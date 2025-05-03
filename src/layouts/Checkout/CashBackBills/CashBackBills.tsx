@@ -211,7 +211,7 @@ const CashBackBills = ({
   };
   return (
     // Se reduce el padding en mobile para mejorar el diseño
-    <div className="w-full p-2 md:p-10 flex flex-col justify-center gap-6">
+    <div className="w-full p-2 md:p-10 flex flex-col justify-center gap-4">
       <div className="flex flex-col items-center w-full">
         <h2 className="font-bold text-2xl md:text-3xl mb-4 text-center">
           Entregar Vuelto: {objectiveValue}Gs

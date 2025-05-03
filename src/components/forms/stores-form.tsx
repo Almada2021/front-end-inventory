@@ -3,12 +3,15 @@ import { FormikHelpers, FormikValues } from "formik";
 import { BackendApi } from "@/core/api/api";
 import { StoreCreationResponse } from "@/infrastructure/interfaces/store/store.interface";
 import * as Yup from "yup";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
 interface FormFields extends FormikValues {
   name: string;
   address?: string; // Ensure this is a string
 }
 export default function StoresForm() {
+  const navigate = useNavigate();
   const onSubmit = async (
     values: FormFields,
     formikHelpers: FormikHelpers<FormFields>
@@ -19,11 +22,12 @@ export default function StoresForm() {
         ...values,
       }
     );
+    toast.success("Creando tienda...");
     if (storeCreation.data.err) {
-      console.log("Err");
-    } else if (storeCreation.data.store) {
-      console.log(storeCreation);
-      console.log("Hello", values.name);
+      toast.error(storeCreation.data.err);
+    } else if (storeCreation.data) {
+      toast.success(`Tienda creada correctamente ${values.name}`);
+      navigate(`/inventory/stores/show/${storeCreation.data.store?.id}`);
     }
     formikHelpers.resetForm();
   };

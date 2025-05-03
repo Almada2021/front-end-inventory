@@ -29,7 +29,11 @@ interface Props {
   id?: string;
 }
 
-export default function EmployeeForm({ editMode = false, editValues, id }: Props) {
+export default function EmployeeForm({
+  editMode = false,
+  editValues,
+  id,
+}: Props) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,15 +46,17 @@ export default function EmployeeForm({ editMode = false, editValues, id }: Props
       roles: ["USER_ROLE"], // Default role
     },
     validationSchema: Yup.object({
-      name: Yup.string().required("Full name is required"),
+      name: Yup.string().required("Nombre es requerido"),
       email: Yup.string()
         .email("Invalid email format")
         .required("Email is required"),
-      password: Yup.string()
-        .min(6, "Password must be at least 6 characters"),
+      password: Yup.string().min(
+        8,
+        "Contraseña debe tener al menos 8 caracteres"
+      ),
       roles: Yup.array()
         .of(Yup.string())
-        .min(1, "At least one role must be selected"),
+        .min(1, "Por favor seleccione al menos un rol"),
     }),
     onSubmit: async (
       values,
@@ -73,17 +79,19 @@ export default function EmployeeForm({ editMode = false, editValues, id }: Props
           resetForm();
         } else {
           if (id) {
-            await BackendApi.put(`/auth/user/${id}`,{ ...values, password:values.password || editValues?.password});
+            await BackendApi.put(`/auth/user/${id}`, {
+              ...values,
+              password: values.password || editValues?.password,
+            });
             toast({
               title: "Empleado Actualizado",
               description: "El empleado ha sido actualizado exitosamente.",
               variant: "default",
               className:
-              "bg-green-50 border-2 border-green-500 p-4 max-w-md w-full shadow-lg", // Larger, more visible styling
-
-            })
-          }else {
-            throw "No existe id en el formulario"
+                "bg-green-50 border-2 border-green-500 p-4 max-w-md w-full shadow-lg", // Larger, more visible styling
+            });
+          } else {
+            throw "No existe id en el formulario";
           }
         }
 

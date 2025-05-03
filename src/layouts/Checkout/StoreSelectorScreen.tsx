@@ -25,7 +25,7 @@ const StoreSelectorScreen = memo(function StoreSelectorScreen({
       </div>
     );
   return (
-    <div className="p-10 flex flex-col md:flex-row gap-4 mt-4 md:mt-0">
+    <div className="p-10  grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 mt-10 md:mt-0">
       {storesQuery?.data?.map((store, index) => (
         <motion.div
           key={store.id}

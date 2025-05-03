@@ -12,7 +12,7 @@ import {
   NewTillAction,
   TillActionRequirements,
 } from "@/core/actions/tills/newTillAction";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import toast from "react-hot-toast";
 
 const DENOMINATIONS = [
@@ -82,11 +82,16 @@ export default function NewTilll({
   const [bills, setBills] = useState<Map<string, number>>(
     new Map(DENOMINATIONS.map((denomination) => [denomination, 0]))
   );
+  const navigate = useNavigate();
   const { id } = useParams();
   const newTillMutate = useMutation({
     mutationFn: (data: TillActionRequirements) => NewTillAction(data),
     mutationKey: [],
-    onSuccess: () => {},
+    onSuccess: (data) => {
+      if (data && data?.id) {
+        navigate(`/inventory/till/${data.id}`);
+      }
+    },
   });
   const formik = useFormik({
     initialValues: {

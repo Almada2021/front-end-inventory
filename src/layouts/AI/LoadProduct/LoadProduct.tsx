@@ -835,7 +835,7 @@ export default function LoadProductScreen() {
       toast.error(error.message);
     },
   });
-  if (!loading) {
+  if (loading) {
     return (
       <div className="w-full h-screen flex justify-center items-center px-4">
         <LoadingScreen />
