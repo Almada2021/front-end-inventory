@@ -9,16 +9,17 @@ interface Props
 }
 export default function Image({ src, ...props }: Props) {
   // Check if it's a blob URL (local preview)
+  // src exists verify
   const isBlobUrl = src.startsWith("blob:");
   // Check if it's an external URL
   const isAnURL = /^(https?:\/\/)/.test(src);
-
   // Always call the hook, but we'll only use its result for backend URLs
   const { data, isLoading, isError } = useImg(
     !isBlobUrl && !isAnURL
       ? `${import.meta.env.VITE_BACKEND_URL}/static/${src}`
       : ""
   );
+  if (!src) return null;
 
   // For blob URLs or external URLs, use the src directly
   if (isBlobUrl || isAnURL) {
