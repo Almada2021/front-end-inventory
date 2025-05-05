@@ -9,7 +9,7 @@ import { useMediaQuery } from "usehooks-ts";
 import PaymentMethod from "./Screens/PaymentMethod";
 import Bills from "@/components/Bills/Bills";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftCircleIcon } from "lucide-react";
+import { ArrowLeftCircleIcon, X } from "lucide-react";
 import { PaymentMethod as TPaymentMethod } from "@/lib/database.types";
 import AlertMessage from "../Alert/AlertMessage";
 import useLocalStorage from "@/hooks/browser/useLocalStorage";
@@ -309,7 +309,22 @@ export default function CheckoutScreen() {
       navigate("./../");
     }
   }, [tillStorage, navigate]);
-
+  if (tillsByIdQuery.data == null || tillsByIdQuery.isError) {
+    return (
+      <div className="h-screen w-full flex flex-col justify-center items-center ">
+        <X size={48} />
+        <div>Parece que la caja no existe o fue borrada</div>
+        <Button
+          onClick={() => {
+            setTillStorage(null);
+            navigate("/inventory/checkout");
+          }}
+        >
+          Regresar a la seleccion de Cajas
+        </Button>
+      </div>
+    );
+  }
   if (productsQuery.isFetching || tillsByIdQuery.isFetching) return null;
   // * Payment Method Screen
 
