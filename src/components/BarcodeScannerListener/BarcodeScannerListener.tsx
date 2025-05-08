@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import onScan from "onscan.js";
 import { Product } from "@/infrastructure/interfaces/products.interface";
 
@@ -19,24 +19,37 @@ export default function BarcodeScannerListener({
   setProducts,
   toast,
 }: BarcodeScannerListenerProps) {
+  // Guardar el último código y tiempo
+  const lastScanRef = React.useRef<{ code: string; time: number }>({
+    code: "",
+    time: 0,
+  });
+  const LOCK_MS = 500;
+
   useEffect(() => {
     if (mode !== "products" || disabledScan) return;
 
-    // Inicializar onscan.js sobre todo el documento
     const options = {
-      suffixKeyCodes: [13], // Enter al final del escaneo
-      timeBeforeScanTest: 2, // ms entre chars para considerar mismo scan
-      avgTimeByChar: 20, // velocidad promedio esperada por char
-      minLength: 3, // longitud mínima de código
+      suffixKeyCodes: [13],
+      timeBeforeScanTest: 2,
+      avgTimeByChar: 20,
+      minLength: 3,
       onScan: async (scannedCode: string) => {
-        console.log("Código detectado por onscan.js:", scannedCode);
+        const now = Date.now();
+        // Si el código es igual y fue hace menos de LOCK_MS, ignorar
+        if (
+          lastScanRef.current.code === scannedCode.trim() &&
+          now - lastScanRef.current.time < LOCK_MS
+        ) {
+          console.log("Escaneo ignorado (doble):", scannedCode);
+          return;
+        }
+        lastScanRef.current = { code: scannedCode.trim(), time: now };
 
-        // Validar código no vacío
         if (!scannedCode.trim()) {
           console.log("Código vacío, ignorando");
           return;
         }
-
         try {
           const results = await searchProductsByBarcode(scannedCode);
           console.log("Resultados de búsqueda:", results);
@@ -74,8 +87,6 @@ export default function BarcodeScannerListener({
     };
 
     onScan.attachTo(document, options);
-
-    // Cleanup al desmontar
     return () => {
       onScan.detachFrom(document);
     };
@@ -88,5 +99,5 @@ export default function BarcodeScannerListener({
     toast,
   ]);
 
-  return null; // Este componente no renderiza nada
+  return null;
 }
