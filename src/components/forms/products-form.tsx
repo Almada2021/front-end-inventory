@@ -90,11 +90,8 @@ export default function ProductsForm({
       name: Yup.string().required("El nombre es requerido"),
       price: Yup.number()
         .required("El Precio es requerido")
-        .integer("Ingresa un Entero.")
         .required("El precio es requerido"),
-      basePrice: Yup.number()
-        .integer("Ingresa un Entero.")
-        .required("El precio base es requerido"),
+      basePrice: Yup.number().required("El precio base es requerido"),
       image: Yup.mixed().nullable(),
       uncounted: Yup.boolean().required(),
       stock: Yup.number(),
